@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubCanvasEntities</name>
+        <script><![CDATA[var NavHubCanvasEntities = createReactClass({
+	getInitialState: function() {
+		return { filter_text: "" };
+	},
+	
+	handleFilterTextChange: function(event) {
+		this.setState({ filter_text: event.target.value });
+	},
+
+	handleSubmit: function(event) {
+		event.preventDefault();
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var entitytypes = null;
+		var filtering_is_on = false;
+		if (this.state.filter_text === "") {
+			entitytypes = this.props.entitytypes;
+		} else {
+			filtering_is_on = true;
+			var regex = new RegExp(sn_kpi_composer.ClientHelper.escapeRegex(this.state.filter_text), "i");
+			entitytypes = [];
+			for (var i = 0; i < this.props.entitytypes.length; i++) {
+				var entitytype = this.props.entitytypes[i];
+				entitytypes.push(
+					{
+						sys_id: entitytype.sys_id,
+						name: entitytype.name,
+						entities: entitytype.entities.filter(function (v) { return v.name.search(regex) > -1; })
+					}
+				);
+			}
+		}
+		
+		var listtypes = entitytypes.filter(function (et) { return et.entities.length > 0; }).map(
+			function (et) {
+				return e(
+					NavHubCanvasEntityType,
+					{ key: et.sys_id, entities: et.entities, name: et.name, selecteddashboardusedentities: that.props.selecteddashboardusedentities, filtering_is_on: filtering_is_on, disableDragging: that.props.readonly }
+				);
+			}
+		);
+		
+		if (listtypes.length == 0) {
+			listtypes.push(
+				e(
+					'div',
+					{ key: 'empty', className: 'navhubcanvasentitytype no-items' },
+					getMessage('(no elements found)')
+				)
+			);
+		}
+
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+				{className: 'sn-aside-header'},
+				e(
+					'span',
+					null,
+					getMessage('Add Artifacts')
+				),
+				e(
+					'div',
+					{className : 'sn-aside-btn icon-cross', 'aria-label': getMessage('Close Add Artifacts Panel'), role: 'button', tabIndex: '0', onClick: this.props.onCloseActiveAside}
+				)
+			),
+			e(
+				'div',
+				{className: 'sn-aside-body wb-pa-aside-body'},
+				e(
+					'form',
+					{ className: 'navhubcanvasentitytype canvasentity-filter-search', onSubmit: this.handleSubmit },
+					e(
+						'div',
+						{ className: 'input-group-transparent' },
+						e(
+							'span',
+							{className: 'input-group-addon-transparent icon-filter'}
+						),
+						e(
+							'input',
+							{ className: 'form-control form-control-search', type: 'search', 'aria-label': getMessage('Filter'), placeholder: getMessage('Filter'), value: this.state.filter_text, onChange: this.handleFilterTextChange }
+						)
+					)
+				),
+				listtypes
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubCanvasEntities</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-29 09:16:30</sys_created_on>
+        <sys_id>a252f9391be7ff00bcb985507e4bcbc9</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubCanvasEntities</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_a252f9391be7ff00bcb985507e4bcbc9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 14:56:58</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_section caption="Indicator definition properties" section_id="6d4df3cd1b8c3700055f96002d4bcb24" sys_domain="global" table="sn_kpi_composer_indicator_definition" version="3" view="Test">
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>direction</element>
+            <position>0</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:12:34</sys_created_on>
+            <sys_id>1b35682adbb79c10b7ce2b24ca961956</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Indicator definition properties" display_value="Indicator definition properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">6d4df3cd1b8c3700055f96002d4bcb24</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:34</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>indicator_type</element>
+            <position>1</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:12:34</sys_created_on>
+            <sys_id>9b35682adbb79c10b7ce2b24ca961956</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Indicator definition properties" display_value="Indicator definition properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">6d4df3cd1b8c3700055f96002d4bcb24</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:34</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>aggregation</element>
+            <position>2</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:12:34</sys_created_on>
+            <sys_id>1f35682adbb79c10b7ce2b24ca961956</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Indicator definition properties" display_value="Indicator definition properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">6d4df3cd1b8c3700055f96002d4bcb24</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:34</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>frequency</element>
+            <position>3</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:12:34</sys_created_on>
+            <sys_id>9f35682adbb79c10b7ce2b24ca961956</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Indicator definition properties" display_value="Indicator definition properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">6d4df3cd1b8c3700055f96002d4bcb24</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:34</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>facts_table</element>
+            <position>4</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:12:34</sys_created_on>
+            <sys_id>1335682adbb79c10b7ce2b24ca961957</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Indicator definition properties" display_value="Indicator definition properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">6d4df3cd1b8c3700055f96002d4bcb24</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:34</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>condition</element>
+            <position>5</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:12:34</sys_created_on>
+            <sys_id>9335682adbb79c10b7ce2b24ca961957</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Indicator definition properties" display_value="Indicator definition properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">6d4df3cd1b8c3700055f96002d4bcb24</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:34</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>formula</element>
+            <position>6</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:12:34</sys_created_on>
+            <sys_id>1735682adbb79c10b7ce2b24ca961957</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Indicator definition properties" display_value="Indicator definition properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">6d4df3cd1b8c3700055f96002d4bcb24</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:34</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.split</element>
+            <position>7</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:12:34</sys_created_on>
+            <sys_id>9735682adbb79c10b7ce2b24ca961957</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Indicator definition properties" display_value="Indicator definition properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">6d4df3cd1b8c3700055f96002d4bcb24</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:34</sys_updated_on>
+            <sys_user/>
+            <type>.split</type>
+        </sys_ui_element>
+        <sys_ui_section action="INSERT_OR_UPDATE">
+            <caption>Indicator definition properties</caption>
+            <header>false</header>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <roles/>
+            <sys_class_name>sys_ui_section</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-03-06 11:47:47</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>6d4df3cd1b8c3700055f96002d4bcb24</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_name>sn_kpi_composer_indicator_definition</sys_name>
+            <sys_overrides/>
+            <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+            <sys_update_name>sys_ui_section_6d4df3cd1b8c3700055f96002d4bcb24</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:03</sys_updated_on>
+            <sys_user/>
+            <title>false</title>
+            <view display_value="Test" name="Test">654d73cd1b8c3700055f96002d4bcb9f</view>
+            <view_name/>
+        </sys_ui_section>
+    </sys_ui_section>
+</record_update>

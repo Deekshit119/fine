@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl_role">
+    <sys_security_acl_role action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_security_acl_role</sys_class_name>
+        <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+        <sys_created_on>2022-05-03 12:06:36</sys_created_on>
+        <sys_id>ac4cf2a8875bc910115042ad0ebb357b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>sn_kpi_composer_persona.snc_internal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_security_acl display_value="sn_kpi_composer_persona">1635e3d2db812c10b7ce2b24ca9619eb</sys_security_acl>
+        <sys_update_name>sys_security_acl_role_ac4cf2a8875bc910115042ad0ebb357b</sys_update_name>
+        <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+        <sys_updated_on>2022-05-03 12:06:36</sys_updated_on>
+        <sys_user_role display_value="snc_internal" name="snc_internal">7fcaa702933002009c8579b4f47ffbde</sys_user_role>
+        <transaction_id>66ab7e64875bc910115042ad0ebb35bb</transaction_id>
+    </sys_security_acl_role>
+</record_update>

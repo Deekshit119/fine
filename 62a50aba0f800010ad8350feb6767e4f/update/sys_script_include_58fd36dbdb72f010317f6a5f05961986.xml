@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationReportDefHasNoFactTable</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationReportDefHasNoFactTable</name>
+        <script><![CDATA[var ProjectValidationReportDefHasNoFactTable = Class.create();
+ProjectValidationReportDefHasNoFactTable.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationReportDefHasNoFactTable");	
+		
+		// Loop all entities
+		for(var idx = 0; idx<data.entities.length; idx++) {
+			var entity = data.entities[idx];
+
+			// Check the Measurement
+			if (entity.entitytype == this._entityTypeMeasurement && entity.report_definition != null) {
+				/*
+				* > measure of type report definition should have a fact table
+				*/
+				// Find the report definition
+				data.report_definitions.forEach(function(rep_def) {
+					if (rep_def.sys_id === entity.report_definition) {
+						if (rep_def.facts_table == null) {
+							that._addProjectValidationDefinitionError(
+								{ 
+									description: gs.getMessage("Measurement with reportdefinition has no fact table."),
+									//table: "sn_kpi_composer_report_definition",
+									table: "sn_kpi_composer_entity",									
+									record: entity.sys_id,
+								}, { project: { sys_id: data.project.sys_id } });										
+						}
+					}
+				});
+			}
+		}				
+	},
+
+
+    type: 'ProjectValidationReportDefHasNoFactTable'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-09-30 08:36:18</sys_created_on>
+        <sys_id>58fd36dbdb72f010317f6a5f05961986</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>ProjectValidationReportDefHasNoFactTable</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>protected</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_58fd36dbdb72f010317f6a5f05961986</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-30 10:40:37</sys_updated_on>
+    </sys_script_include>
+</record_update>

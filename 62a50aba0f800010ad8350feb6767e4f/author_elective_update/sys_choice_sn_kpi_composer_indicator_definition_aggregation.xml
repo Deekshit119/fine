@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="aggregation" table="sn_kpi_composer_indicator_definition" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>aggregation</element>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_id>cfeb7ae4875bc910115042ad0ebb35bd</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>aggregation</sys_name>
+            <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+            <sys_update_name>sys_choice_sn_kpi_composer_indicator_definition_aggregation</sys_update_name>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Count</label>
+            <language>en</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>47eb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Sum</label>
+            <language>en</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>4beb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Average</label>
+            <language>en</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>07eb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Minimum</label>
+            <language>en</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>0beb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>4</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Maximum</label>
+            <language>en</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>c7eb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>5</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Count Distinct</label>
+            <language>en</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>87eb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>6</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Recuento</label>
+            <language>es</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e1f2abb187298510115042ad0ebb3528</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>ספירה</label>
+            <language>he</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>8feb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>计数</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>07eb7ae4875bc910115042ad0ebb35ba</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Suma</label>
+            <language>es</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e5f2abb187298510115042ad0ebb3529</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>סכום</label>
+            <language>he</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>4feb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>合计</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>03eb7ae4875bc910115042ad0ebb35ba</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Media</label>
+            <language>es</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a5f2abb187298510115042ad0ebb352a</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>ממוצע</label>
+            <language>he</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>cbeb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>平均水平</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>43eb7ae4875bc910115042ad0ebb35ba</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Mínimo</label>
+            <language>es</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>65f2abb187298510115042ad0ebb352b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>4</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>מינימום</label>
+            <language>he</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>8beb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>4</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>最小值</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>c3eb7ae4875bc910115042ad0ebb35ba</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>4</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Máximo</label>
+            <language>es</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>25f2abb187298510115042ad0ebb352c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>5</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>מקסימום</label>
+            <language>he</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>0feb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>5</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>最大值</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>83eb7ae4875bc910115042ad0ebb35ba</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>5</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Recuento distinto</label>
+            <language>es</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e1f2abb187298510115042ad0ebb352d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>6</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>ספירת ייחודיים</label>
+            <language>he</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>cfeb7ae4875bc910115042ad0ebb35b9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>6</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>aggregation</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>非重复计数</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>47eb7ae4875bc910115042ad0ebb35ba</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:09</sys_updated_on>
+            <value>6</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

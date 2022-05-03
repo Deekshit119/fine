@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="hasLabels=true" label="Definición del indicador" max_length="40" name="sn_kpi_composer_indicator_definition" type="collection">
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" choice="3" default="1" label="Aggregation" max_length="40" name="aggregation" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Average" value="3"/>
+                <element inactive_on_update="false" label="Count" value="1"/>
+                <element inactive_on_update="false" label="Count Distinct" value="6"/>
+                <element inactive_on_update="false" label="Maximum" value="5"/>
+                <element inactive_on_update="false" label="Minimum" value="4"/>
+                <element inactive_on_update="false" label="Sum" value="2"/>
+                <element inactive_on_update="false" label="Máximo" language="es" sequence="0" value="5"/>
+                <element inactive_on_update="false" label="Media" language="es" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="Mínimo" language="es" sequence="0" value="4"/>
+                <element inactive_on_update="false" label="Recuento" language="es" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="Recuento distinto" language="es" sequence="0" value="6"/>
+                <element inactive_on_update="false" label="Suma" language="es" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="מינימום" language="he" sequence="0" value="4"/>
+                <element inactive_on_update="false" label="ממוצע" language="he" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="מקסימום" language="he" sequence="0" value="5"/>
+                <element inactive_on_update="false" label="סכום" language="he" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="ספירה" language="he" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="ספירת ייחודיים" language="he" sequence="0" value="6"/>
+                <element inactive_on_update="false" label="合计" language="zh" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="平均水平" language="zh" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="最大值" language="zh" sequence="0" value="5"/>
+                <element inactive_on_update="false" label="最小值" language="zh" sequence="0" value="4"/>
+                <element inactive_on_update="false" label="计数" language="zh" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="非重复计数" language="zh" sequence="0" value="6"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Comments" max_length="4000" name="comments" type="journal"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" label="Condition" max_length="4000" name="condition" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated" max_length="40" name="definition_updated" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated by" max_length="40" name="definition_updated_by" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="4000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Development instructions" max_length="4000" name="development_instructions" type="string"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" choice="3" default="1" label="Direction" max_length="40" name="direction" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Maximize" value="3"/>
+                <element inactive_on_update="false" label="Minimize" value="2"/>
+                <element inactive_on_update="false" label="None" value="1"/>
+                <element inactive_on_update="false" label="Maximizar" language="es" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="Minimizar" language="es" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="Ninguna" language="es" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="הגדל" language="he" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="ללא" language="he" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="מזער" language="he" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="无" language="zh" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="最大化" language="zh" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="最小化" language="zh" sequence="0" value="2"/>
+            </choice>
+        </element>
+        <element attributes="base_start=true,edge_encryption_enabled=true,track_definition_updated=true" label="Facts Table" max_length="80" name="facts_table" type="table_name"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" label="Formula" max_length="4000" name="formula" type="string"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" choice="1" default="10" label="Frequency" max_length="40" name="frequency" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="4-Weeks" value="35"/>
+                <element inactive_on_update="false" label="6-Months" value="70"/>
+                <element inactive_on_update="false" label="Bi-Monthly" value="50"/>
+                <element inactive_on_update="false" label="Fiscal quarterly" value="65"/>
+                <element inactive_on_update="false" label="Fiscal yearly" value="85"/>
+                <element inactive_on_update="false" label="Monthly" value="40"/>
+                <element inactive_on_update="false" label="Quarterly" value="60"/>
+                <element inactive_on_update="false" label="Yearly" value="80"/>
+                <element inactive_on_update="false" label="4 semanas" language="es" sequence="0" value="35"/>
+                <element inactive_on_update="false" label="4 שבועות" language="he" sequence="0" value="35"/>
+                <element inactive_on_update="false" label="4 个星期" language="zh" sequence="0" value="35"/>
+                <element inactive_on_update="false" label="6 meses" language="es" sequence="0" value="70"/>
+                <element inactive_on_update="false" label="6 חודשים" language="he" sequence="0" value="70"/>
+                <element inactive_on_update="false" label="6 个月" language="zh" sequence="0" value="70"/>
+                <element inactive_on_update="false" label="Anual" language="es" sequence="0" value="80"/>
+                <element inactive_on_update="false" label="Bimensual" language="es" sequence="0" value="50"/>
+                <element inactive_on_update="false" label="Cada ejercicio fiscal" language="es" sequence="0" value="85"/>
+                <element inactive_on_update="false" label="Cada trimestre fiscal" language="es" sequence="0" value="65"/>
+                <element inactive_on_update="false" label="Mensual" language="es" sequence="0" value="40"/>
+                <element inactive_on_update="false" label="Trimestral" language="es" sequence="0" value="60"/>
+                <element inactive_on_update="false" label="דו-חודשי" language="he" sequence="0" value="50"/>
+                <element inactive_on_update="false" label="חודשי" language="he" sequence="0" value="40"/>
+                <element inactive_on_update="false" label="רבעון כספים" language="he" sequence="0" value="65"/>
+                <element inactive_on_update="false" label="רבעוני" language="he" sequence="0" value="60"/>
+                <element inactive_on_update="false" label="שנת כספים" language="he" sequence="0" value="85"/>
+                <element inactive_on_update="false" label="שנתי" language="he" sequence="0" value="80"/>
+                <element inactive_on_update="false" label="每两月" language="zh" sequence="0" value="50"/>
+                <element inactive_on_update="false" label="每季度" language="zh" sequence="0" value="60"/>
+                <element inactive_on_update="false" label="每年" language="zh" sequence="0" value="80"/>
+                <element inactive_on_update="false" label="每月" language="zh" sequence="0" value="40"/>
+                <element inactive_on_update="false" label="每财季" language="zh" sequence="0" value="65"/>
+                <element inactive_on_update="false" label="每财年" language="zh" sequence="0" value="85"/>
+                <element inactive_on_update="false" label="Daily" sequence="1" value="10"/>
+                <element inactive_on_update="false" label="Diaria" language="es" sequence="1" value="10"/>
+                <element inactive_on_update="false" label="יומי" language="he" sequence="1" value="10"/>
+                <element inactive_on_update="false" label="每天" language="zh" sequence="1" value="10"/>
+                <element inactive_on_update="false" label="Semanal" language="es" sequence="2" value="20"/>
+                <element inactive_on_update="false" label="Weekly" sequence="2" value="20"/>
+                <element inactive_on_update="false" label="שבועי" language="he" sequence="2" value="20"/>
+                <element inactive_on_update="false" label="每周" language="zh" sequence="2" value="20"/>
+                <element inactive_on_update="false" label="Bi-weekly" sequence="3" value="30"/>
+                <element inactive_on_update="false" label="Bisemanal" language="es" sequence="3" value="30"/>
+                <element inactive_on_update="false" label="דו-שבועי" language="he" sequence="3" value="30"/>
+                <element inactive_on_update="false" label="每两周" language="zh" sequence="3" value="30"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Indicator details" max_length="4000" name="indicator_details" type="string"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" choice="3" default="1" label="Indicator Type" mandatory="true" max_length="40" name="indicator_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Automated" value="1"/>
+                <element inactive_on_update="false" label="Formula" value="2"/>
+                <element inactive_on_update="false" label="Manual" value="3"/>
+                <element inactive_on_update="false" label="Automatizado" language="es" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="Fórmula" language="es" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="Manual" language="es" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="אוטומטי" language="he" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="ידני" language="he" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="נוסחה" language="he" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="公式" language="zh" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="手动" language="zh" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="自动" language="zh" sequence="0" value="1"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" display="true" label="Name" max_length="200" name="name" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="PA Indicator" max_length="32" name="pa_indicator" reference="pa_indicators" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Project" max_length="32" name="project" reference="sn_kpi_composer_project" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" label="Target" max_length="1000" name="target" type="string"/>
+        <index name="index">
+            <element name="pa_indicator"/>
+        </index>
+        <index name="index2">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index3">
+            <element name="project"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DasTabAddTemplateItem</name>
+        <script><![CDATA[var DashboardTabAddTemplateItem = createReactClass({
+	onClick: function (evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        this.props.onSelected(this.props.templateitem);
+    },
+    
+    componentDidMount: function() {
+        if (this.props.isselected && this.refs.thelink && this.props.doautoselect) {
+            var thelink = this.refs.thelink;
+            setTimeout(function(){thelink.focus();}, 100);
+        }
+    },
+	
+	render: function() {
+        var that = this;
+        
+        var icontablerows = [];
+        if (this.props.templateitem.columns_per_row) {
+            for (var r = 0; r < this.props.templateitem.columns_per_row.length; r++) {
+                var cols = [];
+                var nrofcols = this.props.templateitem.columns_per_row[r];
+                for (var c = 0; c < nrofcols; c++) {
+                    cols.push(e(
+                        "span",
+                        {key: c}
+                    ));
+                }
+                var nrofcolsclassname = "";
+                if (nrofcols === 1) {
+                    nrofcolsclassname = "one";
+                } else if (nrofcols === 2) {
+                    nrofcolsclassname = "two";
+                } else if (nrofcols === 3) {
+                    nrofcolsclassname = "three";
+                }
+                cols.push(e(
+                    "div",
+                    {key: "clearfix", className: "clearfix"}
+                ));
+                icontablerows.push(e(
+                    "div",
+                    {key: r, className: nrofcolsclassname },
+                    cols
+                ));
+            }
+        } else {
+            icontablerows.push(e(
+                "div",
+                {key: "blank", className: "blank" },
+                e(
+                    "span"
+                ),
+                e(
+                    "div",
+                    {className: "clearfix"}
+                )
+            ));
+        }
+    
+		return e(
+			'a',
+			{ className: 'list-group-item' + (this.props.isselected ? ' active' : ''), onClick: this.onClick, href: window.location.href, ref: 'thelink' },
+			e(
+				'div',
+				{ className: 'pull-left dashboardtabtemplateicon' },
+				e(
+                    "div",
+                    null,
+                    icontablerows
+                )
+            ),
+            e(
+				'div',
+				{ className: 'pull-left dashboardtabtemplatetext' },
+                this.props.templateitem.caption,
+                e(
+                    'div',
+                    {className: 'small'},
+                    this.props.templateitem.description
+                )
+			),
+			e(
+				'span',
+				{ className: 'pull-right icon icon-arrow-right dashboardtabtemplatebuttonicon' }
+            ),
+            e(
+                'div',
+                {className: 'clearfix' }
+            )
+		);
+	}
+});]]></script>
+        <script_name>DasTabAddTemplateItem</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-01-16 09:34:10</sys_created_on>
+        <sys_id>ddea6720dbb52c5095fe8709689619dc</sys_id>
+        <sys_mod_count>26</sys_mod_count>
+        <sys_name>sn_kpi_composer.DasTabAddTemplateItem</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_ddea6720dbb52c5095fe8709689619dc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 14:50:06</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

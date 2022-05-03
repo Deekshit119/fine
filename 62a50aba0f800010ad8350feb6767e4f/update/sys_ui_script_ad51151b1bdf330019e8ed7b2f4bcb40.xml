@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardCanvasItem</name>
+        <script><![CDATA[var DashboardCanvasItem = createReactClass({
+	getInitialState: function() {
+		return { edit: false, hover: false, delete: false, edittitle: false, dragcounter: 0, dragisentity: false };
+	},
+	
+	componentDidUpdate: function(prevProps, prevState) {
+		if (prevState.edittitle === false && this.state.edittitle === true && this.refs.titleinput != null) {
+			this.refs.titleinput.select();
+		}
+	},
+	
+	onMouseEnter: function() {
+		this.setState({ hover: true });
+	},
+	
+	onMouseLeave: function() {
+		this.setState({ hover: false });
+	},
+	
+	onEditTitleClick: function (evt) {
+		if (evt != null) evt.stopPropagation();
+		this.setState({ edittitle: true, savingtitle: false, title: this.props.canvas.title });
+	},
+	
+	handleTitleInputChange: function(event) {
+		this.setState({ title: event.target.value });
+	},
+	
+	handleTitleInputBlur: function(event) {
+		this.saveTitleIfNeeded();
+	},
+	
+	handleTitleSubmit: function(event) {
+		event.preventDefault();
+		this.saveTitleIfNeeded();
+	},
+	
+	saveTitleIfNeeded: function() {
+		if (this.state.title !== this.props.canvas.title) {
+			this.setState({ savingtitle: true });
+			var that = this;
+			this.props.onDashboardTabRowCanvasSaveTitle(this.props.canvas.sys_id, this.state.title, function(error) {
+				that.setState({ edittitle: false });
+			});
+		} else {
+			this.setState({ edittitle: false });
+		}
+	},
+
+	disableDropIfNeeded: function(evt) {
+		var data = evt.dataTransfer.items;
+		var isentity = false;
+  		for (var i = 0; i < data.length; i++) {
+			  if (data[i].type === "text/category/entity") {
+				isentity = true;
+				i = data.length;
+			  }
+		}
+
+		var disabledrop = false;
+		if (isentity === true && this.props.canvas.widgetvisualisation != null) {
+			disabledrop = widgetTypeDisallowsLinkedEntities(this.props.canvas.widgetvisualisation.widgettype_sys_id);
+		}
+
+		if (disabledrop === false) {
+			evt.preventDefault();
+		}
+		return isentity;
+	},
+	
+	onDragOver: function(evt) {
+		this.disableDropIfNeeded(evt);
+	},
+
+	onDragEnter: function(evt) {
+		var isentity = this.disableDropIfNeeded(evt);
+  		
+		this.setState({ dragcounter: this.state.dragcounter + 1, dragisentity: isentity });
+	},
+	
+	onDragLeave: function(evt) {
+		evt.stopPropagation();
+		this.setState({ dragcounter: this.state.dragcounter - 1 });
+	},
+	
+	parseDragData: function(data) {
+		try {
+			return JSON.parse(data);
+		} catch(e) {
+			return {};
+		}
+	},
+	
+	onDrop: function(evt, item) {
+		evt.stopPropagation();
+
+		var data = this.parseDragData(evt.dataTransfer.getData("Text"));
+		var category = data.category;
+		var sys_id = data.sys_id;
+
+		if (category === "entity") {
+			//check als de entity tot het dashboard behoort..
+			if (evt.altKey == true) {
+				this.props.onDashboardTabRowCanvasEntityDelete(this.props.canvas, sys_id, function (error) {
+
+				});	
+			} else {
+				this.props.onDashboardTabRowCanvasEntityInsert(this.props.canvas, sys_id, function (error) {
+
+				});	
+			}
+		} else if (category === "visualisation") {
+			var showpopup = this.props.canvas.widgetvisualisation == null;
+			this.props.onDashboardTabRowCanvasSaveWidgetVisualisation(this.props.canvas, sys_id, function (error) {
+			});
+			if (showpopup) {
+				this.onEditClick(null);
+			}
+		}
+
+		this.setState({ dragcounter: 0, dragisentity: false });
+	},
+	
+	onMoveToLeftClick: function(evt) {
+		evt.stopPropagation();
+		this.props.onDashboardTabRowCanvasMoveTo('left', this.props.canvas.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onMoveToRightClick: function(evt) {
+		evt.stopPropagation();
+		this.props.onDashboardTabRowCanvasMoveTo('right', this.props.canvas.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onEditClick: function (evt) {
+		if (evt != null) evt.stopPropagation();
+		this.setState({ edit: true });
+	},
+	
+	editOnCancel: function() {
+		this.setState({edit: false});
+	},
+	
+	editOnSave: function(details) {
+		var that = this;
+		var currentwidgetvisualisationsys_id = "";
+		if (this.props.canvas.widgetvisualisation != null) {
+			currentwidgetvisualisationsys_id = this.props.canvas.widgetvisualisation.sys_id;
+		}
+		var currententitysysids = this.props.canvas.entities;
+		var newentitysysids = details.entities;
+		var entitieschanged = false;
+		if (currententitysysids.length !== newentitysysids.length) {
+		   entitieschanged = true; 
+		} else {
+			currententitysysids.sort();
+			newentitysysids.sort();
+			for (var i = 0; i < currententitysysids.length; i++) {
+				if (currententitysysids[i] !== newentitysysids[i]) {
+					entitieschanged = true;
+					i = currententitysysids.length;
+				}
+			}
+		}
+		
+		var currentpa_widgetsysid = this.props.canvas.pa_widget != null ? this.props.canvas.pa_widget.sys_id : "";
+		var newpa_widgetsysid = details.pa_widget != null ? details.pa_widget.sys_id : "";
+
+		var currentspotlight_groupsysid = this.props.canvas.spotlight_group != null ? this.props.canvas.spotlight_group.sys_id : "";
+		var newspotlight_groupsysid = details.spotlight_group != null ? details.spotlight_group.sys_id : "";
+
+		var currentcontent_blocksysid = this.props.canvas.content_block != null ? this.props.canvas.content_block.sys_id : "";
+		var newcontent_blocksysid = details.content_block != null ? details.content_block.sys_id : "";
+
+		var currentinteractive_filtersysid = this.props.canvas.interactive_filter != null ? this.props.canvas.interactive_filter.sys_id : "";
+		var newinteractive_filtersysid = details.interactive_filter != null ? details.interactive_filter.sys_id : "";
+
+		var currentreportsysid = this.props.canvas.report != null ? this.props.canvas.report.sys_id : "";
+		var newreportsysid = details.report != null ? details.report.sys_id : "";
+		
+		if (entitieschanged || 
+			this.props.canvas.title !== details.title ||
+			this.props.canvas.follow_element !== details.follow_element ||
+			this.props.canvas.follow_interactive_filter !== details.follow_interactive_filter ||
+			currentwidgetvisualisationsys_id !== details.widgetvisualisationsys_id ||
+			currentpa_widgetsysid !== newpa_widgetsysid ||
+			currentspotlight_groupsysid !== newspotlight_groupsysid ||
+			currentcontent_blocksysid !== newcontent_blocksysid ||
+			currentinteractive_filtersysid !== newinteractive_filtersysid ||
+			currentreportsysid !== newreportsysid ||
+			this.props.canvas.time_serie !== details.time_serie ||
+			this.props.canvas.description !== details.description) {
+			this.props.onDashboardTabRowCanvasEdit(this.props.canvas.sys_id, details, function(error) {
+				that.setState({edit: false});	
+			});	
+ 		} else {
+			this.setState({edit: false});
+ 		}
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var editmodal = null;
+		if (this.state.edit == true) {
+			editmodal = e(
+				DashboardCanvasModal,
+				{
+					key: 'editmodal',
+					canvas: this.props.canvas,
+					onSave: this.props.onDashboardTabRowCanvasEdit ? this.editOnSave : null,
+					onCancel: this.editOnCancel,
+					widgettypes: this.props.widgettypes,
+					entities: this.props.entities,
+					timeseries: this.props.timeseries,
+					spotlight_installed: this.props.spotlight_installed,
+				}
+			);
+		}
+		
+		var title = null;
+		if (this.state.edittitle === true) {
+			title = e(
+				'form',
+				{className: 'canvas-title', onSubmit: this.handleTitleSubmit},
+				e(
+					'input',
+					{ ref: 'titleinput', type: 'text', autoFocus: true, placeholder: getMessage('Edit Title'), className: 'form-control', disabled: this.state.savingtitle, value: this.state.title, onChange: this.handleTitleInputChange, onBlur: this.handleTitleInputBlur, maxLength: 80 }
+				)
+			);
+		} else {
+			var titleProps = { className: 'canvas-title view' };
+			if (this.props.onDashboardTabRowCanvasSaveTitle) {
+				titleProps.className += " editable";
+				titleProps.onClick = this.onEditTitleClick;
+			}
+			title = e(
+				'div',
+				titleProps,
+				this.props.canvas.title
+			);
+		}
+		
+ 		var entitieslistarr = [];
+		for (var i = 0; i < this.props.canvas.entities.length; i++) {
+			var entitysys_id = this.props.canvas.entities[i];
+			var thecanvasentities = this.props.entities.filter(function (ent) { return ent.sys_id === entitysys_id || ent.org_sys_id === entitysys_id; });
+			if (thecanvasentities.length > 0) {
+				entitieslistarr.push(thecanvasentities[0].name);
+			}
+		}
+		var entitieslist = null;
+		if (entitieslistarr.length > 0) {
+			entitieslistarr.sort(function(a, b) {
+				return a.localeCompare(b);
+			});
+			entitieslist = entitieslistarr.join(", ");
+		}
+				
+		var buttons = null;
+		if (this.state.hover === true) {
+			var editbuttonprops = { className: 'icon sn-tooltip-basic', onClick: this.onEditClick};
+			if (this.props.onDashboardTabRowCanvasEdit) {
+				editbuttonprops.className += " icon-edit";
+				editbuttonprops.title = getMessage("Edit item");
+			} else {
+				editbuttonprops.className += " icon-view";
+				editbuttonprops.title = getMessage("View item");
+			}
+			buttons = [
+				e(
+					'div',
+					{ key: 'edit', className: 'icon-contain' },
+					e(
+						'span',
+						editbuttonprops
+					)
+				)
+			];
+			if (this.props.onDashboardTabRowCanvasMoveTo) {
+				buttons.push(
+					e(
+						'div',
+						{ key: 'move', className: 'icon-contain arrows' },
+						e(
+							'span',
+							{ className: 'icon icon-arrow-left ' + (this.props.allowmoveleft ? 'enabled' : 'disabled'), title: getMessage("Move left"), onClick: this.props.allowmoveleft ? this.onMoveToLeftClick : null}
+						),
+						e(
+							'span',
+							{ className: 'icon icon-arrow-right ' + (this.props.allowmoveright ? 'enabled' : 'disabled'), title: getMessage("Move right"), onClick: this.props.allowmoveright ? this.onMoveToRightClick : null}
+						)
+					)
+				);
+			}
+		}
+		
+		var canvasimage = null;
+		if (this.props.canvas.widgetvisualisation != null) {
+			//check nr of columns
+			var imagetoshow = null;
+			var stretch = false;
+			
+			if (this.props.nrofcolumns === 12 && this.props.canvas.widgetvisualisation.twelvecolimg != null) {
+				imagetoshow = this.props.canvas.widgetvisualisation.twelvecolimg;
+			} else if (this.props.nrofcolumns === 6 && this.props.canvas.widgetvisualisation.sixcolimg != null) {
+				imagetoshow = this.props.canvas.widgetvisualisation.sixcolimg;
+			} else if (this.props.nrofcolumns === 4 && this.props.canvas.widgetvisualisation.fourcolimg != null) {
+				imagetoshow = this.props.canvas.widgetvisualisation.fourcolimg;
+			} else if (this.props.nrofcolumns === 3 && this.props.canvas.widgetvisualisation.threecolimg != null) {
+				imagetoshow = this.props.canvas.widgetvisualisation.threecolimg;
+			} else if (this.props.nrofcolumns === 2 && this.props.canvas.widgetvisualisation.twocolimg != null) {
+				imagetoshow = this.props.canvas.widgetvisualisation.twocolimg;
+			} else if (this.props.nrofcolumns === 1 && this.props.canvas.widgetvisualisation.onecolimg != null) {
+				imagetoshow = this.props.canvas.widgetvisualisation.onecolimg;
+			} else {
+				imagetoshow = this.props.canvas.widgetvisualisation.onecolimg;
+				stretch = true;
+			}
+			
+			if (imagetoshow != null) {
+				canvasimage = e(
+					'div',
+					{ className: 'widgetimagecontainer' },
+					e(
+						'img',
+						{ src: imagetoshow + '.iix', className: 'widgetimage' + (stretch ? ' stretch' : ''), alt: getMessage('Widget image placeholder') }
+					)
+				);
+			}
+		}
+		var canvascontent = null;
+		if (this.props.canvas.content != "") {
+			canvascontent =
+				e(
+					'div',
+					{ className: 'widgetcontent' },
+					this.props.canvas.content
+				);
+		}
+		var canvasentities = null;
+		if (entitieslist != null) {
+			canvasentities = e(
+				'div',
+				{ className: 'entities' },
+				entitieslist
+			);
+		}
+
+		var dropIsDisabled = false;
+		if (this.state.dragisentity === true && this.props.canvas.widgetvisualisation != null) {
+			dropIsDisabled = widgetTypeDisallowsLinkedEntities(this.props.canvas.widgetvisualisation.widgettype_sys_id);
+		}
+
+		var allowdragandrop = this.props.onDashboardTabRowCanvasEntityDelete && this.props.onDashboardTabRowCanvasEntityInsert && this.props.onDashboardTabRowCanvasSaveWidgetVisualisation;
+		
+		return e(
+			'div',
+			{ className: 'tabrowcanvas' + (this.state.dragcounter > 0 ? ' draghighlight' : '') + (this.state.dragcounter > 0 && dropIsDisabled === true ? ' dropdisabled' : ''), onDragOver: allowdragandrop ? this.onDragOver : null, onDragEnter: allowdragandrop ? this.onDragEnter : null, onDragLeave: allowdragandrop ? this.onDragLeave : null, onDrop: allowdragandrop ? this.onDrop : null, onMouseEnter: this.onMouseEnter, onMouseLeave: this.onMouseLeave, onDoubleClick: this.onEditClick },
+			e(
+				'div',
+				{ className: 'canvasheader' },
+				e(
+					'div',
+					{className: 'canvastitle'},
+					title
+				),
+				e(
+					'div',
+					{className: 'canvasbuttons' },
+					buttons
+				),
+				e(
+					'div',
+					{
+						key: 'clear',
+						className: 'clearfix'
+					}
+				)
+			),
+			e(
+				'div',
+				{ className: 'canvasbody'},
+				canvasimage,
+				canvascontent,
+				canvasentities
+			),
+			editmodal
+		);
+	}
+});]]></script>
+        <script_name>DashboardCanvasItem</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-21 12:27:08</sys_created_on>
+        <sys_id>ad51151b1bdf330019e8ed7b2f4bcb40</sys_id>
+        <sys_mod_count>99</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardCanvasItem</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_ad51151b1bdf330019e8ed7b2f4bcb40</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 14:16:05</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

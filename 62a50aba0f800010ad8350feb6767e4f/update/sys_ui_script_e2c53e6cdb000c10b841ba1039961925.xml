@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.ModalBreakdowns</name>
+        <script><![CDATA[//props can have selectedbreakdowns_from_library and selectedbreakdowns_from_project but is not required
+
+var ModalBreakdowns = createReactClass({
+	renderBreakdownLi: function(breakdown) {
+		return this.renderBreakdownLiWithReadOnly(breakdown, false);
+	},
+
+	renderReadOnlyBreakdownLi: function(breakdown) {
+		return this.renderBreakdownLiWithReadOnly(breakdown, true);
+	},
+
+	renderBreakdownLiWithReadOnly: function(breakdown, readonly) {
+		return e(
+			ModalBreakdownLi,
+			{ key: breakdown.sys_id, breakdown: breakdown, checked: this.props.selectedbreakdowns.indexOf(breakdown.sys_id) > -1, onCheckedChange: readonly ? null : this.props.onCheckedChange }
+		);
+	},
+
+	render: function() {
+		var that = this;
+
+		var bodycontent = [];
+		
+		var breakdowns = that.props.onCheckedChange != null ? this.props.breakdowns : this.props.breakdowns.filter(function (breakdown) { return that.props.selectedbreakdowns.indexOf(breakdown.sys_id) > -1; });
+		
+		if (breakdowns.length > 0) {
+			if (this.props.selectedbreakdowns_from_library && this.props.selectedbreakdowns_from_project) {
+				//split by from_library and from_project
+				var breakdowns_from_library = [];
+				var breakdowns_from_project = [];
+				for (var i = 0; i < breakdowns.length; i++) {
+					if (this.props.selectedbreakdowns_from_library.indexOf(breakdowns[i].sys_id)> -1) {
+						breakdowns_from_library.push(breakdowns[i]);
+					} else {
+						breakdowns_from_project.push(breakdowns[i]);
+					}
+				}
+
+				if (breakdowns_from_library.length > 0) {
+					bodycontent.push(
+						e(
+							'div',
+							{ key: 'librarytitle', className: 'sn-aside-group-title'},
+							e(
+								'span',
+								null,
+								getMessage("Defined in library")
+							)
+						)
+					);
+					bodycontent.push(
+						e(
+							'ul',
+							{ key: 'libraryitems', className: 'sn-widget-datalist'},
+							breakdowns_from_library.map(this.renderReadOnlyBreakdownLi)
+						)
+					);
+				}
+
+				if (breakdowns_from_project.length > 0) {
+					bodycontent.push(
+						e(
+							'div',
+							{ key: 'projecttitle', className: 'sn-aside-group-title'},
+							e(
+								'span',
+								null,
+								getMessage("Defined in project")
+							)
+						)
+					);
+					bodycontent.push(
+						e(
+							'ul',
+							{ key: 'projectitems', className: 'sn-widget-datalist'},
+							breakdowns_from_project.map(this.renderBreakdownLi)
+						)
+					);
+				}
+			} else {
+				bodycontent.push(
+					e(
+						'ul',
+						{ key: 'items', className: 'sn-widget-datalist'},
+						breakdowns.map(this.renderBreakdownLi)
+					)
+				);
+			}
+		}
+		
+
+		if (bodycontent.length === 0) {
+			bodycontent.push(
+				e(
+					'ul',
+					{ key: 'mainitems', className: 'sn-widget-datalist'},
+					e(NoneList, { key: 'none' })
+				)
+			);
+		}
+		
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+				{className: 'sn-aside-header'},
+				e(
+					'span',
+					null,
+					getMessage('Group By')
+				)
+			),
+			e(
+				'div',
+				{className: 'sn-aside-body wb-pa-aside-body'},
+				bodycontent
+			)
+		);
+	}
+});]]></script>
+        <script_name>ModalBreakdowns</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-09-19 13:29:55</sys_created_on>
+        <sys_id>e2c53e6cdb000c10b841ba1039961925</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>sn_kpi_composer.ModalBreakdowns</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_e2c53e6cdb000c10b841ba1039961925</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 09:10:55</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

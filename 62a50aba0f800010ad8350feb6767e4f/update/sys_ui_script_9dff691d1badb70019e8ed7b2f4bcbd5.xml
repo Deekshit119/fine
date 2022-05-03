@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.OverviewProject</name>
+        <script><![CDATA[var OverviewProject = createReactClass({
+	//gaat nu via href
+	// onProjectSelected: function() {
+	// 	this.props.onProjectSelected(this.props.project);
+	// },
+
+	getInitialState: function() {
+		return { delete: false, download: false };
+	},
+
+	onDelete: function(evt) {
+		evt.preventDefault();
+
+		this.setState({delete:true});
+	},
+
+	onDeleteYes: function() {
+		var that = this;
+		this.props.onProjectDelete(this.props.project.sys_id, function(error) {
+			if (error) {
+				that.setState({delete:false});
+			}
+		});
+	},
+
+	onDeleteNo: function() {
+		this.setState({delete:false});
+	},
+
+	onDownload: function(evt) {
+		evt.preventDefault();
+		this.setState({download:true});
+	},
+
+	onDownloadOk: function() {
+		this.setState({download:false});
+	},
+
+	onDownloadModalOpened: function() {
+		if (this.refs.downloadokbutton) {
+			this.refs.downloadokbutton.focus();
+		}
+	},
+	
+	onDownloadConfirm: function() {
+		window.location.href = "sn_kpi_composer_download_project_json.do?sys_id=" + this.props.project.sys_id + "&sysparm_ck=" + window.g_ck;
+		this.onDownloadOk();
+	},
+	
+	render: function() {
+		var description = this.props.project.description
+			? e('div', { className: 'pa-overview-info-description' }, this.props.project.description)
+			: e('hr', { className: 'pa-overview-info-division' });
+
+		var confirmremoval = null;
+		if (this.state.delete) {
+			confirmremoval = e(
+				ConfirmRemoval,
+				{ key: 'confirmremove', onYes: this.onDeleteYes, onNo: this.onDeleteNo }
+			);
+		}
+
+		var downloadmodal = null;
+		if (this.state.download) {
+			var downloadCloseButton = e(
+				'button',
+				{type: 'button', title: getMessage('Close'), className: 'btn btn-icon close icon-cross  sn-tooltip-basic', onClick: this.onDownloadOk },
+				e(
+					'span',
+					{ className: 'sr-only' },
+					'Close'
+				)
+			);
+			
+			downloadmodal = e(
+				Reactstrap.Modal, 
+				{'isOpen': true, onOpened: this.onDownloadModalOpened, toggle: this.onDownloadOk, key: "download" },
+				e(
+					Reactstrap.ModalHeader,
+					{'toggle': this.onDownloadOk, close: downloadCloseButton},
+					getMessage('Export project')
+				),
+				e(
+					Reactstrap.ModalBody,
+					{},
+					getMessage("When exporting a project, the following fields are not included in the export: references to knowledge articles, responsible users and contacts as well as project journal entries.")
+				),
+				e(
+					Reactstrap.ModalFooter,
+					{},
+					e(
+						'button',
+						{ ref: 'downloadokbutton', className: 'btn btn-primary', onClick: this.onDownloadConfirm },
+						getMessage('Download')
+					)
+				)
+			);
+		}
+
+		var deletectrl = null;
+		if (this.props.onProjectDelete && this.props.project.candelete) {
+			deletectrl = e(
+				'li',
+				null,
+				e(
+					'a',
+					{className: 'icon icon-delete', onClick: this.onDelete, href: "#" },
+					e(
+						'span',
+						{ className: 'menu-item-text' },
+						getMessage("Delete")
+					)
+				)
+			);
+		}
+
+		var menu = e(
+			'div',
+			{className: 'buttoncontainer'},
+			e(
+				'div',
+				{className: 'btn-group' },
+				e(
+					'button',
+					{className: 'btn btn-link icon icon-menu sn-tooltip-basic dropdown-toggle', type: "button", title: getMessage("Options"), "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false" }
+				),
+				e(
+					"ul",
+					{ className: "dropdown-menu" },
+					e(
+						'li',
+						null,
+						e(
+							'a',
+							{className: 'icon icon-download', onClick: this.onDownload, href: "#" },
+							e(
+								'span',
+								{ className: 'menu-item-text' },
+								getMessage("Export")
+							)
+						)
+					),
+					deletectrl
+				)
+			)
+		);
+
+		//console.log(this.props.project);
+		/*
+		this.props.libraryproject.entity_types.map(function (enttype) {
+			return e(
+				"div",
+				{ key: enttype.entity_type, className: "entity_type"},
+				enttype.count + " " + enttype.entity_type_dv
+			);
+		}*/
+		
+		return [e(
+			'div',
+			{ className: 'pa-overview-card-element', key: 'card' },
+			e(
+				'a',
+				{ className: 'pa-overview-card', tabIndex: 0, href: ('sn_kpi_composer_composer.do?project_sys_id=' + this.props.project.sys_id + this.props.returnUrl) },
+				e(
+					'div',
+					{ className: 'pa-overview-info' },
+					e(
+						'div',
+						{ className: 'pa-overview-info-name' },
+						this.props.project.name
+					),
+					description,
+					e(
+						'div',
+						{ className: 'pa-overview-info-date' },
+						new GwtMessage().getMessage("Last edited: {0}", (this.props.project.lastedit_ord !== "19700101000000" ? this.props.project.lastedit : getMessage("unknown"))),
+						e('br'),
+						new GwtMessage().getMessage("Number of artifacts: {0}", (this.props.project.entity_types ? this.props.project.entity_types.reduce(function (total, enttype) { return total + Number(enttype.count); }, 0) : 0)),
+						e('br'),
+						new GwtMessage().getMessage("Responsible: {0}", (this.props.project.owners_dv ? this.props.project.owners_dv : getMessage("none")))
+					)
+				)
+			),
+			menu
+		),
+		confirmremoval,
+		downloadmodal
+		];
+	}
+});]]></script>
+        <script_name>OverviewProject</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-05-20 09:43:10</sys_created_on>
+        <sys_id>9dff691d1badb70019e8ed7b2f4bcbd5</sys_id>
+        <sys_mod_count>63</sys_mod_count>
+        <sys_name>sn_kpi_composer.OverviewProject</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_9dff691d1badb70019e8ed7b2f4bcbd5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2022-01-10 09:11:39</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

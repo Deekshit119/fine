@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.LinkedIndicatorDetails</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description>AJAX method for getting linked PA indicator details to show on indicator form</description>
+        <name>LinkedIndicatorDetails</name>
+        <script><![CDATA[var LinkedIndicatorDetails = Class.create();
+LinkedIndicatorDetails.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+	getIndicatorConditions: function() {
+		
+		var ind = this.getParameter('sysparm_ind');
+		
+		if (!ind)
+			return '';
+
+		// Using GlideRecordSecure prevents the details from loading, even when having correct PA roles (not being sys admin). 
+		// Script is not executed at all if user has no access to pa_indicator table.
+		var gr_ind = new GlideRecord('pa_indicators');
+		gr_ind.get(ind);
+
+		if(!gr_ind.canRead()){
+			gs.warn("No read access to given indicator");
+			return '';
+		}
+		var summary = gr_ind.type;
+		
+		// Check if automated indicator
+		if (gr_ind.type == 1){
+
+			var ind_facts_table = gr_ind.cube.facts_table.getDisplayValue();
+			var ind_conditions = gr_ind.conditions.getDisplayValue();
+			var ind_source_conditions = gr_ind.cube.conditions.getDisplayValue();
+
+			if (!ind_conditions)
+				ind_conditions = "None";
+
+			if (!ind_source_conditions)
+				ind_conditions = "None";
+
+			summary = 'Facts table: ' + ind_facts_table + '\nIndicator source conditions: ' + ind_source_conditions + '\nAdditional Indicator conditions: ' + ind_conditions;
+		}
+
+		// Check if formula indicator
+		if (gr_ind.type == 2){
+			
+			// Convert sysid references in formula to display values
+			var formulaTranslated = new global.ScopedPAFormula(gr_ind.getValue('formula'), gr_ind.getValue('sys_id'));
+			
+			if (formulaTranslated.isValid()){
+				summary = 'Formula: \n' + formulaTranslated.getDisplay();
+			}
+		}
+		
+		return summary;
+	},
+	
+	isPublic: function() {
+		return false;
+	},
+
+    type: 'LinkedIndicatorDetails'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-10-14 11:10:35</sys_created_on>
+        <sys_id>d52bf3dedb379c10b7ce2b24ca961997</sys_id>
+        <sys_mod_count>58</sys_mod_count>
+        <sys_name>LinkedIndicatorDetails</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_d52bf3dedb379c10b7ce2b24ca961997</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-09 13:55:17</sys_updated_on>
+    </sys_script_include>
+</record_update>

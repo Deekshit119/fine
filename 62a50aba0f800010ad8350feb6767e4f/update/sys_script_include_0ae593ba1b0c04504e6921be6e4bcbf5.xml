@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.globalFunctions</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>globalFunctions</name>
+        <script><![CDATA[function globalFunctions() {
+	// Leave this function so this code will load
+}
+
+// Array with objects containing sys_id property
+function findBySysId(arr, sys_id) {	
+	try {
+		for(var i = 0, m = arr.length; i<m; i++) {
+			var e = arr[i];
+			if (e.sys_id == sys_id)
+				return e;
+			// If not found, check if it is a library entity
+			else if (e.org_sys_id && e.org_sys_id == sys_id)
+				return e;
+		}	
+	} catch(err) {
+		gs.error(err);
+	}
+	return null;
+}
+// Instead of checking the objects sys_id, the array is a list of sys_id's itself
+function findBySysIdList(arr, sys_id) {	
+	try {
+		for(var i = 0, m = arr.length; i<m; i++) {
+			var e = arr[i];
+			if (e == sys_id)
+				return e;
+		}	
+	} catch(err) {
+		gs.error(err);
+	}
+	return null;
+}
+	]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-09-26 15:36:37</sys_created_on>
+        <sys_id>0ae593ba1b0c04504e6921be6e4bcbf5</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>globalFunctions</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_0ae593ba1b0c04504e6921be6e4bcbf5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-10-19 08:50:20</sys_updated_on>
+    </sys_script_include>
+</record_update>

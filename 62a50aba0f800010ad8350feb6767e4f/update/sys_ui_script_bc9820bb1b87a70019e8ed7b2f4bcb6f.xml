@@ -1,0 +1,4135 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.MainApp</name>
+        <script><![CDATA[var allowedActiveAsides = {};
+allowedActiveAsides["analysis"] = ['info', 'personas', 'breakdowns', 'library', 'journal', 'share'];
+allowedActiveAsides["dashboarddesign"] = ['info', 'addwidget', 'canvasentities', 'journal', 'share'];
+allowedActiveAsides["indicatordesign"] = ['info', 'journal', 'share'];
+allowedActiveAsides["review"] = ['info', 'journal', 'share'];
+
+var MainApp = createReactClass({
+    pa_widgets: [],
+    spotlight_groups: [],
+    content_blocks: [],
+    interactive_filters: [],
+    reports: [],
+    returnUrl: sn_kpi_composer.ClientGlobalUI.getParameterByName("returnUrl", window.location.href),
+    allusers: [],
+    allknowledgearticles: [],
+
+    getInitialState: function() {
+        var projectidfromquerystring = sn_kpi_composer.ClientGlobalUI.getParameterByName("project_sys_id", window.location.href);
+        if (!projectidfromquerystring) projectidfromquerystring = null;
+
+        return {
+            wizardStep: "analysis",
+            activeAside: null,
+            initialDataLoaded: false,
+            initialDataLoadError: null,
+            allbreakdowns: null,
+            breakdowns: null,
+            personas: null,
+            rules: null,
+            entitytypes: null,
+            indicatordefinitions: null,
+            indicatordefinition_indicatordefinition: null,
+            report_definitions: null,
+            project_defaultentityrelationtype: null,
+            project_description: null,
+            project_comments: null,
+            project_name: null,
+            project_objective: null,
+            project_library_public: null,
+            project_sys_id: projectidfromquerystring,
+            project_knowledgearticles: null,
+            project_owners: null,
+            project_contacts: null,
+            project_permissions: null,
+            project_library: false,
+            entities: null,
+            relations: null,
+            selected_personas: [],
+            selected_breakdowns: [],
+            analysis_filter_text: "",
+            tasks: null,
+            taskdefs: null,
+            validations: null,
+            dashboards: null, //we also have dashboardtabs_sysid per dasboard, dashboardtabrows_sysid per tab and dashboardtabrowcanvasses_sysid per row
+            timeseries: null,
+            widgetvisualisations: null,
+            widgettypes: null,
+            selecteddashboardid: null,
+            pa_dashboards: [],
+            spotlight_installed: false,
+            indicatordesign_filter_status: "",
+            indicatordesign_filter_text: "",
+            readonly: true,
+            possibletemplatetabs: null,
+            library_searchtext: "",
+            library_searching: false,
+            library_searchresults: null
+        };
+    },
+
+    addKnowledgeArticleToAllList: function(knowledgearticle) {
+        if (this.allknowledgearticles.filter(function (art){return art.sys_id === knowledgearticle.sys_id; }).length === 0) {
+            this.allknowledgearticles.push(knowledgearticle);
+        }
+    },
+
+    addUserToAllList: function(user) {
+        if (this.allusers.filter(function (u) {return u.sys_id === user.sys_id; }).length === 0) {
+            this.allusers.push(user);
+        }
+    },
+
+    getApiInputObj: function() {
+        return { project: {sys_id: this.state.project_sys_id} };
+    },
+
+    dahboardSelect: function(dashboard) {
+        this.setState({
+            selecteddashboardid: dashboard.sys_id
+        });
+    },
+
+    getPossibleDashboardTabTemplates: function(callback) {
+        if (this.state.possibletemplatetabs) {
+            callback(this.state.possibletemplatetabs);
+        } else {
+            var that = this;
+            sn_kpi_composer.ClientApi.selectTabTemplates( //doens't need project sys_id
+                {filter:""},
+                function (result) { 
+                    //console.log(result);
+                    if (result.success) {
+                        that.setState({possibletemplatetabs: result.templates}, function(){
+                            callback(that.state.possibletemplatetabs);
+                        });
+                    } else {
+                        log(result);
+                        callback(null);
+                        console.error('get possible tab templates FAILED:' + JSON.stringify(result));
+                    }
+                }, 
+                function(result) {
+                    log(result);
+                    callback(null);
+                    console.error('get possible tab templates FAILED:' + JSON.stringify(result));
+                });
+        }
+    },
+
+    getKnowledgeArticlesByString: function(sysids, allknowledgearticles) {
+        var toreturn = [];
+        if (sysids != null && sysids != "") {
+            var knowledgearticlessysids = sysids.split(",");
+            for (i = 0; i < knowledgearticlessysids.length; i++) {
+                var knowledgearticles = allknowledgearticles.filter(function(k) {
+                    return k.sys_id === knowledgearticlessysids[i];
+                });
+                if (knowledgearticles.length == 1) {
+                    toreturn.push(knowledgearticles[0]);
+                }
+            }
+        }
+        toreturn.sort(function(a, b) {
+            return a.number.localeCompare(b.number);
+        });
+        return toreturn;
+    },
+
+    getUsersByString: function(sysids, allusers) {
+        var toreturn = [];
+        if (sysids != null && sysids != "") {
+            var userssysids = sysids.split(",");
+            for (i = 0; i < userssysids.length; i++) {
+                var users = allusers.filter(function(k) {
+                    return k.sys_id === userssysids[i];
+                });
+                if (users.length == 1) {
+                    toreturn.push(users[0]);
+                }
+            }
+        }
+        toreturn.sort(function(a, b) {
+            return a.name.localeCompare(b.name);
+        });
+        return toreturn;
+    },
+
+    initializeEntity: function(entity, knowledgearticles, users, relations, index) {
+        entity.knowledgearticles = this.getKnowledgeArticlesByString(entity.knowledgearticles, knowledgearticles);
+        entity.owners = this.getUsersByString(entity.owners, users);
+        entity.contacts = this.getUsersByString(entity.contacts, users);
+
+        if (entity.description == null) {
+            entity.description = "";
+        }
+        if (entity.name == null) {
+            entity.name = "";
+        }
+        if (entity.target == null) {
+            entity.target = "";
+        }
+        entity.order = +entity.order;
+
+        var toreturn = false;
+
+        if (entity.order <= 0) {
+            //we moeten alle orders saven
+            toreturn = true;
+
+            //get initial order
+            var torelations = relations.filter(function (rel) { return rel.to === entity.sys_id; });
+            if (torelations.length > 0) {
+                //can only be one, if zero then it's root, hoe dat doen?
+                var parentsysid = torelations[0].from;
+                var parentchildrelations = relations.filter(function (rel) { return rel.from === parentsysid; }).map(function (rel) { return rel.to; });
+                entity.order = parentchildrelations.indexOf(entity.sys_id) + 1;
+            } else {
+                //root element, set to index so multiple roots have different orders
+                entity.order = index;
+            }
+        }
+
+        return toreturn;
+    },
+
+    getPersonasByString: function(sysids, allpersonas) {
+        var toreturn = [];
+        if (sysids != null) {
+            var personassysids = sysids.split(",");
+            for (i = 0; i < personassysids.length; i++) {
+                var pers = allpersonas.filter(function(k) {
+                    return k.sys_id === personassysids[i];
+                });
+                if (pers.length == 1) {
+                    toreturn.push(pers[0]);
+                }
+            }
+        }
+        toreturn.sort(function(a, b) {
+            return a.name.localeCompare(b.name);
+        });
+        return toreturn;
+    },
+
+    getBreakdownsByString: function(sysids, allbreakdowns) {
+        var toreturn = [];
+        if (sysids != null) {
+            var breakdownssysids = sysids.split(",");
+            for (i = 0; i < breakdownssysids.length; i++) {
+                var breakd = allbreakdowns.filter(function(k) {
+                    return k.sys_id === breakdownssysids[i];
+                });
+                if (breakd.length == 1) {
+                    toreturn.push(breakd[0]);
+                }
+            }
+        }
+        toreturn.sort(function(a, b) {
+            return a.name.localeCompare(b.name);
+        });
+        return toreturn;
+    },
+
+    // getEntitiesByString: function(sysids, allentities) {
+    //     var toreturn = [];
+    //     if (sysids != null) {
+    //         var entitiessysids = sysids.split(",");
+    //         for (i = 0; i < entitiessysids.length; i++) {
+    //             console.log(entitiessysids[i]);
+    //             var items = allentities.filter(function(k) {
+    //                 return k.sys_id === entitiessysids[i] || k.org_sys_id === entitiessysids[i];
+    //             });
+    //             if (items.length > 0) {
+    //                 toreturn.push(items[0]);
+    //             }
+    //         }
+    //     }
+    //     toreturn.sort(function(a, b) {
+    //         return a.name.localeCompare(b.name);
+    //     });
+    //     return toreturn;
+    // },
+
+    initializeDashboardTabRowCanvas: function(dashboardtabrowcanvas, widgetvisualisations, entities) {
+        if (dashboardtabrowcanvas.entities) {
+            dashboardtabrowcanvas.entities = dashboardtabrowcanvas.entities.split(",");
+        } else {
+            dashboardtabrowcanvas.entities = [];
+        }
+        //dashboardtabrowcanvas.entities = this.getEntitiesByString(dashboardtabrowcanvas.entities, entities);
+
+        if (dashboardtabrowcanvas.title == null) {
+            dashboardtabrowcanvas.title = "";
+        }
+
+        if (dashboardtabrowcanvas.description == null) {
+            dashboardtabrowcanvas.description = "";
+        }
+
+        if (dashboardtabrowcanvas.time_serie == null) {
+            dashboardtabrowcanvas.time_serie = "";
+        }
+
+        if (dashboardtabrowcanvas.widgetvisualisation != null) {
+            var visualisation = widgetvisualisations.filter(function(v) {
+                return v.sys_id === dashboardtabrowcanvas.widgetvisualisation;
+            });
+            if (visualisation.length > 0) {
+                dashboardtabrowcanvas.widgetvisualisation = visualisation[0];
+            } else {
+                dashboardtabrowcanvas.widgetvisualisation = null;
+            }
+        }
+
+        if (dashboardtabrowcanvas.pa_widget != null) {
+            var pa_widget = this.pa_widgets.filter(function(v) {
+                return v.sys_id === dashboardtabrowcanvas.pa_widget;
+            });
+            if (pa_widget.length > 0) {
+                dashboardtabrowcanvas.pa_widget = pa_widget[0];
+            } else {
+                dashboardtabrowcanvas.pa_widget = null;
+            }
+        }
+
+        if (dashboardtabrowcanvas.spotlight_group != null) {
+            var spotlight_group = this.spotlight_groups.filter(function(v) {
+                return v.sys_id === dashboardtabrowcanvas.spotlight_group;
+            });
+            if (spotlight_group.length > 0) {
+                dashboardtabrowcanvas.spotlight_group = spotlight_group[0];
+            } else {
+                dashboardtabrowcanvas.spotlight_group = null;
+            }
+        }
+
+        if (dashboardtabrowcanvas.content_block != null) {
+            var content_block = this.content_blocks.filter(function(v) {
+                return v.sys_id === dashboardtabrowcanvas.content_block;
+            });
+            if (content_block.length > 0) {
+                dashboardtabrowcanvas.content_block = content_block[0];
+            } else {
+                dashboardtabrowcanvas.content_block = null;
+            }
+        }
+
+        if (dashboardtabrowcanvas.interactive_filter != null) {
+            var interactive_filter = this.interactive_filters.filter(function(v) {
+                return v.sys_id === dashboardtabrowcanvas.interactive_filter;
+            });
+            if (interactive_filter.length > 0) {
+                dashboardtabrowcanvas.interactive_filter = interactive_filter[0];
+            } else {
+                dashboardtabrowcanvas.interactive_filter = null;
+            }
+        }
+
+        if (dashboardtabrowcanvas.report != null) {
+            var report = this.reports.filter(function(v) {
+                return v.sys_id === dashboardtabrowcanvas.report;
+            });
+            if (report.length > 0) {
+                dashboardtabrowcanvas.report = report[0];
+            } else {
+                dashboardtabrowcanvas.report = null;
+            }
+        }
+    },
+
+    initializeDashboardTabRow: function(dashboardtabrow, widgetvisualisations, entities) {
+        var canvasses = dashboardtabrow.canvasses;
+        if (canvasses == null) {
+            canvasses = [];
+        }
+
+        delete dashboardtabrow.canvasses;
+
+        for (var c = 0; c < canvasses.length; c++) {
+            this.initializeDashboardTabRowCanvas(canvasses[c], widgetvisualisations, entities);
+        }
+
+        return canvasses;
+    },
+
+    initializeDashboardTab: function(dashboardtab, rowsandcanvasses, widgetvisualisations, entities) {
+        dashboardtab.name = dashboardtab.caption;
+        if (dashboardtab.name == null) {
+            dashboardtab.name = "";
+        }
+        delete dashboardtab.caption;
+        rowsandcanvasses["dashboardtabrows_" + dashboardtab.sys_id] = dashboardtab.rows;
+        if (rowsandcanvasses["dashboardtabrows_" + dashboardtab.sys_id] == null) {
+            rowsandcanvasses["dashboardtabrows_" + dashboardtab.sys_id] = [];
+        }
+
+        delete dashboardtab.rows;
+
+        var innerrows = rowsandcanvasses["dashboardtabrows_" + dashboardtab.sys_id];
+        for (var r = 0; r < innerrows.length; r++) {
+            var canvasses = this.initializeDashboardTabRow(innerrows[r], widgetvisualisations, entities);
+            rowsandcanvasses["dashboardtabrowcanvasses_" + innerrows[r].sys_id] = canvasses;
+        }
+    },
+
+    initializeDashboard: function(dashboard, personas, breakdowns, widgetvisualisations, entities) {
+        dashboard.breakdowns = this.getBreakdownsByString(dashboard.breakdowns, breakdowns);
+        dashboard.personas = this.getPersonasByString(dashboard.persona, personas);
+        //use same as entities -> dashboard.personas
+        delete dashboard.persona;
+
+        if (dashboard.description == null) {
+            dashboard.description = "";
+        }
+        if (dashboard.name == null) {
+            dashboard.name = "";
+        }
+        if (dashboard.order == null) {
+            dashboard.order = 0;
+        } else {
+            dashboard.order = +dashboard.order;
+        }
+
+        var tabs = dashboard.tabs;
+        delete dashboard.tabs;
+        if (tabs == null) tabs = [];
+        var rowsandcanvasses = {};
+
+        for (var i = 0; i < tabs.length; i++) {
+            this.initializeDashboardTab(tabs[i], rowsandcanvasses, widgetvisualisations, entities);
+        }
+
+        return {
+            tabs: tabs,
+            rowsandcanvasses: rowsandcanvasses
+        };
+    },
+
+    getAllDataFromServer: function() {
+        var that = this;
+        sn_kpi_composer.ClientApi.readServerData(
+            this.getApiInputObj(),
+            function(data) {
+                var i = 0;
+                //console.log(data);
+
+                if (data.entities.filter(function(ent) {return ent.recursive_break === true;}).length > 0) {
+                    addErrorMessage("Found a recursive break in one or more entities");
+                }
+
+                data.widgettypes.sort(function(a, b) {
+                    return a.label.localeCompare(b.label);
+                });
+                var widgetvisualisations = [];
+                for (var j = 0; j < data.widgettypes.length; j++) {
+                    var widgettype = data.widgettypes[j];
+                    widgettype.visualisationtypes.sort(function(a, b) {
+                        return a.label.localeCompare(b.label);
+                    });
+                    for (i = 0; i < widgettype.visualisationtypes.length; i++) {
+                        var visualisationtype = widgettype.visualisationtypes[i];
+                        visualisationtype.widgetvisualisations.sort(function(a, b) {
+                            return a.name.localeCompare(b.name);
+                        });
+                        for (var v = 0; v < visualisationtype.widgetvisualisations.length; v++) {
+                            visualisationtype.widgetvisualisations[v].widgettype_sys_id = widgettype.sys_id;
+                            widgetvisualisations.push(visualisationtype.widgetvisualisations[v]);
+                        }
+                    }
+                }
+
+                that.pa_widgets = data.pa_widgets;
+                that.spotlight_groups = data.spotlight_groups;
+                that.content_blocks = data.content_blocks;
+                that.interactive_filters = data.interactive_filters;
+                that.reports = data.reports;
+                that.allknowledgearticles = data.knowledgearticles;
+                that.allusers = data.users;
+                
+                var saveorders = false;
+                for (i = 0; i < data.entities.length; i++) {
+                    if (that.initializeEntity(data.entities[i], data.knowledgearticles, data.users, data.relations, i)) {
+                        saveorders = true;
+                    }
+                }
+
+                data.personas.sort(function(a, b) {
+                    return a.name.localeCompare(b.name);
+                });
+                data.breakdowns.sort(function(a, b) {
+                    return a.name.localeCompare(b.name);
+                });
+
+                
+
+                var project_permissions = data.project_permissions;
+                project_permissions.sort(ProjectPermissionSorter);
+
+                var readonly = data.project.readonly === true;
+
+                var newstate = {
+                    initialDataLoaded: true,
+                    allbreakdowns: data.breakdowns,
+                    breakdowns: data.breakdowns.filter(function(f) {
+                        return f.show;
+                    }),
+                    personas: data.personas,
+                    rules: data.rules,
+                    entitytypes: data.entitytypes,
+                    entities: data.entities,
+                    relations: data.relations,
+                    tasks: data.tasks,
+                    taskdefs: data.taskdefs,
+                    validations: data.validations,
+                    indicatordefinitions: data.indicatordefinitions,
+                    indicatordefinition_indicatordefinition: data.indicatordefinition_indicatordefinition,
+                    report_definitions: data.report_definitions,
+                    project_defaultentityrelationtype: data.project.defaultentityrelationtype,
+                    project_description: data.project.description != null ? data.project.description : "",
+                    project_comments: data.project.comments,
+                    project_permissions: project_permissions,
+                    project_name: data.project.name != null ? data.project.name : "",
+                    project_objective: data.project.objective != null ? data.project.objective : "",
+                    project_library_public: data.project.library_public != null ? data.project.library_public : false,
+                    project_sys_id: data.project.sys_id,
+                    project_knowledgearticles: that.getKnowledgeArticlesByString(data.project.knowledgearticles, data.knowledgearticles),
+                    project_owners: that.getUsersByString(data.project.owners, data.users),
+                    project_contacts: that.getUsersByString(data.project.contacts, data.users),
+                    project_library: data.project.library === true,
+                    timeseries: data.timesseries,
+                    widgetvisualisations: widgetvisualisations,
+                    widgettypes: data.widgettypes,
+                    pa_dashboards: data.pa_dashboards,
+                    spotlight_installed: data.spotlight && data.spotlight.installed === true,
+                    readonly: readonly
+                };
+
+                for (i = 0; i < data.dashboards.length; i++) {
+                    var extradashboardata = that.initializeDashboard(data.dashboards[i], data.personas, data.breakdowns, widgetvisualisations, data.entities);
+                    newstate["dashboardtabs_" + data.dashboards[i].sys_id] = extradashboardata.tabs;
+                    for (var rowandcanvaskey in extradashboardata.rowsandcanvasses) {
+                        if (extradashboardata.rowsandcanvasses.hasOwnProperty(rowandcanvaskey)) {
+                            newstate[rowandcanvaskey] = extradashboardata.rowsandcanvasses[rowandcanvaskey];
+                        }
+                    }
+                }
+                data.dashboards.sort(function(a, b) {
+                    return a.order - b.order;
+                });
+                newstate.dashboards = data.dashboards;
+                if (data.dashboards.length > 0) {
+                    newstate.selecteddashboardid = data.dashboards[0].sys_id;
+                }
+
+                if (data.project.library === true) {
+                    //fix allowedActiveAsides
+                    for (var allowedActiveAside in allowedActiveAsides) {
+                        allowedActiveAsides[allowedActiveAside] = allowedActiveAsides[allowedActiveAside].filter(function (aside) { return aside !== "share"; });
+                    }
+                }
+
+                that.setState(newstate, function() {
+                    if (!readonly && saveorders) {
+                        //need to save all the orders
+                        that.saveOrderForEntities(data.entities);
+                    }
+                });
+
+                //console.log(newstate);
+            }
+        );
+    },
+
+    componentDidMount: function() {
+        if (!this.state.project_sys_id) {
+            console.log("No project sys_id found, redirecting to overview");
+            window.location = 'sn_kpi_composer_projects.do';
+        }
+
+        this.getAllDataFromServer();
+    },
+
+    refreshAllData: function() {
+        this.setState({
+            initialDataLoaded: false,
+            library_searchresults: null
+        }, this.getAllDataFromServer);
+    },
+
+    refreshEntityDefinitionData: function(callback) {
+        var that = this;
+        sn_kpi_composer.ClientApi.readEntityDataServerData(
+            this.getApiInputObj(),
+            function(data) {
+                var i = 0;
+                //console.log(data);
+
+                var currententities = that.state.entities; //slice?
+
+                for (i = 0; i < data.entities.length; i++) {
+                    var currententity = currententities.filter(function(curEnt) {
+                        return curEnt.sys_id === data.entities[i].sys_id;
+                    });
+                    if (currententity.length == 1) {
+                        currententity[0].indicator_definition = data.entities[i].indicator_definition;
+                        currententity[0].report_definition = data.entities[i].report_definition;
+                    }
+                }
+
+                that.setState({
+                    indicatordefinitions: data.indicatordefinitions,
+                    indicatordefinition_indicatordefinition: data.indicatordefinition_indicatordefinition,
+                    report_definitions: data.report_definitions,
+                    entities: currententities
+                });
+
+                callback();
+            }
+        );
+    },
+
+    onDragStart: function(event) {
+        if (this.refs.AnalysisContent != null) {
+            this.refs.AnalysisContent.onDragStart(event);
+        }
+    },
+
+    onDragEnd: function(event) {
+        if (this.refs.AnalysisContent != null) {
+            this.refs.AnalysisContent.onDragEnd(event);
+        }
+    },
+
+    onWizardStepChange: function(wizardStep) {
+        var that = this;
+        if (this.state.wizardStep !== wizardStep) {
+            var newstate = {
+                wizardStep: wizardStep
+            };
+            var activeAsideChanged = false;
+            if (this.state.activeAside != null) {
+                if (allowedActiveAsides[wizardStep].indexOf(this.state.activeAside) < 0) {
+                    newstate.activeAside = null;
+                    activeAsideChanged = true;
+                }
+            }
+            this.setState(newstate, function() {
+                if (activeAsideChanged) {
+                    that.treeProcessResize();
+                }
+            });
+        }
+    },
+
+    treeProcessResize: function() {
+        var that = this;
+        setTimeout(function() {
+            if (that.refs.AnalysisContent != null) {
+                that.refs.AnalysisContent.requestUpdateForDiagram();
+            }
+            if (that.refs.IndicatorDesignContent != null) {
+                that.refs.IndicatorDesignContent.requestUpdateForDiagram();
+            }
+        }, 500); //die 500 komt van de 500m transition tijd op .sn-aside
+    },
+
+    handleActiveAsideChange: function(activeAside) {
+        var resizetreecontainer = false;
+        if (this.state.activeAside === activeAside) {
+            this.setState({
+                activeAside: null
+            });
+            resizetreecontainer = true;
+        } else {
+            resizetreecontainer = this.state.activeAside == null;
+            this.setState({
+                activeAside: activeAside
+            });
+        }
+        if (resizetreecontainer == true) {
+            this.treeProcessResize();
+        }
+    },
+
+    closeActiveAside: function() {
+        this.setState({
+            activeAside: null
+        });
+        this.treeProcessResize();
+    },
+
+    projectPropertySave: function(name, value, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+
+        input.action = 'updateProject';
+        var field = name.substr("project_".length);
+        //input.project wordt gemaakt in getApiInputObj()
+        input.project[field] = value;
+
+        //zit nu in getApiInputObj
+        //input.project.sys_id = this.state.project_sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                //console.log(result);
+                var partialState = {};
+                partialState[name] = value;
+                that.setState(partialState);
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result);
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    projectNewComment: function(comment, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+
+        input.action = 'insertProjectComments';
+        //input.project wordt gezet in getApiInputObj()
+        input.project.comments = comment;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                //console.log(result);
+                if (result.success && result.project) {
+                    that.setState({project_comments: result.project.comments});
+                    callback(null);
+                } else {
+                    log(result);
+                    callback(result);
+                    console.error('Save FAILED:' + JSON.stringify(result));
+                }
+            },
+            function(result) {
+                log(result);
+                callback(result);
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    projectOwnerDelete: function(sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'deleteProjectOwner';
+        input.owner = sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    return {
+                        project_owners: state.project_owners.filter(function(p) {
+                            return p.sys_id !== sys_id;
+                        })
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result);
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    projectOwnerAdd: function(user, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.owner = user.sys_id;
+        input.action = 'insertProjectOwner';
+
+        this.addUserToAllList(user);
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy
+                    var project_owners = state.project_owners.concat([user]);
+                    project_owners.sort(function(a, b) {
+                        return a.name.localeCompare(b.name);
+                    });
+                    return {
+                        project_owners: project_owners
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    projectContactDelete: function(sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'deleteProjectContact';
+        input.contact = sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    return {
+                        project_contacts: state.project_contacts.filter(function(p) {
+                            return p.sys_id !== sys_id;
+                        })
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result);
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    projectContactAdd: function(user, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'insertProjectContact';
+        input.contact = user.sys_id;
+
+        this.addUserToAllList(user);
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy
+                    var project_contacts = state.project_contacts.concat([user]);
+                    project_contacts.sort(function(a, b) {
+                        return a.name.localeCompare(b.name);
+                    });
+                    return {
+                        project_contacts: project_contacts
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    projectKnowledgeArticleDelete: function(sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'deleteProjectKnowledgeArticle';
+        input.knowledgearticle = sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    return {
+                        project_knowledgearticles: state.project_knowledgearticles.filter(function(p) {
+                            return p.sys_id !== sys_id;
+                        })
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result);
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    projectKnowledgeArticleAdd: function(knowledgearticle, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'insertProjectKnowledgeArticle';
+        input.knowledgearticle = knowledgearticle.sys_id;
+
+        this.addKnowledgeArticleToAllList(knowledgearticle);
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy
+                    var project_knowledgearticles = state.project_knowledgearticles.concat([knowledgearticle]);
+                    project_knowledgearticles.sort(function(a, b) {
+                        return a.number.localeCompare(b.number);
+                    });
+                    return {
+                        project_knowledgearticles: project_knowledgearticles
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    personaDelete: function(sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'deletePersona';
+        input.persona = {};
+        input.persona.sys_id = sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    return {
+                        personas: state.personas.filter(function(p) {
+                            return p.sys_id !== sys_id;
+                        })
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result);
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    personaSave: function(sys_id, name, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.persona = {};
+        input.persona.name = name;
+
+        if (sys_id == null) {
+            input.action = 'insertPersona';
+        } else {
+            input.action = 'updatePersona';
+            input.persona.sys_id = sys_id;
+        }
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy
+                    var personas = state.personas.slice();
+                    var tochange = null;
+                    if (sys_id == null) {
+                        tochange = {
+                            sys_id: result.persona.sys_id
+                        };
+                        personas.push(tochange);
+                    } else {
+                        var tochangeArr = personas.filter(function(p) {
+                            return p.sys_id === sys_id;
+                        });
+                        if (tochangeArr.length == 1) {
+                            tochange = tochangeArr[0];
+                        }
+                    }
+                    if (tochange != null) {
+                        tochange.name = name;
+                        tochange.abbreviation = result.persona.abbreviation;
+                    }
+                    personas.sort(function(a, b) {
+                        return a.name.localeCompare(b.name);
+                    });
+                    return {
+                        personas: personas
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    breakdownSave: function(sys_id, name, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.breakdown = {};
+        input.breakdown.name = name;
+
+        if (sys_id == null) {
+            input.action = 'insertBreakdown';
+        } else {
+            input.action = 'updateBreakdown';
+            input.breakdown.sys_id = sys_id;
+        }
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy
+                    var breakdowns = state.allbreakdowns.slice();
+                    var tochange = null;
+                    if (sys_id == null) {
+                        tochange = {
+                            sys_id: result.breakdown.sys_id,
+                            show: true,
+                            color: result.breakdown.color
+                        };
+                        breakdowns.push(tochange);
+                    } else {
+                        var tochangeArr = breakdowns.filter(function(p) {
+                            return p.sys_id === sys_id;
+                        });
+                        if (tochangeArr.length == 1) {
+                            tochange = tochangeArr[0];
+                        }
+                    }
+                    if (tochange != null) {
+                        tochange.name = name;
+                    }
+                    breakdowns.sort(function(a, b) {
+                        return a.name.localeCompare(b.name);
+                    });
+                    return {
+                        allbreakdowns: breakdowns,
+                        breakdowns: breakdowns.filter(function(b) {
+                            return b.show;
+                        })
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    refreshBreakdownDefinitions: function(callback) {
+        var that = this;
+
+        sn_kpi_composer.ClientApi.getBreakdowns(
+            this.getApiInputObj(), //ik denk niet dat dit nodig is, maar toch maar even meegeven
+            function(data) {
+                if (data.success) {
+                    data.breakdowns.sort(function(a, b) {
+                        return a.name.localeCompare(b.name);
+                    });
+
+                    var newstate = {
+                        allbreakdowns: data.breakdowns,
+                        breakdowns: data.breakdowns.filter(function(f) {
+                            return f.show;
+                        })
+                    };
+
+
+                    var allbreakdownsysids = newstate.allbreakdowns.map(function (b) { return b.sys_id; });
+                    var breakdownsysids = newstate.breakdowns.map(function (b) { return b.sys_id; });
+                    if (that.state.selected_breakdowns.filter(function(s) { return breakdownsysids.indexOf(s) < 0; }).length > 0) {
+                        newstate.selected_breakdowns = that.state.selected_breakdowns.filter(function(s) { return breakdownsysids.indexOf(s) >= 0; });
+                    }
+
+                    var dashboards = that.state.dashboards.slice();
+                    for (i = 0; i < dashboards.length; i++) {
+                        var dashboard = dashboards[i];
+                        //breakdowns opnieuw koppelen
+                        dashboard.breakdowns = dashboard.breakdowns.filter(function (b) { return allbreakdownsysids.indexOf(b.sys_id) >= 0; }).map(function (b) { return newstate.allbreakdowns.filter(function (ib) { return ib.sys_id === b.sys_id; })[0]; });
+                    }
+
+                    that.setState(newstate);
+
+                    callback();
+                }
+            }
+        );
+    },
+
+    breakdownSetShow: function(sys_id, show, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.breakdown = {};
+        input.breakdown.sys_id = sys_id;
+
+        if (show == true) {
+            input.action = 'showBreakdown';
+        } else {
+            input.action = 'hideBreakdown';
+        }
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy
+                    var breakdowns = state.allbreakdowns.slice();
+                    var tochangeArr = breakdowns.filter(function(p) {
+                        return p.sys_id === sys_id;
+                    });
+                    if (tochangeArr.length == 1) {
+                        tochangeArr[0].show = show;
+                    }
+                    var toreturn = {
+                        allbreakdowns: breakdowns,
+                        breakdowns: breakdowns.filter(function(b) {
+                            return b.show;
+                        })
+                    };
+                    if (state.selected_breakdowns.filter(function(s) {
+                            return s === sys_id;
+                        }).length > 0) {
+                        toreturn.selected_breakdowns = state.selected_breakdowns.filter(function(s) {
+                            return s !== sys_id;
+                        });
+                    }
+                    return toreturn;
+                });
+                callback(null); // errormessage meegeven	
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    insertBreakdownEntities: function(entity_sys_ids, breakdown_sys_id, callback) {
+        var maininput = {
+            actions: []
+        };
+        for (var i = 0; i < entity_sys_ids.length; i++) {
+            var input = this.getApiInputObj();
+            input.action = "insertBreakdownEntity";
+            input.entity = entity_sys_ids[i];
+            input.breakdown = breakdown_sys_id;
+            maininput.actions.push(input);
+        }
+
+        sn_kpi_composer.ClientApi.multiUpdateServerData(
+            maininput,
+            function(result) {
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+        //reflect in state, hier down we geen slice, deze update komt van gojs, niet vanuit de modal - weet niet zeker of dit mag.. - eventueel de breakdowns en persona array uit de entities state halen en op root niveau zetten?
+        var entities = this.state.entities;
+        var entityArr = entities.filter(function(e) {
+            return entity_sys_ids.indexOf(e.org_sys_id) >= 0;
+        });
+        if (entityArr.length > 0) {
+            for (i = 0; i < entityArr.length; i++) {
+                entityArr[i].breakdowns.push(breakdown_sys_id);
+            }
+            this.setState({
+                entities: entities
+            });
+        }
+    },
+
+    deleteBreakdownEntities: function(entity_sys_ids, breakdown_sys_id, callback) {
+        var maininput = {
+            actions: []
+        };
+        for (var i = 0; i < entity_sys_ids.length; i++) {
+            var input = this.getApiInputObj();
+            input.action = "deleteBreakdownEntity";
+            input.entity = entity_sys_ids[i];
+            input.breakdown = breakdown_sys_id;
+            maininput.actions.push(input);
+        }
+        sn_kpi_composer.ClientApi.multiUpdateServerData(
+            maininput,
+            function(result) {
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+        //reflect in state, hier down we geen slice, deze update komt van gojs, niet vanuit de modal - weet niet zeker of dit mag.. - eventueel de breakdowns en persona array uit de entities state halen en op root niveau zetten?
+        var entities = this.state.entities;
+        var entityArr = entities.filter(function(e) {
+            return entity_sys_ids.indexOf(e.org_sys_id) >= 0;
+        });
+        if (entityArr.length > 0) {
+            for (i = 0; i < entityArr.length; i++) {
+                var indx = entityArr[i].breakdowns.indexOf(breakdown_sys_id);
+                if (indx > -1) {
+                    entityArr[i].breakdowns.splice(indx, 1);
+                }
+            }
+
+            this.setState({
+                entities: entities
+            });
+        }
+    },
+
+    insertPersonaEntities: function(entity_sys_ids, persona_sys_id, callback) {
+        var maininput = {
+            actions: []
+        };
+        for (var i = 0; i < entity_sys_ids.length; i++) {
+            var input = this.getApiInputObj();
+            input.action = "insertPersonaEntity";
+            input.entity = entity_sys_ids[i];
+            input.persona = persona_sys_id;
+            maininput.actions.push(input);
+        }
+        sn_kpi_composer.ClientApi.multiUpdateServerData(
+            maininput,
+            function(result) {
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+        //reflect in state, hier down we geen slice, deze update komt van gojs, niet vanuit de modal - weet niet zeker of dit mag.. - eventueel de breakdowns en persona array uit de entities state halen en op root niveau zetten?
+        var entities = this.state.entities;
+        var entityArr = entities.filter(function(e) {
+            return entity_sys_ids.indexOf(e.org_sys_id) >= 0;
+        });
+        if (entityArr.length > 0) {
+            for (i = 0; i < entityArr.length; i++) {
+                entityArr[i].personas.push(persona_sys_id);
+            }
+            this.setState({
+                entities: entities
+            });
+        }
+    },
+
+    deletePersonaEntities: function(entity_sys_ids, persona_sys_id, callback) {
+        var maininput = {
+            actions: []
+        };
+        for (var i = 0; i < entity_sys_ids.length; i++) {
+            var input = this.getApiInputObj();
+            input.action = "deletePersonaEntity";
+            input.entity = entity_sys_ids[i];
+            input.persona = persona_sys_id;
+            maininput.actions.push(input);
+        }
+
+        sn_kpi_composer.ClientApi.multiUpdateServerData(
+            maininput,
+            function(result) {
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+        //reflect in state, hier down we geen slice, deze update komt van gojs, niet vanuit de modal - weet niet zeker of dit mag.. - eventueel de breakdowns en persona array uit de entities state halen en op root niveau zetten?
+        var entities = this.state.entities;
+        var entityArr = entities.filter(function(e) {
+            return entity_sys_ids.indexOf(e.org_sys_id) >= 0;
+        });
+        if (entityArr.length > 0) {
+            for (i = 0; i < entityArr.length; i++) {
+                var indx = entityArr[i].personas.indexOf(persona_sys_id);
+                if (indx > -1) {
+                    entityArr[i].personas.splice(indx, 1);
+                }
+            }
+
+            this.setState({
+                entities: entities
+            });
+        }
+    },
+
+    saveEntitiesCollapsed: function(entitiestoupdate) {
+        if (entitiestoupdate.length > 0) {
+            var that = this;
+            var maininput = {
+                actions: entitiestoupdate.map(function (ent) {
+                    var toreturn = that.getApiInputObj();
+                    toreturn.action = "updateEntityCollapsed";
+                    toreturn.entity = {
+                        sys_id: ent.org_sys_id
+                    };
+                    toreturn.relation = { 
+                        sys_id: (ent.library === true && ent.relation_sys_id != "" ? ent.relation_sys_id : null) 
+                    };
+                    toreturn.collapsed = ent.collapsed;
+                    return toreturn;
+                })
+            };
+            sn_kpi_composer.ClientApi.multiUpdateServerData(maininput);
+        }
+    },
+
+    saveEntitiesCollapsedDataDefinition: function(entitiestoupdate) {
+        if (entitiestoupdate.length > 0) {
+            var that = this;
+            var maininput = {
+                actions: entitiestoupdate.map(function (ent) {
+                    var toreturn = that.getApiInputObj();
+                    toreturn.action = "updateEntityCollapsed";
+                    toreturn.entity = {
+                        sys_id: ent.org_sys_id
+                    };
+                    toreturn.relation = { 
+                        sys_id: (ent.library === true && ent.relation_sys_id != "" ? ent.relation_sys_id : null) 
+                    };
+                    toreturn.collapseddd = ent.collapseddd;
+                    return toreturn;
+                })
+            };
+            sn_kpi_composer.ClientApi.multiUpdateServerData(maininput);
+        }
+    },
+
+    updateEntityName: function(entity_sys_id, name, callback) {
+        var that = this;
+        var input = this.getApiInputObj();
+        input.action = "updateEntity";
+        input.entity = {};
+        input.entity.sys_id = entity_sys_id;
+        input.entity.name = name;
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                //reflect in state, hier down we geen slice, deze update komt van gojs, niet vanuit de modal - weet niet zeker of dit mag.. - eventueel de breakdowns en persona array uit de entities state halen en op root niveau zetten?
+                var entities = that.state.entities;
+                var entityArr = entities.filter(function(e) {
+                    return e.sys_id === entity_sys_id;
+                });
+                if (entityArr.length > 0) {
+                    entityArr[0].name = name;
+                    that.setState({
+                        entities: entities
+                    });
+                }
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    updateEntityDescription: function(entity_sys_id, description, callback) {
+        var that = this;
+        var input = this.getApiInputObj();
+        input.action = "updateEntity";
+        input.entity = {};
+        input.entity.sys_id = entity_sys_id;
+        input.entity.description = description;
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                //reflect in state, hier down we geen slice, deze update komt van gojs, niet vanuit de modal - weet niet zeker of dit mag.. - eventueel de breakdowns en persona array uit de entities state halen en op root niveau zetten?
+                var entities = that.state.entities;
+                var entityArr = entities.filter(function(e) {
+                    return e.sys_id === entity_sys_id;
+                });
+                if (entityArr.length > 0) {
+                    entityArr[0].description = description;
+                    that.setState({
+                        entities: entities
+                    });
+                }
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    updateEntityTarget: function(entity_sys_id, target, callback) {
+        var that = this;
+        var input = this.getApiInputObj();
+        input.action = "updateEntity";
+        input.entity = {};
+        input.entity.sys_id = entity_sys_id;
+        input.entity.target = target;
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                var entities = that.state.entities;
+                var entityArr = entities.filter(function(e) {
+                    return e.sys_id === entity_sys_id;
+                });
+                if (entityArr.length > 0) {
+                    entityArr[0].target = target;
+                    that.setState({
+                        entities: entities
+                    });
+                }
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    updateEntityFromEntity: function(relation_sys_id, new_from_sys_id, entity, state_callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = "updateEntityFromEntity";
+        input.relation = {};
+        input.relation.sys_id = relation_sys_id;
+        input.entities = {};
+        input.entities.newfrom = new_from_sys_id;
+
+        this.saveOrderForEntities([entity], [input], function(result) {
+            if (result.success) {
+                var relations = that.state.relations.slice();
+                var relationtoupdate = relations.filter(function (r) { return r.sys_id === relation_sys_id; });
+                if (relationtoupdate.length > 0) {
+                    relationtoupdate[0].from = new_from_sys_id;
+                }
+                that.setState({
+        			relations: relations
+        		}, state_callback);
+            }
+        });
+    },
+
+    insertEntityEntityGetSysIdFromResult: function(result, relations, entities, from_sys_id, to_sys_id, relation_sys_id) {
+        if (result.results) {
+            var actions = result.results.filter(function (res) { return res.success && res.action === "insertEntityEntity" && res.relation && ((res.relation.from === from_sys_id && res.relation.to === to_sys_id) || (res.deleted_relation && res.deleted_relation === relation_sys_id)); });
+            if (actions.length > 0) {
+                var action = actions[0];
+                if (action.relation && action.relation.sys_id) {
+                    if (action.deleted_relation && action.deleted_relation === relation_sys_id) {
+                        relations = relations.filter(function (rel) { return rel.sys_id !== relation_sys_id;});
+                        relations.push(action.relation);
+                        if (relation_sys_id !== action.relation.sys_id) {
+                            //linking a root library element to an entity causes the relation to be deleted and re-inserted, so we'll need to update the sys_ids and relation_sys_ids (by making a copy) - or deleting parent so library becomes root, same aproach
+                            var theentities = entities.filter(function (ent) { return ent.sys_id.indexOf(relation_sys_id) === 0; });
+                            if (theentities.length > 0) {
+                                //fix all child elements
+                                for (var e = 0; e < theentities.length; e++) {
+                                    var newentity = Object.assign({}, theentities[e]);
+                                    newentity.sys_id = newentity.sys_id.replace(relation_sys_id, action.relation.sys_id);
+                                    newentity.relation_sys_id = newentity.relation_sys_id.replace(relation_sys_id, action.relation.sys_id);
+                                    //from_sys_id is null when deleting a parent, then animations are allowed
+                                    if (from_sys_id) {
+                                        newentity.disableanimations = true;
+                                    } else {
+                                        delete newentity.disableanimations;
+                                    }
+                                    entities.push(newentity);
+                                }
+                                entities = entities.filter(function(ent) { return theentities.indexOf(ent) < 0; });
+                            }
+                            var therelations = relations.filter(function (rel) { return rel.from && rel.from.indexOf(relation_sys_id) === 0; });
+                            if (therelations.length > 0) {
+                                for (var r = 0; r < therelations.length; r++) {
+                                    var newrelation = Object.assign({}, therelations[r]);
+                                    newrelation.from = newrelation.from.replace(relation_sys_id, action.relation.sys_id);
+                                    relations.push(newrelation);
+                                }
+                                relations = relations.filter(function(rel) { return therelations.indexOf(rel) < 0; });
+                            }
+                            therelations = relations.filter(function (rel) { return rel.to && rel.to.indexOf(relation_sys_id) === 0; });
+                            if (therelations.length > 0) {
+                                for (var r = 0; r < therelations.length; r++) {
+                                    var newrelation = Object.assign({}, therelations[r]);
+                                    newrelation.to = newrelation.to.replace(relation_sys_id, action.relation.sys_id);
+                                    relations.push(newrelation);
+                                }
+                                relations = relations.filter(function(rel) { return therelations.indexOf(rel) < 0; });
+                            }
+                        }
+                    } else {
+                        var therelations = relations.filter(function (rel) { return rel.from === from_sys_id && rel.to === to_sys_id; });
+                        if (therelations.length > 0) {
+                            for (var r = 0; r < therelations.length; r++) {
+                                therelations[r].sys_id = action.relation.sys_id;
+                            }
+                        } else {
+                            //aangezien de relations in de tree niet meer rechtstreeks de state collection gebruiken moeten we nu zelf de relation state up to date houden
+                            relations.push(action.relation);
+                        }
+                    }
+                }
+            }
+        }
+        return {relations:relations, entities:entities};
+    },
+
+    insertEntityEntity: function(from_sys_id, to_sys_id, relationtype_sys_id, entity) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = "insertEntityEntity";
+        input.entities = {};
+        input.entities.from = from_sys_id;
+        input.entities.to = to_sys_id;
+        input.entities.relationtype = relationtype_sys_id;
+        input.entities.relation_sys_id = entity.relation_sys_id;
+
+        this.saveOrderForEntities([entity], [input], function(result) {
+            var relations = that.state.relations.slice();
+            var entities = that.state.entities.slice();
+            var processresult = that.insertEntityEntityGetSysIdFromResult(result, relations, entities, from_sys_id, to_sys_id, entity.relation_sys_id);
+            that.setState({
+                relations: processresult.relations,
+                entities: processresult.entities
+            });
+        });
+    },
+
+    saveOrderForEntities: function(entities, extraserveractions, callback) {
+        var maininput = {
+            actions: []
+        };
+        if (extraserveractions) {
+            for (var i = 0; i < extraserveractions.length; i++) {
+                maininput.actions.push(extraserveractions[i]);
+            }
+        }
+        for (var i = 0; i < entities.length; i++) {
+            var input = this.getApiInputObj();
+            input.action = "updateEntity";
+            input.entity = {};
+            input.entity.sys_id = entities[i].org_sys_id;
+            input.entity.order = entities[i].order;
+            maininput.actions.push(input);
+        }
+        sn_kpi_composer.ClientApi.multiUpdateServerData(maininput, callback);
+    },
+
+    insertEntity: function(newentity, newlink, callback) {
+        var that = this;
+        var maininput = {
+            actions: []
+        };
+        var input = this.getApiInputObj();
+        input.action = "insertEntity";
+        input.entity = {};
+        input.entity.name = newentity.name;
+        input.entity.sys_id = newentity.sys_id;
+        input.entity.entitytype = newentity.entitytype;
+        input.entity.order = newentity.order;
+        maininput.actions.push(input);
+        if (newlink != null) {
+            var linkinput = this.getApiInputObj();
+            linkinput.action = "insertEntityEntity";
+            linkinput.entities = {};
+            linkinput.entities.from = newlink.from;
+            linkinput.entities.to = newlink.to;
+            linkinput.entities.relationtype = newlink.relationtype;
+            maininput.actions.push(linkinput);
+        }
+
+        sn_kpi_composer.ClientApi.multiUpdateServerData(
+            maininput,
+            function(result) {
+                var entities = that.state.entities.slice();
+
+                entities.push(newentity);
+
+                var newstate = {};
+
+                if (newlink != null) {
+                    var relations = that.state.relations.slice();
+                    var processresult = that.insertEntityEntityGetSysIdFromResult(result, relations, entities, newlink.from, newlink.to);
+                    newstate.relations = processresult.relations;
+                    newstate.entities = processresult.entities;
+                    //console.log(relations);
+                } else {
+                    newstate.entities = entities
+                }
+
+                that.setState(newstate);
+
+                callback(null);
+            },
+            function(result) {
+                callback(result);
+            }
+        );
+    },
+
+    deleteEntities: function(data, callback) {
+        var that = this;
+
+        //data contains 3 properties: entities, library_entities and change_to_root
+        //console.log(data);
+
+        var maininput = {
+            actions: []
+        };
+
+        if (data.change_to_root.length > 0) {
+            maininput.actions = maininput.actions.concat(
+                data.change_to_root.map(function (relation) {
+                    var input = that.getApiInputObj();
+                    input.action = "insertEntityEntity";
+                    input.entities = {};
+                    input.entities.from = null;
+                    input.entities.to = relation.to_org_sys_id;
+                    input.entities.relationtype = relation.relationtype;
+                    input.entities.relation_sys_id = relation.sys_id;
+                    return input;
+                })
+            );
+        }
+        
+        var entities_sysids = data.entities.map(function (ent) { return ent.sys_id; });
+        maininput.actions = maininput.actions.concat(
+            entities_sysids.map(function (sys_id) {
+                var input = that.getApiInputObj();
+                input.action = "deleteEntity";
+                input.entity = {};
+                input.entity.sys_id = sys_id;
+                return input;
+            })
+        );
+
+        
+        var library_entities_relation_sys_id = data.library_entities.map(function (ent) { return ent.relation_sys_id; });
+        maininput.actions = maininput.actions.concat(
+            library_entities_relation_sys_id.map(function (relation_sys_id) {
+                var input = that.getApiInputObj();
+                input.action = "deleteEntityEntity";
+                input.relation = {};
+                input.relation.sys_id = relation_sys_id;
+                return input;
+            })
+        );
+
+        sn_kpi_composer.ClientApi.multiUpdateServerData(
+            maininput,
+            function(result) {
+                //built list with removed entities, these are all data.entities and all entities with the same /-relation_sys_id as the library_entities-/ -> relation_sys_id bevat nu niet meer de relation_sys_id van de root relation, dus kijken op basis van sys_id van de entities, die moeten beginnen met de relation sys_id + underscore 
+                var keysremoved = entities_sysids.concat(
+                    that.state.entities.filter(function (ent) {
+                        return ent.library === true && library_entities_relation_sys_id.filter(function(librootrelsysid) { return ent.sys_id.indexOf(librootrelsysid + "_") === 0; }).length > 0;
+                    }).map(function (ent) {
+                        return ent.sys_id;
+                    })
+                );
+
+                var entities = that.state.entities.filter(function(e) {
+                    return keysremoved.indexOf(e.sys_id) < 0;
+                });
+
+                var relations = that.state.relations.filter(function (r) { 
+                    return keysremoved.indexOf(r.from) < 0 && keysremoved.indexOf(r.to) < 0;
+                });
+
+                for (var r = 0; r < data.change_to_root.length; r++) {
+                    var relation = data.change_to_root[r];
+                    var processresult = that.insertEntityEntityGetSysIdFromResult(result, relations, entities, null, relation.to_org_sys_id, relation.sys_id);
+                    relations = processresult.relations;
+                    entities = processresult.entities;
+                }
+
+                that.setState({
+                    entities: entities,
+                    relations: relations
+                });
+                //list van removed keys meegeven
+                callback(keysremoved, null);
+            },
+            function(result) {
+                log(result);
+                callback([], result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    insertEntityKnowledgeArticle: function(sys_id, knowledgearticle, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'insertEntityKnowledgeArticle';
+        input.knowledgearticle = knowledgearticle.sys_id;
+        input.entity = sys_id;
+
+        this.addKnowledgeArticleToAllList(knowledgearticle);
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy?
+                    var entitiescopy = state.entities; //.slice();
+                    var entities = entitiescopy.filter(function(ent) {
+                        return ent.sys_id === sys_id;
+                    });
+                    if (entities.length == 1) {
+                        var entity = entities[0];
+                        //make copy
+                        var knowledgearticles = entity.knowledgearticles.concat([knowledgearticle]);
+                        knowledgearticles.sort(function(a, b) {
+                            return a.number.localeCompare(b.number);
+                        });
+                        entity.knowledgearticles = knowledgearticles;
+                        return {
+                            entities: entitiescopy
+                        };
+                    } else {
+                        return {};
+                    }
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    deleteEntityKnowledgeArticle: function(entity_sys_id, knowledgearticle_sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'deleteEntityKnowledgeArticle';
+        input.knowledgearticle = knowledgearticle_sys_id;
+        input.entity = entity_sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    var entitiescopy = state.entities; //.slice();
+                    var entities = entitiescopy.filter(function(ent) {
+                        return ent.sys_id === entity_sys_id;
+                    });
+                    if (entities.length == 1) {
+                        var entity = entities[0];
+                        entity.knowledgearticles = entity.knowledgearticles.filter(function(p) {
+                            return p.sys_id !== knowledgearticle_sys_id;
+                        });
+                        return {
+                            entities: entitiescopy
+                        };
+                    } else {
+                        return {};
+                    }
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result);
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    insertEntityOwner: function(sys_id, owner, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'insertEntityOwner';
+        input.owner = owner.sys_id;
+        input.entity = sys_id;
+
+        this.addUserToAllList(owner);
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy?
+                    var entitiescopy = state.entities; //.slice();
+                    var entities = entitiescopy.filter(function(ent) {
+                        return ent.sys_id === sys_id;
+                    });
+                    if (entities.length == 1) {
+                        var entity = entities[0];
+                        //make copy
+                        var owners = entity.owners.concat([owner]);
+                        owners.sort(function(a, b) {
+                            return a.name.localeCompare(b.name);
+                        });
+                        entity.owners = owners;
+                        return {
+                            entities: entitiescopy
+                        };
+                    } else {
+                        return {};
+                    }
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    deleteEntityOwner: function(entity_sys_id, owner_sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'deleteEntityOwner';
+        input.owner = owner_sys_id;
+        input.entity = entity_sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    var entitiescopy = state.entities; //.slice();
+                    var entities = entitiescopy.filter(function(ent) {
+                        return ent.sys_id === entity_sys_id;
+                    });
+                    if (entities.length == 1) {
+                        var entity = entities[0];
+                        entity.owners = entity.owners.filter(function(p) {
+                            return p.sys_id !== owner_sys_id;
+                        });
+                        return {
+                            entities: entitiescopy
+                        };
+                    } else {
+                        return {};
+                    }
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result);
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    insertEntityContact: function(sys_id, contact, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'insertEntityContact';
+        input.contact = contact.sys_id;
+        input.entity = sys_id;
+
+        this.addUserToAllList(contact);
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy?
+                    var entitiescopy = state.entities; //.slice();
+                    var entities = entitiescopy.filter(function(ent) {
+                        return ent.sys_id === sys_id;
+                    });
+                    if (entities.length == 1) {
+                        var entity = entities[0];
+                        //make copy
+                        var contacts = entity.contacts.concat([contact]);
+                        contacts.sort(function(a, b) {
+                            return a.name.localeCompare(b.name);
+                        });
+                        entity.contacts = contacts;
+                        return {
+                            entities: entitiescopy
+                        };
+                    } else {
+                        return {};
+                    }
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    deleteEntityContact: function(entity_sys_id, contact_sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'deleteEntityContact';
+        input.contact = contact_sys_id;
+        input.entity = entity_sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    var entitiescopy = state.entities; //.slice();
+                    var entities = entitiescopy.filter(function(ent) {
+                        return ent.sys_id === entity_sys_id;
+                    });
+                    if (entities.length == 1) {
+                        var entity = entities[0];
+                        entity.contacts = entity.contacts.filter(function(p) {
+                            return p.sys_id !== contact_sys_id;
+                        });
+                        return {
+                            entities: entitiescopy
+                        };
+                    } else {
+                        return {};
+                    }
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result);
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    onPersonaSelected: function(persona) {
+        var newselectedpersonas = null;
+        if (this.state.selected_personas.indexOf(persona.sys_id) > -1) {
+            newselectedpersonas = this.state.selected_personas.filter(function(s) {
+                return s !== persona.sys_id;
+            });
+        } else {
+            newselectedpersonas = this.state.selected_personas.concat([persona.sys_id]);
+        }
+        this.setState({
+            selected_personas: newselectedpersonas
+        });
+    },
+
+    onBreakdownSelected: function(breakdown) {
+        var newselectedbreakdowns = null;
+        if (this.state.selected_breakdowns.indexOf(breakdown.sys_id) > -1) {
+            newselectedbreakdowns = this.state.selected_breakdowns.filter(function(s) {
+                return s !== breakdown.sys_id;
+            });
+        } else {
+            newselectedbreakdowns = this.state.selected_breakdowns.concat([breakdown.sys_id]);
+        }
+        this.setState({
+            selected_breakdowns: newselectedbreakdowns
+        });
+    },
+
+    onAnalysisClearFilter: function() {
+        var newState = {};
+        if (this.state.selected_breakdowns.length > 0) {
+            newState.selected_breakdowns = [];
+        }
+        if (this.state.selected_personas.length > 0) {
+            newState.selected_personas = [];
+        }
+        if (this.state.analysis_filter_text !== "") {
+            newState.analysis_filter_text = "";
+        }
+        this.setState(newState);
+    },
+
+    onAnalysisFilterTextChange: function(filter_text) {
+        this.setState({
+            analysis_filter_text: filter_text
+        });
+    },
+
+    insertEntityIndicatorDefinition: function(entity_sys_id, indicator_definition_sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'insertEntityIndicatorDefinition';
+        input.entity = entity_sys_id;
+        input.indicator_definition = indicator_definition_sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                //hier geen slice, ok?
+                var entities = that.state.entities;
+                var entityArr = entities.filter(function(e) {
+                    return e.sys_id === entity_sys_id;
+                });
+                if (entityArr.length > 0) {
+                    entityArr[0].indicator_definition = indicator_definition_sys_id;
+                    that.setState({
+                        entities: entities
+                    });
+                }
+                callback(null); // errormessage meegeven	
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    deleteEntityIndicatorDefinition: function(entity_sys_id, callback) {
+        var that = this;
+        var input = this.getApiInputObj();
+        input.action = "deleteEntityIndicatorDefinition";
+        input.entity = entity_sys_id;
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                //hier geen slice, ok?
+                var entities = that.state.entities;
+                var entityArr = entities.filter(function(e) {
+                    return e.sys_id === entity_sys_id;
+                });
+                if (entityArr.length > 0) {
+                    entityArr[0].indicator_definition = null;
+                    that.setState({
+                        entities: entities
+                    });
+                }
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    insertEntityReportDefinition: function(entity_sys_id, report_definition_sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.action = 'insertEntityReportDefinition';
+        input.entity = entity_sys_id;
+        input.report_definition = report_definition_sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                //console.log(result);
+                //hier geen slice, ok?
+                var entities = that.state.entities;
+                var entityArr = entities.filter(function(e) {
+                    return e.sys_id === entity_sys_id;
+                });
+                if (entityArr.length > 0) {
+                    entityArr[0].report_definition = report_definition_sys_id;
+                    that.setState({
+                        entities: entities
+                    });
+                }
+                callback(null); // errormessage meegeven	
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    deleteEntityReportDefinition: function(entity_sys_id, callback) {
+        var that = this;
+        var input = this.getApiInputObj();
+        input.action = "deleteEntityReportDefinition";
+        input.entity = entity_sys_id;
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                //hier geen slice, ok?
+                var entities = that.state.entities;
+                var entityArr = entities.filter(function(e) {
+                    return e.sys_id === entity_sys_id;
+                });
+                if (entityArr.length > 0) {
+                    entityArr[0].report_definition = null;
+                    that.setState({
+                        entities: entities
+                    });
+                }
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    projectCreateValidations: function(callback) {
+        var that = this;
+        var input = this.getApiInputObj();
+        sn_kpi_composer.ClientApi.projectCreateValidations(
+            input,
+            function(result) {
+                //console.log(result);
+                if (result.success == true) {
+                    that.setState({
+                        validations: result.validations
+                    });
+                }
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('projectCreateValidations FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    projectCreateTasks: function(callback) {
+        var that = this;
+        var input = this.getApiInputObj();
+        sn_kpi_composer.ClientApi.projectCreateTasks(
+            input,
+            function(result) {
+                //console.log(result);
+                if (result.success == true) {
+                    that.setState({
+                        tasks: result.tasks
+                    });
+                }
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('projectCreateTasks FAILED:' + result);
+            }
+        );
+    },
+
+    projectTaskDefAssignToGroupEdit: function(assignmentgroupobj, callback) {
+        var that = this;
+        var input = this.getApiInputObj();
+        input.action = "updateTaskDefinitionAssignmentGroup";
+        input.assignmentgroup_sys_id = assignmentgroupobj ? assignmentgroupobj.sys_id : "";
+        input.trace = true;
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                if (result.success === true) {
+                    that.setState({
+                        taskdefs: {
+                            assignmentgroup: assignmentgroupobj ? assignmentgroupobj.sys_id : "",
+                            assignmentgroup_dv: assignmentgroupobj ? assignmentgroupobj.name : "",
+                        }
+                    });
+                }
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardDelete: function(sys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.dashboard = {};
+        input.action = 'deleteDashboard';
+        input.dashboard.sys_id = sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy
+                    var dashboards = state.dashboards.slice();
+                    var indx = dashboards.findIndex(function(p) {
+                        return p.sys_id === sys_id;
+                    });
+                    if (indx > -1) {
+                        dashboards.splice(indx, 1);
+                    }
+                    return {
+                        dashboards: dashboards
+                    };
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardMoveTo: function(direction, sys_id, callback) {
+        var that = this;
+
+        //reflect in state
+        var dashboards = this.state.dashboards.slice();
+        var indx = dashboards.findIndex(function(b) {
+            return b.sys_id === sys_id;
+        });
+        if (indx > -1) {
+            var serverDataInput = null;
+            if (direction === 'left' && indx > 0) {
+                var tmp = dashboards[indx];
+                dashboards[indx] = dashboards[indx - 1];
+                dashboards[indx - 1] = tmp;
+                serverDataInput = this.getApiInputObj();
+                serverDataInput.action = "dashboardUp";
+                serverDataInput.dashboard = {
+                    sys_id: sys_id
+                };
+            } else if (direction === 'right' && indx < dashboards.length - 1) {
+                var tmp = dashboards[indx];
+                dashboards[indx] = dashboards[indx + 1];
+                dashboards[indx + 1] = tmp;
+                serverDataInput = this.getApiInputObj();
+                serverDataInput.action = "dashboardDown";
+                serverDataInput.dashboard = {
+                    sys_id: sys_id
+                };
+            }
+
+            if (serverDataInput != null) {
+                this.setState({
+                    dashboards: dashboards
+                }, function() {
+                    sn_kpi_composer.ClientApi.updateServerData(
+                        serverDataInput,
+                        function(result) {
+                            //ok
+                            callback(null);
+                        },
+                        function(result) {
+                            log(result);
+                            //todo: reset positions
+                            callback(result); // errormessage meegeven	
+                            console.error('Save FAILED:' + JSON.stringify(result));
+                        }
+                    );
+                });
+            }
+        }
+    },
+
+    dashboardSaveName: function(sys_id, name, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.dashboard = {};
+        input.dashboard.name = name;
+
+        if (sys_id == null) {
+            input.action = 'insertDashboard';
+        } else {
+            input.action = 'updateDashboard';
+            input.dashboard.sys_id = sys_id;
+        }
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                var newone = null;
+                that.setState(function(state, props) {
+                    var newstate = {};
+                    //make copy
+                    var dashboards = state.dashboards.slice();
+                    var tochange = null;
+                    if (sys_id == null) {
+                        tochange = result.dashboard;
+                        var extradashboardata = that.initializeDashboard(tochange, that.state.personas, that.state.allbreakdowns, that.state.widgetvisualisations, that.state.entities);
+                        dashboards.push(tochange);
+                        newstate["dashboardtabs_" + tochange.sys_id] = extradashboardata.tabs;
+                        for (var rowandcanvaskey in extradashboardata.rowsandcanvasses) {
+                            if (extradashboardata.rowsandcanvasses.hasOwnProperty(rowandcanvaskey)) {
+                                newstate[rowandcanvaskey] = extradashboardata.rowsandcanvasses[rowandcanvaskey];
+                            }
+                        }
+                        newone = tochange;
+                    } else {
+                        var tochangeArr = dashboards.filter(function(p) {
+                            return p.sys_id === sys_id;
+                        });
+                        if (tochangeArr.length == 1) {
+                            tochange = tochangeArr[0];
+                        }
+                    }
+                    if (tochange != null) {
+                        tochange.name = name;
+                    }
+                    newstate.dashboards = dashboards;
+                    return newstate;
+                }, function() {
+                    if (newone != null) {
+                        //add tab
+                        that.dashboardTabSaveName(newone.sys_id, null, new GwtMessage().getMessage("Tab {0}", 1), function(error, newtab) {
+                            callback(null, newone);
+                        });
+                    } else {
+                        callback(null, null);
+                    }
+                });
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardSaveDescription: function(sys_id, description, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.dashboard = {};
+        input.dashboard.description = description;
+        input.action = 'updateDashboard';
+        input.dashboard.sys_id = sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                var newone = null;
+                that.setState(function(state, props) {
+                    var newstate = {};
+                    //make copy
+                    var dashboards = state.dashboards.slice();
+                    var tochange = null;
+                    var tochangeArr = dashboards.filter(function(p) {
+                        return p.sys_id === sys_id;
+                    });
+                    if (tochangeArr.length == 1) {
+                        tochange = tochangeArr[0];
+                    }
+                    if (tochange != null) {
+                        tochange.description = description;
+                    }
+                    newstate.dashboards = dashboards;
+                    return newstate;
+                }, function() {
+                    callback(null, newone);
+                });
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardBreakdownDelete: function(dashboard, breakdown_sys_id, callback) {
+        var that = this;
+
+        //reflect in state
+        var dashboards = this.state.dashboards.slice();
+        var indx = dashboard.breakdowns.findIndex(function(b) {
+            return b.sys_id === breakdown_sys_id;
+        });
+        if (indx > -1) {
+            dashboard.breakdowns.splice(indx, 1);
+
+            this.setState({
+                dashboards: dashboards
+            }, function() {
+                var input = that.getApiInputObj();
+                input.action = "deleteDashboardBreakdown";
+                input.dashboard = {
+                    sys_id: dashboard.sys_id
+                };
+                input.breakdown = breakdown_sys_id;
+
+                sn_kpi_composer.ClientApi.updateServerData(
+                    input,
+                    function(result) {
+                        //ok
+                        callback(null);
+                    },
+                    function(result) {
+                        log(result);
+                        //todo: re insert the breakdown
+                        callback(result); // errormessage meegeven	
+                        console.error('Save FAILED:' + JSON.stringify(result));
+                    }
+                );
+            });
+        }
+    },
+
+    dashboardBreakdownInsert: function(dashboard, breakdown_sys_id, callback) {
+        var that = this;
+
+        //reflect in state
+        var dashboards = this.state.dashboards.slice();
+        var indx = dashboard.breakdowns.findIndex(function(b) {
+            return b.sys_id === breakdown_sys_id;
+        });
+        if (indx < 0) {
+            var breakdown = this.state.allbreakdowns.filter(function(b) {
+                return b.sys_id === breakdown_sys_id;
+            });
+            if (breakdown.length > 0) {
+                dashboard.breakdowns.push(breakdown[0]);
+                dashboard.breakdowns.sort(function(a, b) {
+                    return a.name.localeCompare(b.name);
+                });
+
+                this.setState({
+                    dashboards: dashboards
+                }, function() {
+                    var input = that.getApiInputObj();
+                    input.action = "insertDashboardBreakdown";
+                    input.dashboard = {
+                        sys_id: dashboard.sys_id
+                    };
+                    input.breakdown = breakdown_sys_id;
+
+                    sn_kpi_composer.ClientApi.updateServerData(
+                        input,
+                        function(result) {
+                            //ok
+                            callback(null);
+                        },
+                        function(result) {
+                            log(result);
+                            //todo: delete the breakdown
+                            callback(result); // errormessage meegeven	
+                            console.error('Save FAILED:' + JSON.stringify(result));
+                        }
+                    );
+                });
+            }
+        }
+    },
+
+    dashboardPersonaDelete: function(dashboard, persona_sys_id, callback) {
+        var that = this;
+
+        //reflect in state
+        var dashboards = this.state.dashboards.slice();
+        var indx = dashboard.personas.findIndex(function(b) {
+            return b.sys_id === persona_sys_id;
+        });
+        if (indx > -1) {
+            dashboard.personas.splice(indx, 1);
+
+            this.setState({
+                dashboards: dashboards
+            }, function() {
+                var input = that.getApiInputObj();
+                input.action = "deleteDashboardPersona";
+                input.dashboard = {
+                    sys_id: dashboard.sys_id
+                };
+                input.persona = persona_sys_id;
+
+                sn_kpi_composer.ClientApi.updateServerData(
+                    input,
+                    function(result) {
+                        //ok
+                        callback(null);
+                    },
+                    function(result) {
+                        log(result);
+                        //todo: re insert the persona
+                        callback(result); // errormessage meegeven	
+                        console.error('Save FAILED:' + JSON.stringify(result));
+                    }
+                );
+            });
+        }
+    },
+
+    dashboardPersonaInsert: function(dashboard, persona_sys_id, callback) {
+        var that = this;
+
+        //reflect in state
+        var dashboards = this.state.dashboards.slice();
+        var indx = dashboard.personas.findIndex(function(b) {
+            return b.sys_id === persona_sys_id;
+        });
+        if (indx < 0) {
+            var persona = this.state.personas.filter(function(b) {
+                return b.sys_id === persona_sys_id;
+            });
+            if (persona.length > 0) {
+                dashboard.personas.push(persona[0]);
+                dashboard.personas.sort(function(a, b) {
+                    return a.name.localeCompare(b.name);
+                });
+
+                this.setState({
+                    dashboards: dashboards
+                }, function() {
+                    var input = that.getApiInputObj();
+                    input.action = "insertDashboardPersona";
+                    input.dashboard = {
+                        sys_id: dashboard.sys_id
+                    };
+                    input.persona = persona_sys_id;
+
+                    sn_kpi_composer.ClientApi.updateServerData(
+                        input,
+                        function(result) {
+                            //ok
+                            callback(null);
+                        },
+                        function(result) {
+                            log(result);
+                            //todo: delete the persona
+                            callback(result); // errormessage meegeven	
+                            console.error('Save FAILED:' + JSON.stringify(result));
+                        }
+                    );
+                });
+            }
+        }
+    },
+
+    dashboardPaDashboardSave: function(sys_id, pa_dashboard, callback) {
+        var that = this;
+        var pa_dashboard_sys_id = null;
+
+        if (pa_dashboard != null) {
+            pa_dashboard_sys_id = pa_dashboard.sys_id;
+        }
+
+        var input = this.getApiInputObj();
+        input.dashboard = {};
+
+        input.dashboard.pa_dashboard = pa_dashboard_sys_id;
+        input.action = 'updateDashboard';
+        input.dashboard.sys_id = sys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                var newone = null;
+                that.setState(function(state, props) {
+                    var newstate = {};
+
+                    //see if pa_dashboard needs to be added to the current list
+                    if (pa_dashboard_sys_id != null && state.pa_dashboards.filter(function(pd) {
+                            return pd.sys_id === pa_dashboard_sys_id;
+                        }).length === 0) {
+                        var pa_dashboards = state.pa_dashboards.slice();
+                        pa_dashboards.push(pa_dashboard);
+                        newstate.pa_dashboards = pa_dashboards;
+                    }
+
+                    //make copy
+                    var dashboards = state.dashboards.slice();
+                    var tochange = null;
+                    var tochangeArr = dashboards.filter(function(p) {
+                        return p.sys_id === sys_id;
+                    });
+                    if (tochangeArr.length == 1) {
+                        tochange = tochangeArr[0];
+                    }
+                    if (tochange != null) {
+                        tochange.pa_dashboard = pa_dashboard_sys_id;
+                    }
+                    newstate.dashboards = dashboards;
+                    return newstate;
+                }, function() {
+                    callback(null, newone);
+                });
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardTabDelete: function(dashboardsys_id, dashboardtabsys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.tab = {};
+        input.action = 'deleteTab';
+        input.tab.dashboard = dashboardsys_id;
+        input.tab.sys_id = dashboardtabsys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    //make copy
+                    var dashboardtabs = state["dashboardtabs_" + dashboardsys_id].slice();
+                    var indx = dashboardtabs.findIndex(function(p) {
+                        return p.sys_id === dashboardtabsys_id;
+                    });
+                    if (indx > -1) {
+                        dashboardtabs.splice(indx, 1);
+                    }
+                    var newstate = {};
+                    newstate["dashboardtabrows_" + dashboardtabsys_id] = null;
+                    newstate["dashboardtabs_" + dashboardsys_id] = dashboardtabs;
+                    return newstate;
+                });
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardTabAddAsTemplate: function(dashboardsys_id, dashboardtabsys_id, data, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.tab = {};
+        input.tab.sys_id = dashboardtabsys_id;
+        input.tab.caption = data.caption;
+        input.tab.description = data.description;
+
+        sn_kpi_composer.ClientApi.createNewTemplate(
+            input,
+            function(result) {
+                //console.log(result);
+                that.setState({possibletemplatetabs:null}); //clear the cache
+                callback(null);
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Creation of template FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardTabMoveTo: function(direction, dashboardsys_id, dashboardtabsys_id, callback) {
+        var that = this;
+
+        var dashboardtabs = this.state["dashboardtabs_" + dashboardsys_id].slice();
+        var indx = dashboardtabs.findIndex(function(b) {
+            return b.sys_id === dashboardtabsys_id;
+        });
+        if (indx > -1) {
+            var serverDataInput = null;
+            if (direction === 'left' && indx > 0) {
+                var tmp = dashboardtabs[indx];
+                dashboardtabs[indx] = dashboardtabs[indx - 1];
+                dashboardtabs[indx - 1] = tmp;
+                serverDataInput = this.getApiInputObj();
+                serverDataInput.action = "tabUp";
+                serverDataInput.tab = {
+                    sys_id: dashboardtabsys_id
+                };
+            } else if (direction === 'right' && indx < dashboardtabs.length - 1) {
+                var tmp = dashboardtabs[indx];
+                dashboardtabs[indx] = dashboardtabs[indx + 1];
+                dashboardtabs[indx + 1] = tmp;
+                serverDataInput = this.getApiInputObj();
+                serverDataInput.action = "tabDown";
+                serverDataInput.tab = {
+                    sys_id: dashboardtabsys_id
+                };
+            }
+
+            if (serverDataInput != null) {
+                var newstate = {};
+                newstate["dashboardtabs_" + dashboardsys_id] = dashboardtabs;
+                this.setState(newstate, function() {
+                    sn_kpi_composer.ClientApi.updateServerData(
+                        serverDataInput,
+                        function(result) {
+                            //ok
+                            callback(null);
+                        },
+                        function(result) {
+                            log(result);
+                            //todo: reset positions
+                            callback(result); // errormessage meegeven	
+                            console.error('Save FAILED:' + JSON.stringify(result));
+                        }
+                    );
+                });
+            }
+        }
+    },
+
+    dashboardTabAdd: function(dashboardsys_id, data, callback) {
+        var that = this;
+
+        //templatetab_sysid
+        //name
+        //console.log(data);
+        if (data.templatetab_sysid == null) {
+            this.dashboardTabSaveName(dashboardsys_id, null, data.name, callback);
+        } else {
+            var input = this.getApiInputObj();
+            input.tab = {};
+            input.tab.sys_id = data.templatetab_sysid;
+            input.tab.caption = data.name;
+            input.dashboard = {};
+            input.dashboard.sys_id = dashboardsys_id;
+    
+            sn_kpi_composer.ClientApi.createNewTabFromTemplate(
+                input,
+                function(result) {
+                    var newtab = null;
+
+                    if (result.success) {
+                        //console.log(JSON.stringify(result.tab));
+                        var rowsandcanvasses = {};
+                        that.initializeDashboardTab(result.tab, rowsandcanvasses, that.state.widgetvisualisations, that.state.entities);
+                        //console.log(rowsandcanvasses);
+
+                        that.setState(function(state, props) {
+                            var newstate = {};
+                            //make copy
+                            var dashboardtabs = state["dashboardtabs_" + dashboardsys_id].slice();
+                            newtab = result.tab;
+                            dashboardtabs.push(newtab);
+                            for (var rowandcanvaskey in rowsandcanvasses) {
+                                if (rowsandcanvasses.hasOwnProperty(rowandcanvaskey)) {
+                                    newstate[rowandcanvaskey] = rowsandcanvasses[rowandcanvaskey];
+                                }
+                            }
+                            newstate["dashboardtabs_" + dashboardsys_id] = dashboardtabs;
+                            return newstate;
+                        }, function() {
+                            callback(null, newtab);
+                        });
+                    } else {
+                        log(result);
+                        callback(result); // errormessage meegeven	
+                        console.error('Save FAILED:' + JSON.stringify(result));
+                    }
+                },
+                function(result) {
+                    log(result);
+                    callback(result); // errormessage meegeven	
+                    console.error('Save FAILED:' + JSON.stringify(result));
+                }
+            );
+        }
+    },
+
+    dashboardTabSaveName: function(dashboardsys_id, dashboardtabsys_id, name, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.tab = {};
+        input.tab.dashboard = dashboardsys_id;
+        input.tab.caption = name;
+
+        if (dashboardtabsys_id == null) {
+            input.action = 'insertTab';
+        } else {
+            input.action = 'updateTab';
+            input.tab.sys_id = dashboardtabsys_id;
+        }
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                var newone = null;
+                that.setState(function(state, props) {
+                    var newstate = {};
+                    //make copy
+                    var dashboardtabs = state["dashboardtabs_" + dashboardsys_id].slice();
+                    var tochange = null;
+                    if (dashboardtabsys_id == null) {
+                        tochange = result.tab;
+                        dashboardtabs.push(tochange);
+                        newstate["dashboardtabrows_" + result.tab.sys_id] = [];
+                        newone = tochange;
+                    } else {
+                        var tochangeArr = dashboardtabs.filter(function(p) {
+                            return p.sys_id === dashboardtabsys_id;
+                        });
+                        if (tochangeArr.length == 1) {
+                            tochange = tochangeArr[0];
+                        }
+                    }
+                    if (tochange != null) {
+                        tochange.name = name;
+                    }
+                    newstate["dashboardtabs_" + dashboardsys_id] = dashboardtabs;
+                    return newstate;
+                }, function() {
+                    callback(null, newone);
+                });
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardTabRowAdd: function(dashboardtabsys_id, nrofcanvasses, callback) {
+        this.dashboardTabRowEdit(dashboardtabsys_id, null, nrofcanvasses, callback);
+    },
+
+    dashboardTabRowEdit: function(dashboardtabsys_id, dashboardtabrowsys_id, nrofcanvasses, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.row = {};
+        if (dashboardtabrowsys_id == null) {
+            input.action = 'insertRow';
+        } else {
+            input.action = 'updateRow';
+            input.row.sys_id = dashboardtabrowsys_id;
+        }
+        input.row.tab = dashboardtabsys_id;
+        input.row.nrofcanvasses = nrofcanvasses;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    var newstate = {};
+                    //make copy
+                    var tabrows = state["dashboardtabrows_" + dashboardtabsys_id].slice();
+                    var tochange = null;
+                    if (dashboardtabrowsys_id == null) {
+                        tochange = result.row;
+                        var canvasses = that.initializeDashboardTabRow(tochange, that.state.widgetvisualisations, that.state.entities);
+                        tabrows.push(tochange);
+                        newstate["dashboardtabrowcanvasses_" + tochange.sys_id] = canvasses;
+                    } else {
+                        var tochangeArr = tabrows.filter(function(p) {
+                            return p.sys_id === dashboardtabrowsys_id;
+                        });
+                        if (tochangeArr.length == 1) {
+                            tochange = tochangeArr[0];
+                            var rowcanvasses = state["dashboardtabrowcanvasses_" + dashboardtabrowsys_id].slice();
+                            var newrowcanvasses = null;
+                            if (tochange.nrofcanvasses < nrofcanvasses) {
+                                //er zijn canvassen bij gekomen, neem ze uit het result (bvb van 2 naar 4)
+                                newrowcanvasses = rowcanvasses;
+                                for (var r = tochange.nrofcanvasses; r < nrofcanvasses; r++) {
+                                    if (result.row.canvasses != null && result.row.canvasses.length > r) {
+                                        var newcanvas = result.row.canvasses[r];
+                                        that.initializeDashboardTabRowCanvas(newcanvas, that.state.widgetvisualisations, that.state.entities);
+                                        newrowcanvasses.push(newcanvas);
+                                    } else {
+                                        //console.log("New canvas not found");
+                                    }
+                                }
+                            } else if (tochange.nrofcanvasses > nrofcanvasses) {
+                                //er zijn canvassen verwijderd, bvb van 4 naar 2
+                                newrowcanvasses = [];
+                                for (var r = 0; r < nrofcanvasses; r++) {
+                                    newrowcanvasses.push(rowcanvasses[r]);
+                                }
+                            }
+                            newstate["dashboardtabrowcanvasses_" + dashboardtabrowsys_id] = newrowcanvasses;
+                        }
+                    }
+                    if (tochange != null) {
+                        tochange.nrofcanvasses = nrofcanvasses;
+                    }
+                    newstate["dashboardtabrows_" + dashboardtabsys_id] = tabrows;
+                    return newstate;
+                }, function() {
+                    callback(null);
+                });
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardTabRowDelete: function(dashboardtabsys_id, dashboardtabrowsys_id, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.row = {};
+        input.action = 'deleteRow';
+        input.row.sys_id = dashboardtabrowsys_id;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    var newstate = {};
+                    //filter out the deleted one
+                    var tabrows = state["dashboardtabrows_" + dashboardtabsys_id].filter(function(r) {
+                        return r.sys_id !== dashboardtabrowsys_id;
+                    });
+                    newstate["dashboardtabrowconvasses_" + dashboardtabrowsys_id] = null;
+                    newstate["dashboardtabrows_" + dashboardtabsys_id] = tabrows;
+                    return newstate;
+                }, function() {
+                    callback(null);
+                });
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardTabRowMoveTo: function(direction, dashboardtabsys_id, dashboardtabrowsys_id, callback) {
+        var that = this;
+
+        var dashboardtabrows = this.state["dashboardtabrows_" + dashboardtabsys_id].slice();
+        var indx = dashboardtabrows.findIndex(function(b) {
+            return b.sys_id === dashboardtabrowsys_id;
+        });
+        if (indx > -1) {
+            var serverDataInput = null;
+            if (direction === 'up' && indx > 0) {
+                var tmp = dashboardtabrows[indx];
+                dashboardtabrows[indx] = dashboardtabrows[indx - 1];
+                dashboardtabrows[indx - 1] = tmp;
+                serverDataInput = this.getApiInputObj();
+                serverDataInput.action = "rowUp";
+                serverDataInput.row = {
+                    sys_id: dashboardtabrowsys_id
+                };
+            } else if (direction === 'down' && indx < dashboardtabrows.length - 1) {
+                var tmp = dashboardtabrows[indx];
+                dashboardtabrows[indx] = dashboardtabrows[indx + 1];
+                dashboardtabrows[indx + 1] = tmp;
+                serverDataInput = this.getApiInputObj();
+                serverDataInput.action = "rowDown";
+                serverDataInput.row = {
+                    sys_id: dashboardtabrowsys_id
+                };
+            }
+
+            if (serverDataInput != null) {
+                var newstate = {};
+                newstate["dashboardtabrows_" + dashboardtabsys_id] = dashboardtabrows;
+                this.setState(newstate, function() {
+                    sn_kpi_composer.ClientApi.updateServerData(
+                        serverDataInput,
+                        function(result) {
+                            //ok
+                            callback(null);
+                        },
+                        function(result) {
+                            log(result);
+                            //todo: reset positions
+                            callback(result); // errormessage meegeven	
+                            console.error('Save FAILED:' + JSON.stringify(result));
+                        }
+                    );
+                });
+            }
+        }
+    },
+
+    dashboardTabRowCanvasSaveTitle: function(dashboardtabrowsys_id, dashboardtabrowcanvassys_id, title, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.canvas = {};
+        input.action = 'updateCanvas';
+        input.canvas.sys_id = dashboardtabrowcanvassys_id;
+        input.canvas.title = title;
+
+        sn_kpi_composer.ClientApi.updateServerData(
+            input,
+            function(result) {
+                that.setState(function(state, props) {
+                    var newstate = {};
+                    //make copy
+                    var rowcanvasses = state["dashboardtabrowcanvasses_" + dashboardtabrowsys_id].slice();
+                    var tochange = null;
+                    var tochangeArr = rowcanvasses.filter(function(p) {
+                        return p.sys_id === dashboardtabrowcanvassys_id;
+                    });
+                    if (tochangeArr.length == 1) {
+                        tochange = tochangeArr[0];
+                    }
+                    if (tochange != null) {
+                        tochange.title = title;
+                    }
+                    newstate["dashboardtabrowcanvasses_" + dashboardtabrowsys_id] = rowcanvasses;
+                    return newstate;
+                }, function() {
+                    callback(null);
+                });
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardTabRowCanvasEdit: function(dashboardtabrowsys_id, dashboardtabrowcanvassys_id, details, callback) {
+        var that = this;
+
+        var newwidgetvisualisation = null;
+        var newwidgetvisualisationsys_id = null;
+        if (details.widgetvisualisationsys_id != null && details.widgetvisualisationsys_id !== "") {
+            var visualisation = this.state.widgetvisualisations.filter(function(v) {
+                return v.sys_id === details.widgetvisualisationsys_id;
+            });
+            if (visualisation.length > 0) {
+                newwidgetvisualisation = visualisation[0];
+                newwidgetvisualisationsys_id = newwidgetvisualisation.sys_id;
+                details.widgetvisualisation = newwidgetvisualisation;
+            }
+        }
+
+        details.sys_id = dashboardtabrowcanvassys_id;
+        var serveractionstodo = [];
+        clearCanvasDataBasedOnWidgetType(this.getApiInputObj, details, serveractionstodo);
+
+        var input = this.getApiInputObj();
+        input.canvas = {};
+        input.action = 'updateCanvas';
+        input.canvas.sys_id = dashboardtabrowcanvassys_id;
+        input.canvas.title = details.title;
+        input.canvas.follow_element = details.follow_element;
+        input.canvas.follow_interactive_filter = details.follow_interactive_filter;
+        input.canvas.description = details.description;
+        input.canvas.widgetvisualisation = newwidgetvisualisationsys_id;
+        input.canvas.time_serie = details.time_serie !== "" ? details.time_serie : null;
+        input.canvas.pa_widget = details.pa_widget != null ? details.pa_widget.sys_id : null;
+        input.canvas.spotlight_group = details.spotlight_group != null ? details.spotlight_group.sys_id : null;
+        input.canvas.content_block = details.content_block != null ? details.content_block.sys_id : null;
+        input.canvas.interactive_filter = details.interactive_filter != null ? details.interactive_filter.sys_id : null;
+        input.canvas.report = details.report != null ? details.report.sys_id : null;
+        input.canvas.entities = details.entities.join(",");
+        serveractionstodo.push(input);
+        
+
+        sn_kpi_composer.ClientApi.multiUpdateServerData(
+            {actions: serveractionstodo},
+            function(result) {
+                that.setState(function(state, props) {
+                    var newstate = {};
+                    //make copy
+                    var rowcanvasses = state["dashboardtabrowcanvasses_" + dashboardtabrowsys_id].slice();
+                    var tochange = null;
+                    var tochangeArr = rowcanvasses.filter(function(p) {
+                        return p.sys_id === dashboardtabrowcanvassys_id;
+                    });
+                    if (tochangeArr.length == 1) {
+                        tochange = tochangeArr[0];
+                    }
+                    if (tochange != null) {
+                        tochange.title = details.title;
+                        tochange.follow_element = details.follow_element;
+                        tochange.follow_interactive_filter = details.follow_interactive_filter;
+                        tochange.description = details.description;
+                        tochange.widgetvisualisation = newwidgetvisualisation;
+                        tochange.entities = details.entities;
+                        tochange.time_serie = details.time_serie;
+                        tochange.pa_widget = details.pa_widget;
+                        tochange.spotlight_group = details.spotlight_group;
+                        tochange.content_block = details.content_block;
+                        tochange.interactive_filter = details.interactive_filter;
+                        tochange.report = details.report;
+                    }
+                    newstate["dashboardtabrowcanvasses_" + dashboardtabrowsys_id] = rowcanvasses;
+                    return newstate;
+                }, function() {
+                    callback(null);
+                });
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    dashboardTabRowCanvasEntityDelete: function(dashboardtabrowsys_id, canvas, entity_sys_id, callback) {
+        var that = this;
+
+        //reflect in state
+        var rowcanvasses = this.state["dashboardtabrowcanvasses_" + dashboardtabrowsys_id].slice();
+        var indx = canvas.entities.indexOf(entity_sys_id);
+        if (indx > -1) {
+            canvas.entities.splice(indx, 1);
+
+            var newstate = {};
+            newstate["dashboardtabrowcanvasses_" + dashboardtabrowsys_id] = rowcanvasses;
+
+            this.setState(newstate, function() {
+                var input = that.getApiInputObj();
+                input.action = "deleteCanvasEntity";
+                input.canvas = {
+                    sys_id: canvas.sys_id
+                };
+                input.entity = entity_sys_id;
+
+                sn_kpi_composer.ClientApi.updateServerData(
+                    input,
+                    function(result) {
+                        //ok
+                        callback(null);
+                    },
+                    function(result) {
+                        log(result);
+                        //todo: re insert the entity
+                        callback(result); // errormessage meegeven	
+                        console.error('Save FAILED:' + JSON.stringify(result));
+                    }
+                );
+            });
+        }
+    },
+
+    dashboardTabRowCanvasEntityInsert: function(dashboardtabrowsys_id, canvas, entity_sys_id, callback) {
+        var that = this;
+
+        //reflect in state
+        var rowcanvasses = this.state["dashboardtabrowcanvasses_" + dashboardtabrowsys_id].slice();
+        var indx = canvas.entities.indexOf(entity_sys_id);
+        if (indx < 0) {
+            var entity = this.state.entities.filter(function(b) {
+                return b.sys_id === entity_sys_id || b.org_sys_id === entity_sys_id;
+            });
+            if (entity.length > 0) {
+                var serveractionstodo = [];
+
+                canvas.entities.push(entity_sys_id);
+                // canvas.entities.sort(function(a, b) {
+                //     return a.name.localeCompare(b.name);
+                // });
+                
+                if (canvas.title == null || canvas.title === "") {
+                    canvas.title = entity[0].name;
+                    
+                    var updatetitleaction = that.getApiInputObj();
+                    updatetitleaction.canvas = {};
+                    updatetitleaction.action = 'updateCanvas';
+                    updatetitleaction.canvas.sys_id = canvas.sys_id;
+                    updatetitleaction.canvas.title = canvas.title;
+                    serveractionstodo.push(updatetitleaction);
+                }
+                
+
+                var newstate = {};
+                newstate["dashboardtabrowcanvasses_" + dashboardtabrowsys_id] = rowcanvasses;
+
+                this.setState(newstate, function() {
+                    var insertcanvasentityaction = that.getApiInputObj();
+                    insertcanvasentityaction.action = "insertCanvasEntity";
+                    insertcanvasentityaction.canvas = {
+                        sys_id: canvas.sys_id
+                    };
+                    insertcanvasentityaction.entity = entity_sys_id;
+                    serveractionstodo.push(insertcanvasentityaction);
+
+                    sn_kpi_composer.ClientApi.multiUpdateServerData(
+                        {actions: serveractionstodo},
+                        function(result) {
+                            //ok
+                            callback(null);
+                        },
+                        function(result) {
+                            log(result);
+                            //todo: delete the entity
+                            callback(result); // errormessage meegeven	
+                            console.error('Save FAILED:' + JSON.stringify(result));
+                        }
+                    );
+                });
+            }
+        }
+    },
+
+    dashboardTabRowCanvasSaveWidgetVisualisation: function(dashboardtabrowsys_id, canvas, visualisation_sys_id, callback) {
+        var that = this;
+
+        //reflect in state
+        var rowcanvasses = this.state["dashboardtabrowcanvasses_" + dashboardtabrowsys_id].slice();
+        //var prevwidget = canvas.widgetvisualisation;
+        if (canvas.widgetvisualisation == null || canvas.widgetvisualisation.sys_id !== visualisation_sys_id) {
+            var widgetvisualisation = this.state.widgetvisualisations.filter(function(b) {
+                return b.sys_id === visualisation_sys_id;
+            });
+            if (widgetvisualisation.length > 0) {
+                var serveractionstodo = [];
+                canvas.widgetvisualisation = widgetvisualisation[0];
+                if (canvas.widgetvisualisation.widgettype_sys_id === WIDGETTYPE_CONTENTBLOCK_SYS_ID) {
+                    canvas.title = canvas.widgetvisualisation.name;
+                }
+                clearCanvasDataBasedOnWidgetType(that.getApiInputObj, canvas, serveractionstodo);
+              
+                var newstate = {};
+                newstate["dashboardtabrowcanvasses_" + dashboardtabrowsys_id] = rowcanvasses;
+
+                this.setState(newstate, function() {
+                    var updateCanvasAction = that.getApiInputObj();
+                    updateCanvasAction.action = 'updateCanvas';
+                    updateCanvasAction.canvas = {
+                        sys_id: canvas.sys_id
+                    };
+                    updateCanvasAction.canvas.widgetvisualisation = visualisation_sys_id;
+                    if (canvas.widgetvisualisation.widgettype_sys_id === WIDGETTYPE_CONTENTBLOCK_SYS_ID) {
+                        updateCanvasAction.canvas.title = canvas.title;
+                    }
+                    updateCanvasAction.canvas.follow_element = canvas.follow_element;
+                    updateCanvasAction.canvas.follow_interactive_filter = canvas.follow_interactive_filter;
+                    updateCanvasAction.canvas.description = canvas.description;
+                    updateCanvasAction.canvas.time_serie = canvas.time_serie !== "" ? canvas.time_serie : null;
+                    updateCanvasAction.canvas.pa_widget = canvas.pa_widget != null ? canvas.pa_widget.sys_id : null;
+                    updateCanvasAction.canvas.spotlight_group = canvas.spotlight_group != null ? canvas.spotlight_group.sys_id : null;
+                    updateCanvasAction.canvas.content_block = canvas.content_block != null ? canvas.content_block.sys_id : null;
+                    updateCanvasAction.canvas.interactive_filter = canvas.interactive_filter != null ? canvas.interactive_filter.sys_id : null;
+                    updateCanvasAction.canvas.report = canvas.report != null ? canvas.report.sys_id : null;
+                    updateCanvasAction.canvas.entities = canvas.entities.join(",");
+                    serveractionstodo.push(updateCanvasAction);
+
+                    sn_kpi_composer.ClientApi.multiUpdateServerData(
+                        {actions: serveractionstodo},
+                        function(result) {
+                            //ok
+                            callback(null);
+                        },
+                        function(result) {
+                            log(result);
+                            //todo: revert the state change
+                            callback(result); // errormessage meegeven	
+                            console.error('Save FAILED:' + JSON.stringify(result));
+                        }
+                    );
+                });
+            }
+        }
+    },
+
+    dashboardTabRowCanvasMoveTo: function(direction, dashboardtabrowsys_id, dashboardtabrowcanvassys_id, callback) {
+        var that = this;
+
+        var dashboardtabrowcanvasses = this.state["dashboardtabrowcanvasses_" + dashboardtabrowsys_id].slice();
+        var indx = dashboardtabrowcanvasses.findIndex(function(b) {
+            return b.sys_id === dashboardtabrowcanvassys_id;
+        });
+        if (indx > -1) {
+            var serverDataInput = null;
+            if (direction === 'left' && indx > 0) {
+                var tmp = dashboardtabrowcanvasses[indx];
+                dashboardtabrowcanvasses[indx] = dashboardtabrowcanvasses[indx - 1];
+                dashboardtabrowcanvasses[indx - 1] = tmp;
+                serverDataInput = this.getApiInputObj();
+                serverDataInput.action = "canvasUp";
+                serverDataInput.canvas = {
+                    sys_id: dashboardtabrowcanvassys_id
+                };
+            } else if (direction === 'right' && indx < dashboardtabrowcanvasses.length - 1) {
+                var tmp = dashboardtabrowcanvasses[indx];
+                dashboardtabrowcanvasses[indx] = dashboardtabrowcanvasses[indx + 1];
+                dashboardtabrowcanvasses[indx + 1] = tmp;
+                serverDataInput = this.getApiInputObj();
+                serverDataInput.action = "canvasDown";
+                serverDataInput.canvas = {
+                    sys_id: dashboardtabrowcanvassys_id
+                };
+            }
+
+            if (serverDataInput != null) {
+                var newstate = {};
+                newstate["dashboardtabrowcanvasses_" + dashboardtabrowsys_id] = dashboardtabrowcanvasses;
+                this.setState(newstate, function() {
+                    sn_kpi_composer.ClientApi.updateServerData(
+                        serverDataInput,
+                        function(result) {
+                            //ok
+                            callback(null);
+                        },
+                        function(result) {
+                            log(result);
+                            //todo: reset positions
+                            callback(result); // errormessage meegeven	
+                            console.error('Save FAILED:' + JSON.stringify(result));
+                        }
+                    );
+                });
+            }
+        }
+    },
+
+    onIndicatorDesignClearFilter: function() {
+        this.setState({indicatordesign_filter_text:"", indicatordesign_filter_status: ""});
+    },
+
+    onIndicatorDesignFilterTextChange: function(filter_text) {
+        this.setState({ indicatordesign_filter_text: filter_text });
+    },
+
+    onIndicatorDesignFilterStatusChange: function(status) {
+        this.setState({ indicatordesign_filter_status: status });
+    },
+
+    permissionsAdd: function(data, callback) {
+        var that = this;
+
+        var currentuserpermissions = this.state.project_permissions.filter(function (p) { return p.permissiontype === "User"; } ).map(function (p) { return p.user_sys_id; });
+        var currentgrouppermissions = this.state.project_permissions.filter(function (p) { return p.permissiontype === "Group"; } ).map(function (p) { return p.group_sys_id; });
+
+        //filter out existing permissions
+        data.users = data.users.filter(function (u) { return currentuserpermissions.indexOf(u.sys_id) < 0; });
+        data.groups = data.groups.filter(function (g) { return currentgrouppermissions.indexOf(g.sys_id) < 0; });
+
+        var input = this.getApiInputObj();
+        input.permissions = {};
+        input.permissions.users = data.users.map(function(u) { return u.sys_id; });
+        input.permissions.groups = data.groups.map(function(g) { return g.sys_id; });
+        input.permissions.write = data.write;
+
+        sn_kpi_composer.ClientApi.addProjectPermissions(
+            input,
+            function(result) {
+                if (result.success) {
+                    that.setState(function(state) {
+                        var project_permissions = state.project_permissions
+                        .concat(data.users.map(function(u) { return { group: "", group_sys_id: null, permissiontype: "User", sys_id: result.users[u.sys_id], user: u.name, user_sys_id: u.sys_id, write: data.write }; }))
+                        .concat(data.groups.map(function(g) { return { group: g.name, group_sys_id: g.sys_id, permissiontype: "Group", sys_id: result.groups[g.sys_id], user: "", user_sys_id: null, write: data.write }; }));
+
+                        project_permissions.sort(ProjectPermissionSorter);
+
+                        return {project_permissions : project_permissions};
+                    }, function() {
+                        callback(null);
+                    });
+                } else {
+                    callback("failed");
+                }
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    permissionDelete: function(permission, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.permissions = {};
+        var targetsysid;
+        if (permission.permissiontype === "User") {
+            input.permissions.users = [permission.user_sys_id];
+            targetsysid = permission.user_sys_id;
+        } else {
+            input.permissions.groups = [permission.group_sys_id];
+            targetsysid = permission.group_sys_id;
+        }
+        
+        sn_kpi_composer.ClientApi.deleteProjectPermissions(
+            input,
+            function(result) {
+                if (result.success) {
+                    that.setState(function(state) {
+                        var project_permissions = state.project_permissions.filter(function (p) {
+                            return p.permissiontype !== permission.permissiontype || (p.user_sys_id !== targetsysid && p.group_sys_id !== targetsysid);
+                        });
+
+                        return {project_permissions : project_permissions};
+                    }, function() {
+                        callback(null);
+                    });
+                } else {
+                    callback("failed");
+                }
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    permissionEdit: function(permission, write, callback) {
+        var that = this;
+
+        var input = this.getApiInputObj();
+        input.permissions = {};
+        var targetsysid;
+        if (permission.permissiontype === "User") {
+            input.permissions.users = [permission.user_sys_id];
+            targetsysid = permission.user_sys_id;
+        } else {
+            input.permissions.groups = [permission.group_sys_id];
+            targetsysid = permission.group_sys_id;
+        }
+        input.permissions.write = write;
+        
+        sn_kpi_composer.ClientApi.updateProjectPermissions(
+            input,
+            function(result) {
+                if (result.success) {
+                    that.setState(function(state) {
+                        var project_permissions = state.project_permissions.map(function (p) {
+                            if (p.permissiontype !== permission.permissiontype || (p.user_sys_id !== targetsysid && p.group_sys_id !== targetsysid)) {
+                                return p;
+                            } else {
+                                var toreturn = {};
+                                for (propname in p) {
+                                    toreturn[propname] = p[propname];
+                                }
+                                toreturn.write = write;
+                                return toreturn;
+                            }
+                        });
+
+                        return {project_permissions : project_permissions};
+                    }, function() {
+                        callback(null);
+                    });
+                } else {
+                    callback("failed");
+                }
+            },
+            function(result) {
+                log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    librarySearch: function(searchtext, callback) {
+        var that = this;
+
+        this.setState({library_searchtext: searchtext, library_searching: true}, function() {
+            sn_kpi_composer.ClientApi.selectLibraryProjects(
+                {filter:searchtext}, //hier geen project sys id nodig
+                function (result) { 
+                    //console.log(result);
+                    if (result.success) {
+                        var library_searchresults = result.projects.filter(function (proj) { return proj.sys_id !== that.state.project_sys_id; }).map(function (proj) {
+                            if (proj.top_nodes && proj.top_nodes.length) {
+                                proj.top_node_sys_id = proj.top_nodes[0].sys_id;
+                                proj.top_node_entitytype = proj.top_nodes[0].entitytype;
+                                var entitytypes = that.state.entitytypes.filter(function (enttyp) { return enttyp.sys_id === proj.top_nodes[0].entitytype; });
+                                if (entitytypes.length > 0) {
+                                    proj.top_node_color = entitytypes[0].color;
+                                }
+                                delete proj.top_nodes;
+                            }
+                            return proj;
+                        });
+                        that.setState({library_searching: false, library_searchresults: library_searchresults}, function(){
+                            callback();
+                        });
+                    } else {
+                        log(result);
+                        that.setState({library_searching: false}, function(){
+                            callback(null);
+                        });
+                        console.error('search library elements FAILED:' + JSON.stringify(result));
+                    }
+                }, 
+                function(result) {
+                    log(result);
+                    that.setState({library_searching: false}, function(){
+                        callback(null);
+                    });
+                    console.error('search library elements FAILED:' + JSON.stringify(result));
+                }
+            );
+        });
+    },
+
+    //replaced_entities needs to be an object, with key = old id, value = new id
+    processReplacedEntities: function(replaced_entities, currentState, newState) {
+        var old_sys_ids = Object.keys(replaced_entities);
+        for (var d = 0; d < currentState.dashboards.length; d++) {
+            var tabids = currentState["dashboardtabs_" + currentState.dashboards[d].sys_id].map(function(t) {
+                return t.sys_id;
+            });
+            var rowids = [];
+            for (var t = 0; t < tabids.length; t++) {
+                rowids = rowids.concat(currentState["dashboardtabrows_" + tabids[t]].map(function(r) {
+                    return r.sys_id;
+                }));
+            }
+            for (var r = 0; r < rowids.length; r++) {
+                var rowcanvasses = currentState["dashboardtabrowcanvasses_" + rowids[r]];
+
+                var localentities = rowcanvasses.map(function(c) {
+                    return c.entities;
+                });
+                var alllocalentities = [];
+                for (var l = 0; l < localentities.length; l++) {
+                    alllocalentities = alllocalentities.concat(localentities[l]);
+                }
+
+                //row has changed entities
+                if (alllocalentities.filter(function (entsysid) { return old_sys_ids.indexOf(entsysid) >= 0; }).length > 0) {
+                    var newrowcanvasses = rowcanvasses.slice();
+
+                    for (var c = 0; c < newrowcanvasses.length; c++) {
+                        for (var ce = 0; ce < newrowcanvasses[c].entities.length; ce++) {
+                            if (replaced_entities[newrowcanvasses[c].entities[ce]]) {
+                                //console.log("replacing " + newrowcanvasses[c].entities[ce]);
+                                newrowcanvasses[c].entities[ce] = replaced_entities[newrowcanvasses[c].entities[ce]];
+                                //console.log("by " + newrowcanvasses[c].entities[ce]);
+                            }
+                        }
+                    }
+
+                    newState["dashboardtabrowcanvasses_" + rowids[r]] = newrowcanvasses;
+                }
+            }
+        }
+    },
+
+    processLibraryActionResultFromServer: function(result, current_from_sys_id, entity_sys_ids_to_remove, callback) {
+        var that = this;
+        if (result.success) {
+            //result.entities //has new entities
+            //result.relations //has new relations
+            //result.new_lib_project //has new_lib_project library, store in local array? -> we can't because the filtering is done on the server, so we'll need to refresh that too, set results to null so the control can refresh the results
+            //console.log(result);
+
+            //fix voor verkeerde from
+            for (var r = 0; r < result.relations.length; r++) {
+                if (!result.relations[r].from || result.relations[r].from === "null") {
+                    result.relations[r].from = null;
+                }
+            }
+
+            var new_root_entity_sys_id = null;
+            var newrootrelations = result.relations.filter(function (rel) { return rel.from === current_from_sys_id; });
+            if (newrootrelations.length === 1) {
+                new_root_entity_sys_id = newrootrelations[0].to;
+            }
+
+            that.setState(function(state, props) {
+                for (var enti = 0; enti < result.entities.length; enti++) {
+                    if (!result.entities[enti].personas) {
+                        result.entities[enti].personas = [];
+                    }
+                    if (!result.entities[enti].breakdowns) {
+                        result.entities[enti].breakdowns = [];
+                    }
+                    that.initializeEntity(result.entities[enti], that.allknowledgearticles, that.allusers, result.relations, enti); //we already have the users and knowledge articles, keep it up to date!
+                }
+
+                //remove old entities and add new ones
+                var newentities = state.entities.filter(function (ent) { return entity_sys_ids_to_remove.indexOf(ent.sys_id) < 0; }).concat(result.entities);
+                //remove old relations and add new ones
+                var newrelations = state.relations.filter(function (rel) { return entity_sys_ids_to_remove.indexOf(rel.to) < 0 && entity_sys_ids_to_remove.indexOf(rel.from) < 0; }).concat(result.relations);
+                
+                var newState = {
+                    entities: newentities,
+                    relations: newrelations
+                };
+
+                if (result.new_lib_project) { //when a new library element is created, reset the search results so this library project can come up in there
+                    newState.library_searchresults = null;
+                }
+
+                if (result.replace_entities) {
+                    var replaced_entities = {};
+                    for (var r = 0; r < result.replace_entities.length; r++) {
+                        replaced_entities[result.replace_entities[r].old] = result.replace_entities[r].new;
+                    }
+                    that.processReplacedEntities(replaced_entities, state, newState);
+                }                
+
+                return newState;
+            }, function() {
+                callback({error: null, new_root_entity_sys_id: new_root_entity_sys_id});
+            });
+        } else {
+            log(result);
+            callback({error: result});
+            console.error('Save FAILED:' + JSON.stringify(result));
+        }
+    },
+
+    createLibraryProjectFromEntity: function(entity_sys_id, relation_sys_id, entity_sys_ids_to_remove, name, description, callback) {
+        var that = this;
+
+        var current_from_sys_id = null;
+        if (relation_sys_id) {
+            var currentrels = this.state.relations.filter(function (rel) { return rel.sys_id === relation_sys_id; });
+            if (currentrels.length === 1) {
+                current_from_sys_id = currentrels[0].from;
+            }
+        }
+
+        //var input = this.getApiInputObj(); //-> sys id van project is niet nodig denk ik?
+        var input = {};
+        input.entity = {};
+        input.relation = {};
+        input.entity.sys_id = entity_sys_id;
+        input.relation.sys_id = relation_sys_id;
+        input.project = { name: name, description: description };
+    
+        sn_kpi_composer.ClientApi.createLibraryProjectFromEntity(
+            input,
+            function(result) {
+                that.processLibraryActionResultFromServer(result, current_from_sys_id, entity_sys_ids_to_remove, callback);
+            },
+            function(result) {
+                log(result);
+                callback({error: result});
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    copyLibraryEntitiesToProject: function(relation_sys_id, entity_sys_ids_to_remove, callback) {
+        var that = this;
+
+        var current_from_sys_id = null;
+        if (relation_sys_id) {
+            var currentrels = this.state.relations.filter(function (rel) { return rel.sys_id === relation_sys_id; });
+            if (currentrels.length === 1) {
+                current_from_sys_id = currentrels[0].from;
+            }
+        }
+
+        //var input = this.getApiInputObj(); //-> sys id van project is niet nodig denk ik?
+        var input = {};
+        input.relation = {};
+        input.relation.sys_id = relation_sys_id;
+    
+        sn_kpi_composer.ClientApi.copyLibraryEntitiesToProject(
+            input,
+            function(result) {
+                that.processLibraryActionResultFromServer(result, current_from_sys_id, entity_sys_ids_to_remove, callback);
+            },
+            function(result) {
+                log(result);
+                callback({error: result});
+                console.error('Save FAILED:' + JSON.stringify(result));
+            }
+        );
+    },
+
+    setLibraryProjectIsAdding: function(sys_id, isadding, callback) {
+        this.setState(function(state) {
+            var newstate = {};
+            var libraryelement = state.library_searchresults.filter(function(libel) {return libel.sys_id === sys_id;});
+            if (libraryelement.length) {
+                var new_library_searchresults = state.library_searchresults.slice();
+                libraryelement[0].isadding = isadding;
+                newstate.library_searchresults = new_library_searchresults;
+            }
+            return newstate;
+        }, callback);
+    },
+
+    addLibraryToProject: function(from_sys_id, library_element_sys_id, library_top_node_sys_id, callback) {
+        var that = this;
+
+        this.setLibraryProjectIsAdding(library_element_sys_id, true, function() {
+            var input = that.getApiInputObj();
+            input.source = {};
+            input.source.entity = {};
+            input.source.entity.sys_id = from_sys_id;
+            input.target = {};
+            input.target.entity = {};
+            input.target.entity.sys_id = library_top_node_sys_id;
+    
+            sn_kpi_composer.ClientApi.addLibraryToProject(
+                input,
+                function(result) {
+                    that.processLibraryActionResultFromServer(result, from_sys_id, [], callback);
+                    that.setLibraryProjectIsAdding(library_element_sys_id, false, null);
+                },
+                function(result) {
+                    log(result);
+                    callback({error: result});
+                    console.error('Save FAILED:' + JSON.stringify(result));
+                    that.setLibraryProjectIsAdding(library_element_sys_id, false, null);
+                }
+            );
+        });
+    },
+
+    render: function() {
+        var that = this;
+
+        var componentsToShow = null;
+        if (this.state.initialDataLoaded === false) {
+            componentsToShow = e(FullscreenLoading);
+        } else if (this.state.initialDataLoadError != null) {
+            //todo: show error
+        } else {
+            var navhub = null;
+            var navhubcontainerprops = {
+                activeAside: this.state.activeAside,
+                onCloseActiveAside: this.closeActiveAside,
+                readonly: this.state.readonly
+            };
+
+            if (allowedActiveAsides[this.state.wizardStep].indexOf('info') > -1) {
+                navhubcontainerprops.project_name = this.state.project_name;
+                navhubcontainerprops.project_description = this.state.project_description;
+                navhubcontainerprops.project_objective = this.state.project_objective;
+                navhubcontainerprops.project_library_public = this.state.project_library_public;
+                navhubcontainerprops.project_knowledgearticles = this.state.project_knowledgearticles;
+                navhubcontainerprops.project_owners = this.state.project_owners;
+                navhubcontainerprops.project_contacts = this.state.project_contacts;
+                navhubcontainerprops.onProjectPropertySave = this.projectPropertySave;
+                navhubcontainerprops.onProjectOwnerDelete = this.projectOwnerDelete;
+                navhubcontainerprops.onProjectOwnerAdd = this.projectOwnerAdd;
+                navhubcontainerprops.onProjectContactDelete = this.projectContactDelete;
+                navhubcontainerprops.onProjectContactAdd = this.projectContactAdd;
+                navhubcontainerprops.onProjectKnowledgeArticleDelete = this.projectKnowledgeArticleDelete;
+                navhubcontainerprops.onProjectKnowledgeArticleAdd = this.projectKnowledgeArticleAdd;
+                navhubcontainerprops.project_library = this.state.project_library;
+            }
+
+            if (allowedActiveAsides[this.state.wizardStep].indexOf('share') > -1) {
+                navhubcontainerprops.project_permissions = this.state.project_permissions;
+                navhubcontainerprops.onPermissionsAdd = this.permissionsAdd;
+                navhubcontainerprops.onPermissionDelete = this.permissionDelete;
+                navhubcontainerprops.onPermissionEdit = this.permissionEdit;
+                navhubcontainerprops.project_sys_id = this.state.project_sys_id;
+            }
+
+            if (allowedActiveAsides[this.state.wizardStep].indexOf('library') > -1) {
+                navhubcontainerprops.library_searchtext = this.state.library_searchtext;
+                navhubcontainerprops.library_searching = this.state.library_searching;
+                navhubcontainerprops.library_searchresults = this.state.library_searchresults;
+                navhubcontainerprops.onLibrarySearch = this.librarySearch;
+            }
+
+            if (allowedActiveAsides[this.state.wizardStep].indexOf('journal') > -1) {
+                navhubcontainerprops.project_comments = this.state.project_comments;
+                navhubcontainerprops.onProjectSaveComment = this.projectNewComment;
+            }
+
+            if (allowedActiveAsides[this.state.wizardStep].indexOf('personas') > -1) {
+                navhubcontainerprops.personas = this.state.personas;
+                navhubcontainerprops.onPersonaDelete = this.personaDelete;
+                navhubcontainerprops.onPersonaSave = this.personaSave;
+            }
+
+            if (allowedActiveAsides[this.state.wizardStep].indexOf('breakdowns') > -1) {
+                navhubcontainerprops.breakdowns = this.state.allbreakdowns;
+                navhubcontainerprops.onBreakdownSetShow = this.breakdownSetShow;
+                navhubcontainerprops.onBreakdownSave = this.breakdownSave;
+                navhubcontainerprops.onRefreshBreakdownDefinitions = this.refreshBreakdownDefinitions;
+            }
+
+            if (allowedActiveAsides[this.state.wizardStep].indexOf('addwidget') > -1) {
+                navhubcontainerprops.widgettypes = this.state.widgettypes;
+            }
+
+            //canvasentities is done in dashboarddesign
+
+            var content = null;
+            if (this.state.wizardStep === "analysis") {
+                navhub = e(
+                    AnalysisNavHub, {
+                        key: 'navhub',
+                        title: this.state.project_name,
+                        activeAside: this.state.activeAside,
+                        filter_text: this.state.analysis_filter_text,
+                        onActiveAsideChange: this.handleActiveAsideChange,
+                        filtering_is_on: this.state.selected_personas.length > 0 || this.state.selected_breakdowns.length > 0 || this.state.analysis_filter_text !== "",
+                        onClearFilter: this.onAnalysisClearFilter,
+                        onFilterTextChange: this.onAnalysisFilterTextChange,
+                        project_library: this.state.project_library,
+                        returnUrl: this.returnUrl //not in state
+                    }
+                );
+                content = e(
+                    AnalysisContent, {
+                        ref: 'AnalysisContent',
+                        entities: this.state.entities,
+                        relations: this.state.relations,
+                        personas: this.state.personas,
+                        breakdowns: this.state.breakdowns,
+                        entitytypes: this.state.entitytypes,
+                        rules: this.state.rules,
+                        defaultentityrelationtype: this.state.project_defaultentityrelationtype,
+                        selected_personas: this.state.selected_personas,
+                        selected_breakdowns: this.state.selected_breakdowns,
+                        filter_text: this.state.analysis_filter_text,
+                        onPersonaSelected: this.onPersonaSelected,
+                        onBreakdownSelected: this.onBreakdownSelected,
+                        onInsertBreakdownEntities: this.insertBreakdownEntities,
+                        onDeleteBreakdownEntities: this.deleteBreakdownEntities,
+                        onInsertPersonaEntities: this.insertPersonaEntities,
+                        onDeletePersonaEntities: this.deletePersonaEntities,
+                        onUpdateEntityName: this.updateEntityName,
+                        onSaveEntitiesCollapsed: this.saveEntitiesCollapsed,
+                        onUpdateEntityDescription: this.updateEntityDescription,
+                        onUpdateEntityTarget: this.updateEntityTarget,
+                        onUpdateEntityFromEntity: this.updateEntityFromEntity,
+                        onInsertEntityEntity: this.insertEntityEntity,
+                        onInsertEntity: this.insertEntity,
+                        onDeleteEntities: this.deleteEntities,
+                        onInsertEntityKnowledgeArticle: this.insertEntityKnowledgeArticle,
+                        onDeleteEntityKnowledgeArticle: this.deleteEntityKnowledgeArticle,
+                        onInsertEntityOwner: this.insertEntityOwner,
+                        onDeleteEntityOwner: this.deleteEntityOwner,
+                        onInsertEntityContact: this.insertEntityContact,
+                        onDeleteEntityContact: this.deleteEntityContact,
+                        onSaveOrderForEntities: this.saveOrderForEntities,
+                        onCreateLibraryProjectFromEntity: this.createLibraryProjectFromEntity,
+                        onCopyLibraryEntitiesToProject: this.copyLibraryEntitiesToProject,
+                        onAddLibraryToProject: this.addLibraryToProject,
+                        readonly: this.state.readonly,
+                        project_library: this.state.project_library,
+                        onRefresh: this.refreshAllData
+                    }
+                );
+            } else if (this.state.wizardStep === "dashboarddesign") {
+                navhub = e(
+                    DashboardDesignNavHub, {
+                        key: 'navhub',
+                        title: this.state.project_name,
+                        activeAside: this.state.activeAside,
+                        onActiveAsideChange: this.handleActiveAsideChange,
+                        project_library: this.state.project_library,
+                        returnUrl: this.returnUrl //not in state
+                    }
+                );
+
+                var selecteddashboardpersona = [];
+                var selecteddashboardusedentities = [];
+                if (this.state.selecteddashboardid != null) {
+                    var selecteddashboards = this.state.dashboards.filter(function(d) {
+                        return d.sys_id === that.state.selecteddashboardid;
+                    });
+                    if (selecteddashboards.length === 1) {
+                        selecteddashboardpersona = selecteddashboards[0].personas.map(function(pers) {
+                            return pers.sys_id;
+                        });
+                        var tabids = this.state["dashboardtabs_" + this.state.selecteddashboardid].map(function(t) {
+                            return t.sys_id;
+                        });
+                        var rowids = [];
+                        for (var t = 0; t < tabids.length; t++) {
+                            rowids = rowids.concat(this.state["dashboardtabrows_" + tabids[t]].map(function(r) {
+                                return r.sys_id;
+                            }));
+                        }
+                        for (var r = 0; r < rowids.length; r++) {
+                            var localentities = this.state["dashboardtabrowcanvasses_" + rowids[r]].map(function(c) {
+                                return c.entities;
+                            });
+                            for (var l = 0; l < localentities.length; l++) {
+                                selecteddashboardusedentities = selecteddashboardusedentities.concat(localentities[l]);
+                            }
+                        }
+                    }
+                }
+
+                var possibleentities = this.state.entities.filter(
+                    function(ent) {
+                        return (selecteddashboardpersona.length == 0 || ent.personas.filter(function(perssysid) {
+                            return selecteddashboardpersona.indexOf(perssysid) > -1;
+                        }).length > 0);
+                    }
+                );
+
+                //possibleentities needs to be distinct
+                possibleentities = possibleentities.map(function (ent){
+                    var toreturn = Object.assign({}, ent);
+                    toreturn.sys_id = toreturn.org_sys_id;
+                    return toreturn;
+                });
+
+                possibleentities = sn_kpi_composer.ClientHelper.uniqueArrayByProp(possibleentities, "sys_id");
+
+                possibleentities.sort(function(a, b) {
+                    return a.name.localeCompare(b.name);
+                });
+
+                var entitytypeswithpossibleentities = [];
+                for (var i = 0; i < this.state.entitytypes.length; i++) {
+                    var typesysid = this.state.entitytypes[i].sys_id;
+                    var possibleentitiesfortype = possibleentities.filter(function(ent) {
+                        return ent.entitytype === typesysid;
+                    });
+                    if (possibleentitiesfortype.length > 0) {
+                        entitytypeswithpossibleentities.push({
+                            sys_id: this.state.entitytypes[i].sys_id,
+                            name: this.state.entitytypes[i].name,
+                            entities: possibleentitiesfortype
+                        });
+                    }
+                }
+                //console.log(entitytypeswithpossibleentities);
+
+                navhubcontainerprops.entitytypes = entitytypeswithpossibleentities;
+                //navhubcontainerprops.selecteddashboardpersona = selecteddashboardpersona;
+                navhubcontainerprops.selecteddashboardusedentities = selecteddashboardusedentities;
+
+
+                var designcontentprops = {
+                    ref: 'DashboardDesignContent',
+                    personas: this.state.personas,
+                    breakdowns: this.state.breakdowns,
+                    dashboards: this.state.dashboards,
+                    pa_dashboards: this.state.pa_dashboards,
+                    timeseries: this.state.timeseries,
+                    selecteddashboardid: this.state.selecteddashboardid,
+                    widgettypes: this.state.widgettypes,
+                    entities: possibleentities,
+                    spotlight_installed: this.state.spotlight_installed,
+                    onDashboardSelect: this.dahboardSelect,
+                    onDashboardDelete: this.dashboardDelete,
+                    onDashboardMoveTo: this.dashboardMoveTo,
+                    onDashboardSaveName: this.dashboardSaveName,
+                    onDashboardSaveDescription: this.dashboardSaveDescription,
+                    onDashboardBreakdownDelete: this.dashboardBreakdownDelete,
+                    onDashboardBreakdownInsert: this.dashboardBreakdownInsert,
+                    onDashboardPersonaDelete: this.dashboardPersonaDelete,
+                    onDashboardPersonaInsert: this.dashboardPersonaInsert,
+                    onDashboardPaDashboardSave: this.dashboardPaDashboardSave,
+                    onDashboardTabDelete: this.dashboardTabDelete,
+                    onDashboardTabAddAsTemplate: this.dashboardTabAddAsTemplate,
+                    onDashboardTabMoveTo: this.dashboardTabMoveTo,
+                    onDashboardTabSaveName: this.dashboardTabSaveName,
+                    onDashboardTabAdd: this.dashboardTabAdd,
+                    onDashboardTabRowAdd: this.dashboardTabRowAdd,
+                    onDashboardTabRowEdit: this.dashboardTabRowEdit,
+                    onDashboardTabRowDelete: this.dashboardTabRowDelete,
+                    onDashboardTabRowMoveTo: this.dashboardTabRowMoveTo,
+                    onDashboardTabRowCanvasSaveTitle: this.dashboardTabRowCanvasSaveTitle,
+                    onDashboardTabRowCanvasEdit: this.dashboardTabRowCanvasEdit,
+                    onDashboardTabRowCanvasEntityDelete: this.dashboardTabRowCanvasEntityDelete,
+                    onDashboardTabRowCanvasEntityInsert: this.dashboardTabRowCanvasEntityInsert,
+                    onDashboardTabRowCanvasSaveWidgetVisualisation: this.dashboardTabRowCanvasSaveWidgetVisualisation,
+                    onDashboardTabRowCanvasMoveTo: this.dashboardTabRowCanvasMoveTo,
+                    readonly: this.state.readonly,
+                    getPossibleDashboardTabTemplates: this.getPossibleDashboardTabTemplates
+                };
+                for (var i = 0; i < this.state.dashboards.length; i++) {
+                    var tabs = this.state["dashboardtabs_" + this.state.dashboards[i].sys_id];
+                    designcontentprops["dashboardtabs_" + this.state.dashboards[i].sys_id] = tabs;
+                    for (var t = 0; t < tabs.length; t++) {
+                        var rows = this.state["dashboardtabrows_" + tabs[t].sys_id];
+                        designcontentprops["dashboardtabrows_" + tabs[t].sys_id] = rows;
+                        for (var r = 0; r < rows.length; r++) {
+                            var canvasses = this.state["dashboardtabrowcanvasses_" + rows[r].sys_id];
+                            designcontentprops["dashboardtabrowcanvasses_" + rows[r].sys_id] = canvasses;
+                        }
+                    }
+                }
+                content = e(
+                    DashboardDesignContent,
+                    designcontentprops
+                );
+            } else if (this.state.wizardStep === "indicatordesign") {
+                navhub = e(
+                    IndicatorDesignNavHub, {
+                        key: 'navhub',
+                        title: this.state.project_name,
+                        activeAside: this.state.activeAside,
+                        onActiveAsideChange: this.handleActiveAsideChange,
+                        filter_text: this.state.indicatordesign_filter_text,
+                        filtering_is_on: this.state.indicatordesign_filter_status || this.state.indicatordesign_filter_text,
+                        onClearFilter: this.onIndicatorDesignClearFilter,
+                        onFilterTextChange: this.onIndicatorDesignFilterTextChange,
+                        onFilterStatusChange: this.onIndicatorDesignFilterStatusChange,
+                        filter_status: this.state.indicatordesign_filter_status,
+                        project_library: this.state.project_library,
+                        returnUrl: this.returnUrl //not in state
+                    }
+                );
+                //combine all canvasses, so we can know which entities are used in a report canvas
+                var allcanvasses = [];
+                for (var cIndex=0;cIndex<this.state.dashboards.length;cIndex++) {
+                    var dashboard = this.state.dashboards[cIndex];
+                    var dashboardtabs = this.state["dashboardtabs_" + dashboard.sys_id];
+                    for (var tIndex=0;tIndex<dashboardtabs.length;tIndex++) {
+                        var dashboardtab = dashboardtabs[tIndex];
+                        var tabrows = this.state["dashboardtabrows_" + dashboardtab.sys_id];
+                        for (var rIndex=0;rIndex<tabrows.length;rIndex++) {
+                            var tabrow = tabrows[rIndex];
+                            allcanvasses = allcanvasses.concat(this.state["dashboardtabrowcanvasses_" + tabrow.sys_id]);    
+                        }
+                    }
+                }
+                content = e(
+                    IndicatorDesignContent, {
+                        ref: 'IndicatorDesignContent',
+                        entities: this.state.entities,
+                        relations: this.state.relations,
+                        personas: this.state.personas,
+                        breakdowns: this.state.breakdowns,
+                        entitytypes: this.state.entitytypes,
+                        indicatordefinitions: this.state.indicatordefinitions,
+                        indicatordefinition_indicatordefinition: this.state.indicatordefinition_indicatordefinition,
+                        report_definitions: this.state.report_definitions,
+                        dashboardtabrowcanvasses: allcanvasses,
+                        onSaveEntitiesCollapsedDataDefinition: this.saveEntitiesCollapsedDataDefinition,
+                        insertEntityIndicatorDefinition: this.insertEntityIndicatorDefinition,
+                        refreshEntityDefinitionData: this.refreshEntityDefinitionData,
+                        deleteEntityIndicatorDefinition: this.deleteEntityIndicatorDefinition,
+                        insertEntityReportDefinition: this.insertEntityReportDefinition,
+                        deleteEntityReportDefinition: this.deleteEntityReportDefinition,
+                        filter_text: this.state.indicatordesign_filter_text,
+                        filter_status: this.state.indicatordesign_filter_status,
+                        readonly: this.state.readonly,
+                        onRefresh: this.refreshAllData,
+                        project_library: this.state.project_library
+                    }
+                );
+            } else if (this.state.wizardStep === "review") {
+                navhub = e(
+                    ReviewNavHub, {
+                        key: 'navhub',
+                        title: this.state.project_name,
+                        activeAside: this.state.activeAside,
+                        onActiveAsideChange: this.handleActiveAsideChange,
+                        project_library: this.state.project_library,
+                        returnUrl: this.returnUrl //not in state
+                    }
+                );
+                content = e(
+                    ReviewContent, {
+                        project_name: this.state.project_name,
+                        project_sys_id: this.state.project_sys_id,
+                        entities: this.state.entities,
+                        relations: this.state.relations,
+                        personas: this.state.personas,
+                        breakdowns: this.state.allbreakdowns,
+                        entitytypes: this.state.entitytypes,
+                        indicatordefinitions: this.state.indicatordefinitions,
+                        report_definitions: this.state.report_definitions,
+                        validations: this.state.validations,
+                        tasks: this.state.tasks,
+                        taskdefs: this.state.taskdefs,
+                        projectCreateValidations: this.projectCreateValidations,
+                        projectCreateTasks: this.projectCreateTasks,
+                        onAssignToGroupEdit: this.projectTaskDefAssignToGroupEdit,
+                        readonly: this.state.readonly
+                    }
+                );
+            }
+
+            componentsToShow = [
+                e(
+                    WizardTopButtons, {
+                        key: 'wizardtopbuttons',
+                        selectedId: this.state.wizardStep,
+                        onWizardStepChange: this.onWizardStepChange,
+                        project_library: this.state.project_library
+                    }
+                ),
+                navhub,
+                e(
+                    'div', {
+                        key: 'content',
+                        className: 'sn-wb-pa-content-container'
+                    },
+                    e(
+                        'div', {
+                            className: 'sn-wb-pa-content'
+                        },
+                        content
+                    ),
+                    e(
+                        NavHubContainer,
+                        navhubcontainerprops
+                    )
+                )
+            ];
+        }
+
+        return e(
+            'div', {
+                className: "sn-wb-pa",
+                onDragStart: this.onDragStart,
+                onDragEnd: this.onDragEnd
+            },
+            componentsToShow
+        );
+    }
+});
+
+var domContainer = document.querySelector('#react-app');
+ReactDOM.render(e(MainApp), domContainer);]]></script>
+        <script_name>MainApp</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-23 16:20:46</sys_created_on>
+        <sys_id>bc9820bb1b87a70019e8ed7b2f4bcb6f</sys_id>
+        <sys_mod_count>788</sys_mod_count>
+        <sys_name>sn_kpi_composer.MainApp</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_bc9820bb1b87a70019e8ed7b2f4bcb6f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-24 10:32:14</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.OverviewAddProject</name>
+        <script><![CDATA[var OverviewAddProject = createReactClass({
+	getInitialState: function() {
+		return {
+			name: "",
+			disabled: false
+		};
+	},
+	
+	handleNameTextChange: function(event) {
+		this.setState({ name: event.target.value });
+	},
+	
+	handleNameTextSubmit: function(event) {
+		event.preventDefault();
+		if (this.state.name.length > 0) {
+			this.save();	
+		}
+	},
+	
+	cancel: function() {
+		this.setState({ disabled: true });
+		this.props.onCancel();
+	},
+	
+	save: function() {
+		this.setState({ disabled: true });
+		this.props.onSave(this.state.name);
+	},
+	
+	onOpened: function() {
+		if (this.refs.inputfield) {
+			this.refs.inputfield.focus();
+		}
+	},
+	
+	render: function() {
+		var closeButton = e(
+			'button',
+			{type: 'button', title: getMessage('Close'), className: 'btn btn-icon close icon-cross sn-tooltip-basic', disabled: this.state.disabled, onClick: this.cancel },
+			e(
+				'span',
+				{ className: 'sr-only' },
+				getMessage('Close')
+			)
+		);
+		
+		
+		var loadingOverlay = null;
+		if (this.state.disabled === true) {
+			loadingOverlay = e(
+				'div',
+				{className: 'modal-overlay'},
+				e(
+					'div',
+					{ className: 'icon-loading' }
+				)
+			);
+		}
+		
+		return e(
+			Reactstrap.Modal, 
+			{'isOpen': true, onOpened: this.onOpened, toggle: this.cancel },
+			e(
+				Reactstrap.ModalHeader,
+				{'toggle': this.cancel, close: closeButton},
+				getMessage("Create new project")
+			),
+			e(
+				Reactstrap.ModalBody,
+				{},
+				e(
+					'form',
+					{ onSubmit: this.handleNameTextSubmit },
+					e(
+						'input',
+						{ className: "form-control", type: "text", ref: "inputfield", placeholder: getMessage("Name"), value: this.state.name, onChange: this.handleNameTextChange }
+					)
+				)
+			),
+			e(
+				Reactstrap.ModalFooter,
+				{},
+				e(
+					'button',
+					{ type: 'button',  className: 'btn btn-primary', disabled: this.state.disabled || this.state.name.length === 0, onClick: this.save },
+					getMessage('Save')
+				),
+				e(
+					'button',
+					{ type: 'button', className: 'btn sn-btn-outline-secondary', disabled: this.state.disabled, onClick: this.cancel },
+					getMessage('Cancel')
+				)
+			),
+			loadingOverlay
+		);
+	}
+});]]></script>
+        <script_name>OverviewAddProject</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-05-20 13:20:05</sys_created_on>
+        <sys_id>2691269d1b21f70019e8ed7b2f4bcb67</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>sn_kpi_composer.OverviewAddProject</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_2691269d1b21f70019e8ed7b2f4bcb67</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-11-04 15:32:15</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

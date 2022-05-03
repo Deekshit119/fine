@@ -1,0 +1,1038 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardCanvasModal</name>
+        <script><![CDATA[var DashboardCanvasModal = createReactClass({	
+	getInitialState: function() {
+		var that = this;
+		return {
+			title: this.props.canvas != null ? this.props.canvas.title : "",
+			follow_element: this.props.canvas != null ? this.props.canvas.follow_element ? "yes" : "no" : "yes",
+			follow_interactive_filter: this.props.canvas != null ? this.props.canvas.follow_interactive_filter ? "yes" : "no" : "yes",
+			entities: this.props.canvas != null ? this.props.canvas.entities.map(function (entsysid) {
+				var toreturn = that.props.entities.filter(function (ent) { return ent.sys_id === entsysid; });
+				if (toreturn.length > 0) {
+					return toreturn[0];
+				} else {
+					return null;
+				}
+			 }).filter(function (ent) { return ent != null; }) : [],
+			widgettypesys_id: this.props.canvas != null && this.props.canvas.widgetvisualisation != null ? this.props.canvas.widgetvisualisation.widgettype_sys_id : WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID,
+			widgetvisualisationsys_id: this.props.canvas != null && this.props.canvas.widgetvisualisation != null ? this.props.canvas.widgetvisualisation.sys_id : "",
+			description: this.props.canvas != null ? this.props.canvas.description : "",
+			time_serie: this.props.canvas != null ? this.props.canvas.time_serie : "",
+			pa_widgets: this.props.canvas != null && this.props.canvas.pa_widget != null ? [this.props.canvas.pa_widget] : [],
+			reports: this.props.canvas != null && this.props.canvas.report != null ? [this.props.canvas.report] : [],
+			interactive_filters: this.props.canvas != null && this.props.canvas.interactive_filter != null ? [this.props.canvas.interactive_filter] : [],
+			spotlight_groups: this.props.canvas != null && this.props.canvas.spotlight_group != null ? [this.props.canvas.spotlight_group] : [],
+			content_blocks: this.props.canvas != null && this.props.canvas.content_block != null ? [this.props.canvas.content_block] : [],
+			disabled: false,
+			pa_widgetsloading: false,
+			pa_widget_results: [],
+			reports_loading: false,
+			report_results: [],
+			interactive_filters_loading: false,
+			interactive_filter_results: [],
+			spotlight_groups_loading: false,
+			spotlight_group_results: [],
+			content_blocks_loading: false,
+			content_block_results: []
+		};
+	},
+
+	handleInputChange: function(event) {
+		var newstate = {};
+		newstate[event.target.name] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+
+		if (event.target.name === "widgettypesys_id") {
+			var widgettypesys_id = newstate[event.target.name];
+			if (widgettypesys_id === WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID || widgettypesys_id === WIDGETTYPE_INTERACTIVEFILTERS_SYS_ID || widgettypesys_id === WIDGETTYPE_REPORTS_SYS_ID) {
+				newstate["widgetvisualisationsys_id"] = "";
+			} else {
+				var that = this;
+				var widgettype = this.props.widgettypes.filter(function (widgettype) { return widgettype.sys_id === widgettypesys_id; })[0];
+				if (widgettype && widgettype.visualisationtypes.length > 0 && widgettype.visualisationtypes[0].widgetvisualisations.length > 0) {
+					newstate["widgetvisualisationsys_id"] = widgettype.visualisationtypes[0].widgetvisualisations[0].sys_id;
+				} else {
+					alert("visualisation not found");
+					newstate["widgetvisualisationsys_id"] = "";
+				}
+			}
+		}
+
+		this.setState(newstate);
+	},
+
+	entitiesOnChange: function (selected) {
+		this.setState({ entities: selected });
+	},
+
+	onOpened: function() {
+		if (this.refs.titleinput) {
+			this.refs.titleinput.focus();
+			this.refs.titleinput.select();
+		}
+	},
+
+	returnTrue: function() {
+		return true;
+	},
+
+	paWidgetOnSearch: function(query) {
+		var that = this;
+		that.setState({ pa_widgetsloading: true });
+
+		var searcher = {};
+		searcher.filter = query;
+		searcher.maxresult = 0;
+
+		sn_kpi_composer.ClientApi.selectPaWidgets(
+			searcher,
+			function (result) {
+				if (result.success) {
+					for (var i = 0; i < result.pa_widgets.length; i++) {
+						if (result.pa_widgets[i].name == null) {
+							result.pa_widgets[i].name = "(no name specified)";
+						}
+					}
+					that.setState({ pa_widget_results: result.pa_widgets, pa_widgetsloading: false });
+				} else {
+					that.setState({ pa_widgetsloading: false });
+				}
+			},
+			function (error) {
+				that.setState({ pa_widgetsloading: false });
+			}
+		);
+	},
+
+	paWidgetOnChange: function (selected) {
+		this.setState({ pa_widgets: selected });
+	},
+
+	reportOnSearch: function(query) {
+		var that = this;
+		that.setState({ reportsloading: true });
+
+		var searcher = {};
+		searcher.filter = query;
+		searcher.maxresult = 0;
+
+		sn_kpi_composer.ClientApi.selectReports(
+			searcher,
+			function (result) {
+				//console.log(result);
+				if (result.success) {
+					for (var i = 0; i < result.reports.length; i++) {
+						if (result.reports[i].name == null) {
+							result.reports[i].name = "(no name specified)";
+						}
+					}
+					that.setState({ report_results: result.reports, reportsloading: false });
+				} else {
+					that.setState({ reportsloading: false });
+				}
+			},
+			function (error) {
+				that.setState({ reportsloading: false });
+			}
+		);
+	},
+
+	reportOnChange: function (selected) {
+		this.setState({ reports: selected });
+	},
+
+	interactiveFilterOnSearch: function(query) {
+		var that = this;
+		that.setState({ interactive_filtersloading: true });
+
+		var searcher = {};
+		searcher.filter = query;
+		searcher.maxresult = 0;
+
+		sn_kpi_composer.ClientApi.selectInteractiveFilters(
+			searcher,
+			function (result) {
+				//console.log(result);
+				if (result.success) {
+					for (var i = 0; i < result.interactive_filters.length; i++) {
+						if (result.interactive_filters[i].name == null) {
+							result.interactive_filters[i].name = "(no name specified)";
+						}
+					}
+					that.setState({ interactive_filter_results: result.interactive_filters, interactive_filtersloading: false });
+				} else {
+					that.setState({ interactive_filtersloading: false });
+				}
+			},
+			function (error) {
+				that.setState({ interactive_filtersloading: false });
+			}
+		);
+	},
+
+	interactiveFilterOnChange: function (selected) {
+		this.setState({ interactive_filters: selected });
+	},
+
+	spotlightGroupOnSearch: function(query) {
+		var that = this;
+		that.setState({ spotlight_groupsloading: true });
+
+		var searcher = {};
+		searcher.filter = query;
+		searcher.maxresult = 0;
+
+		sn_kpi_composer.ClientApi.selectSpotlightGroups(
+			searcher,
+			function (result) {
+				//console.log(result);
+				if (result.success) {
+					for (var i = 0; i < result.spotlight_groups.length; i++) {
+						if (result.spotlight_groups[i].name == null) {
+							result.spotlight_groups[i].name = "(no name specified)";
+						}
+					}
+					that.setState({ spotlight_group_results: result.spotlight_groups, spotlight_groupsloading: false });
+				} else {
+					that.setState({ spotlight_groupsloading: false });
+				}
+			},
+			function (error) {
+				that.setState({ spotlight_groupsloading: false });
+			}
+		);
+	},
+
+	spotlightGroupOnChange: function (selected) {
+		this.setState({ spotlight_groups: selected });
+	},
+
+	contentBlockOnSearch: function(query) {
+		var that = this;
+		that.setState({ content_blocksloading: true });
+
+		var searcher = {};
+		searcher.filter = query;
+		searcher.maxresult = 0;
+
+		sn_kpi_composer.ClientApi.selectContentBlocks(
+			searcher,
+			function (result) {
+				//console.log(result);
+				if (result.success) {
+					for (var i = 0; i < result.content_blocks.length; i++) {
+						if (result.content_blocks[i].name == null) {
+							result.content_blocks[i].name = "(no name specified)";
+						}
+					}
+					that.setState({ content_block_results: result.content_blocks, content_blocksloading: false });
+				} else {
+					that.setState({ content_blocksloading: false });
+				}
+			},
+			function (error) {
+				that.setState({ content_blocksloading: false });
+			}
+		);
+	},
+
+	contentBlockOnChange: function (selected) {
+		this.setState({ content_blocks: selected });
+	},
+
+	cancel: function() {
+		this.setState({ disabled: true });
+		this.props.onCancel();
+	},
+
+	save: function() {
+		this.setState({ disabled: true });
+		this.props.onSave(
+			{
+				title: this.state.title,
+				follow_element: this.state.follow_element === "yes",
+				follow_interactive_filter: this.state.follow_interactive_filter === "yes",
+				entities: this.state.entities.map(function (ent) { return ent.sys_id }),
+				widgetvisualisationsys_id: this.state.widgetvisualisationsys_id,
+				pa_widget: this.state.pa_widgets.length > 0 ? this.state.pa_widgets[0] : null,
+				report: this.state.reports.length > 0 ? this.state.reports[0] : null,
+				interactive_filter: this.state.interactive_filters.length > 0 ? this.state.interactive_filters[0] : null,
+				spotlight_group: this.state.spotlight_groups.length > 0 ? this.state.spotlight_groups[0] : null,
+				content_block: this.state.content_blocks.length > 0 ? this.state.content_blocks[0] : null,
+				description: this.state.description,
+				time_serie: this.state.time_serie
+			}
+		);
+	},
+
+	handleSubmit: function(event) {
+		event.preventDefault();
+		this.save();
+	},
+
+	render: function() {
+		var that = this;
+
+		var closeButton = e(
+			'button',
+			{type: 'button', title: getMessage('Close'), className: 'btn btn-icon close icon-cross  sn-tooltip-basic', disabled: this.state.disabled, onClick: this.cancel },
+			e(
+				'span',
+				{ className: 'sr-only' },
+				getMessage('Close')
+			)
+		);
+
+
+		var loadingOverlay = null;
+		if (this.state.disabled === true) {
+			loadingOverlay = e(
+				'div',
+				{className: 'modal-overlay'},
+				e(
+					'div',
+					{ className: 'icon-loading' }
+				)
+			);
+		}
+
+		var widgettypes = this.props.widgettypes.filter(function (widgettype) { return widgettype.sys_id === that.state.widgettypesys_id; });
+		var widgettypeinputcontrol;
+		if (this.props.onSave) {
+			widgettypeinputcontrol = e(
+				'select',
+				{ id: 'canvas-details-widgettype-input', className: 'form-control', disabled: this.state.disabled, value: this.state.widgettypesys_id, onChange: this.handleInputChange, name: 'widgettypesys_id' },
+				this.props.widgettypes.filter(function (widgettype) { return widgettype.inactive === "0"; }).map(function (widgettype) {
+					return e(
+						'option',
+						{ key: widgettype.sys_id, value: widgettype.sys_id },
+						widgettype.label
+					);
+				})
+			);
+		} else {
+			var widgettypelabel = null;
+			if (widgettypes.length > 0) {
+				widgettypelabel = widgettypes[0].label;
+			}
+			if (!widgettypelabel) widgettypelabel = "(none)";
+			widgettypeinputcontrol = e(
+				'p',
+				{ className: 'form-control-static' },
+				widgettypelabel
+			);
+		}
+		if (widgettypes.length === 0 && this.props.widgettypes.length > 0)  {
+			widgettypes = this.props.widgettypes;
+		}
+		if (widgettypes.length === 0) {
+			console.log("Widget types not found!");
+			return e('div', {className: 'alert alert-danger'}, getMessage('Widget types not found'));
+		}
+		var widgettype = widgettypes[0];
+
+		var widgetvisualisationoptions = widgettype.visualisationtypes.filter(function (vt) { return vt.widgetvisualisations.length > 0; }).map(function (vt) {
+			return e(
+				'optgroup',
+				{ key: vt.sys_id, label: vt.label },
+				vt.widgetvisualisations.map(function (v) {
+					return e(
+						'option',
+						{ key: v.sys_id, value: v.sys_id },
+						v.name
+					);
+				})
+			);
+		});
+
+		widgetvisualisationoptions.unshift(
+			e(
+				'option',
+				{ key: "none", value: "" },
+				getMessage("(no widget specified)")
+			)
+		);
+
+		var widgetvisualisationinput = null;
+		if (widgettype.sys_id === WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID || widgettype.sys_id === WIDGETTYPE_INTERACTIVEFILTERS_SYS_ID || widgettype.sys_id === WIDGETTYPE_REPORTS_SYS_ID) {
+			var label = "";
+			if (widgettype.sys_id === WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID) {
+				label = getMessage("Visualisation type");
+			} else if (widgettype.sys_id === WIDGETTYPE_INTERACTIVEFILTERS_SYS_ID) {
+				label = getMessage("UI control type");
+			} else if (widgettype.sys_id === WIDGETTYPE_REPORTS_SYS_ID) {
+				label = getMessage("Visualisation type");
+			}
+
+			var widgetvisualisationinputcontrol;
+			if (this.props.onSave) {
+				widgetvisualisationinputcontrol = e(
+					'select',
+					{ id: 'canvas-details-widget-input', className: 'form-control', disabled: this.state.disabled, value: this.state.widgetvisualisationsys_id, onChange: this.handleInputChange, name: 'widgetvisualisationsys_id' },
+					widgetvisualisationoptions
+				);
+			} else {
+				var widgetvisualisationname = null;
+				if (this.state.widgetvisualisationsys_id) {
+					for (var vt = 0; vt < widgettype.visualisationtypes.length; vt++) {
+						var visualisationtype = widgettype.visualisationtypes[vt];
+						for (var wv = 0; wv < visualisationtype.widgetvisualisations.length; wv++) {
+							var widgetvisualisation = visualisationtype.widgetvisualisations[wv];
+							if (widgetvisualisation.sys_id === this.state.widgetvisualisationsys_id) {
+								widgetvisualisationname = widgetvisualisation.name;
+								wv = visualisationtype.widgetvisualisations.length;
+							}
+						}
+						if (widgetvisualisationname) vt = widgettype.visualisationtypes.length;
+					}
+				}
+				if (!widgetvisualisationname) widgetvisualisationname = "(none)";
+
+				widgettype.visualisationtypes.filter(function (vt) { return vt.widgetvisualisations.length > 0; }).map(function (vt) {  })
+				widgetvisualisationinputcontrol = e(
+					'p',
+					{ className: "form-control-static" },
+					widgetvisualisationname
+				);
+			}
+
+			widgetvisualisationinput = e(
+				'div',
+				{ className: ('form-group' + (this.state.widgetvisualisationsys_id ? '' : ' is-required')) },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-widget-input' },
+					label,
+					e(
+						'span',
+						{ className: "required-marker"}
+					)
+				),
+				e(
+					'div',
+					{ },
+					widgetvisualisationinputcontrol
+				)
+			);
+		}
+
+		var titleinputcontrol;
+		if (this.props.onSave) {
+			titleinputcontrol = e(
+				'input',
+				{ id: 'canvas-details-title-input', className: 'form-control', ref: 'titleinput', disabled: this.state.disabled, value: this.state.title, onChange: this.handleInputChange, name: 'title', maxLength: 80 }
+			);
+		} else {
+			titleinputcontrol = e(
+				'p',
+				{ className: 'form-control-static' },
+				this.state.title
+			);
+		}
+		var titleinput = e(
+			'div',
+			{ className: ('form-group' + (this.state.title ? '' : ' is-required')) },
+			e(
+				'label',
+				{ className: 'control-label bold', htmlFor: 'canvas-details-title-input' },
+				getMessage('Title'),
+				e(
+					'span',
+					{ className: "required-marker"}
+				)
+			),
+			e(
+				'div',
+				{ },
+				titleinputcontrol
+			)
+		);
+
+		var descriptioninputcontrol = null;
+		if (this.props.onSave) {
+			descriptioninputcontrol = e(
+				'textarea',
+				{ id: 'canvas-details-description-input', className: 'form-control', rows: 3, disabled: this.state.disabled, value: this.state.description, onChange: this.handleInputChange, name: 'description', maxLength: 4000 }
+			);
+		} else if (this.state.description) {
+			descriptioninputcontrol = e(
+				'p',
+				{ className: 'form-control-static newlines' },
+				this.state.description
+			);
+		}
+		var descriptioninput = null;
+		if (descriptioninputcontrol) {
+			descriptioninput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-description-input' },
+					getMessage('Description')
+				),
+				e(
+					'div',
+					{ },
+					descriptioninputcontrol
+				)
+			);
+		}
+
+		var followelementinputcontrol;
+		if (this.props.onSave) {
+			followelementinputcontrol = e(
+				'div',
+				{ },
+				e(
+					'label',
+					{ className: "radio-inline" },
+					e(
+						'input',
+						{ type: 'radio', disabled: this.state.disabled, value: "yes", onChange: this.handleInputChange, checked: this.state.follow_element === "yes", name: 'follow_element' }
+					),
+					getMessage(" Yes")
+				),
+				e(
+					'label',
+					{ className: "radio-inline" },
+					e(
+						'input',
+						{ type: 'radio', disabled: this.state.disabled, value: "no", onChange: this.handleInputChange, checked: this.state.follow_element === "no", name: 'follow_element' }
+					),
+					getMessage(" No")
+				)
+			);
+		} else {
+			followelementinputcontrol = e(
+				'div',
+				{ },
+				e(
+					'p',
+					{ className: "form-control-static" },
+					this.state.follow_element === "yes" ? getMessage("Yes") : getMessage("No")
+				)
+			);
+		}
+
+		var followelementinput = null;
+		if (widgettype.sys_id === WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID) {
+			followelementinput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold' },
+					getMessage('Follow element')
+				),
+				followelementinputcontrol
+			);
+		}
+
+		var followinteractivefilterinput = null;
+		if (widgettype.sys_id === WIDGETTYPE_REPORTS_SYS_ID) {
+			var followinteractivefilterinputcontrol;
+			if (this.props.onSave) {
+				followinteractivefilterinputcontrol = e(
+					'div',
+					{ },
+					e(
+						'label',
+						{ className: "radio-inline" },
+						e(
+							'input',
+							{ type: 'radio', disabled: this.state.disabled, value: "yes", onChange: this.handleInputChange, checked: this.state.follow_interactive_filter === "yes", name: 'follow_interactive_filter' }
+						),
+						getMessage("Yes")
+					),
+					e(
+						'label',
+						{ className: "radio-inline" },
+						e(
+							'input',
+							{ type: 'radio', disabled: this.state.disabled, value: "no", onChange: this.handleInputChange, checked: this.state.follow_interactive_filter === "no", name: 'follow_interactive_filter' }
+						),
+						getMessage("No")
+					)
+				);
+			} else {
+				followinteractivefilterinputcontrol = e(
+					'div',
+					{ },
+					e(
+						'p',
+						{ className: "form-control-static" },
+						this.state.follow_interactive_filter === "yes" ? getMessage("Yes") : getMessage("No")
+					)
+				);
+			}
+			followinteractivefilterinput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold' },
+					getMessage('Follow interactive filter')
+				),
+				followinteractivefilterinputcontrol
+			);
+		}
+
+		var timeseriesinput = null;
+		if (widgettype.sys_id === WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID) {
+			var timeseriesinputcontrol;
+			if (this.props.onSave) {
+				var timeserieoptions = this.props.timeseries.map(function (ts) {
+					return e(
+						'option',
+						{ key: ts.sys_id, value: ts.sys_id },
+						ts.label
+					);
+				});
+
+				timeserieoptions.unshift(
+					e(
+						'option',
+						{ key: "none", value: "" },
+						getMessage("Please select")
+					)
+				);
+
+				timeseriesinputcontrol = e(
+					'select',
+					{ id: 'canvas-details-timeseries-input', className: 'form-control', disabled: this.state.disabled, value: this.state.time_serie, onChange: this.handleInputChange, name: 'time_serie' },
+					timeserieoptions
+				);
+			} else {
+				var timeserielabel = null;
+				if (this.state.time_serie) {
+					var thetimeseries = this.props.timeseries.filter(function (ts) { return ts.sys_id === that.state.time_serie; });
+					if (thetimeseries.length > 0) {
+						timeserielabel = thetimeseries[0].label;
+					}
+				}
+
+				if (!timeserielabel) timeserielabel = "(none)";
+
+				timeseriesinputcontrol = e(
+					'p',
+					{ className: 'form-control-static' },
+					timeserielabel
+				);
+			}
+
+
+			timeseriesinput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-timeseries-input' },
+					getMessage('Time series')
+				),
+				e(
+					'div',
+					{ },
+					timeseriesinputcontrol
+				)
+			);
+		}
+
+		var measurementsinput = null;
+		if (widgettype.sys_id === WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID || widgettype.sys_id === WIDGETTYPE_REPORTS_SYS_ID || widgettype.sys_id === WIDGETTYPE_SPOTLIGHTS_SYS_ID) {
+			var measurementsinputcontrol;
+			if (this.props.onSave) {
+				measurementsinputcontrol = e(
+					ReactBootstrapTypeahead.Typeahead,
+					{
+						inputProps: { id: 'canvas-details-measur-input' },
+						labelKey: 'name',
+						multiple: true,
+						options: this.props.entities,
+						selected: this.state.entities,
+						onChange: this.entitiesOnChange,
+						disabled: this.state.disabled,
+						placeholder: getMessage("Choose the artifacts"),
+						bodyContainer: true
+					}
+				);
+			} else {
+				var entitiesjoined = this.state.entities.map(function (ent) { return ent.name; }).join(", ");
+				if (!entitiesjoined) entitiesjoined = "(none)";
+
+				measurementsinputcontrol = e(
+					'p',
+					{ className: 'form-control-static' },
+					entitiesjoined
+				);
+			}
+			measurementsinput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-measur-input' },
+					getMessage('Artifacts')
+				),
+				e(
+					'div',
+					{ },
+					measurementsinputcontrol
+				)
+			);
+		}
+
+		var extraannotation = null;
+		if (widgettype.sys_id === WIDGETTYPE_INTERACTIVEFILTERS_SYS_ID) {
+			extraannotation = e(
+				'div',
+				{ className: 'annotation', 'data-annotation-type': 'Info Box Red' },
+				e(
+					'div',
+					{className: 'annotation-wrapper', style: {padding: 10}},
+					getMessage("Please note that interactive filters will only have effect on report widgets used on your dashboard")
+				)
+			);
+		}
+
+		var snwidgetselectorinput = null;
+		if (widgettype.sys_id === WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID) {
+			var snwidgetselectorinputcontrol;
+			if (this.props.onSave) {
+				snwidgetselectorinputcontrol = e(
+					ReactBootstrapTypeahead.AsyncTypeahead,
+					{
+						inputProps: { id: 'canvas-details-pa_widget-input' },
+						isLoading: this.state.pa_widgetsloading,
+						minLength: 0,
+						labelKey: 'name',
+						clearButton: true,
+						filterBy: this.returnTrue,
+						onSearch: this.paWidgetOnSearch,
+						onChange: this.paWidgetOnChange,
+						options: this.state.pa_widget_results,
+						disabled: this.state.disabled,
+						selected: this.state.pa_widgets,
+						placeholder: getMessage("Select existing PA widget"),
+						selectHintOnEnter: true,
+						//bodyContainer: true, //bij rtl komt dit niet goed, daarom positionFixed gebruiken
+						positionFixed: true,
+						useCache: false, //werkt niet goed,
+						promptText: getMessage('Type to search...'),
+						emptyLabel: getMessage('No matches found.'),
+						autoComplete: 'off'
+					}
+				);
+			} else {
+				var labeltoshow = this.state.pa_widgets.map(function (a) { return a.name; }).join(", ");
+				if (!labeltoshow) labeltoshow = "(none)";
+
+				snwidgetselectorinputcontrol = e(
+					'p',
+					{ className: 'form-control-static' },
+					labeltoshow
+				);
+			}
+			snwidgetselectorinput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-pa_widget-input' },
+					getMessage('PA Widget')
+				),
+				e(
+					'div',
+					{ },
+					snwidgetselectorinputcontrol
+				)
+			);
+		} else if (widgettype.sys_id === WIDGETTYPE_REPORTS_SYS_ID) {
+			var snwidgetselectorinputcontrol;
+			if (this.props.onSave) {
+				snwidgetselectorinputcontrol = e(
+					ReactBootstrapTypeahead.AsyncTypeahead,
+					{
+						inputProps: { id: 'canvas-details-report-input' },
+						isLoading: this.state.reportsloading,
+						minLength: 0,
+						labelKey: 'name',
+						clearButton: true,
+						filterBy: this.returnTrue,
+						onSearch: this.reportOnSearch,
+						onChange: this.reportOnChange,
+						options: this.state.report_results,
+						disabled: this.state.disabled,
+						selected: this.state.reports,
+						placeholder: getMessage("Select existing report"),
+						selectHintOnEnter: true,
+						//bodyContainer: true, //bij rtl komt dit niet goed, daarom positionFixed gebruiken
+						positionFixed: true,
+						useCache: false, //werkt niet goed,
+						promptText: getMessage('Type to search...'),
+						emptyLabel: getMessage('No matches found.'),
+						autoComplete: 'off'
+					}
+				);
+			} else {
+				var labeltoshow = this.state.reports.map(function (a) { return a.name; }).join(", ");
+				if (!labeltoshow) labeltoshow = "(none)";
+
+				snwidgetselectorinputcontrol = e(
+					'p',
+					{ className: 'form-control-static' },
+					labeltoshow
+				);
+			}
+			snwidgetselectorinput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-report-input' },
+					getMessage('Report')
+				),
+				e(
+					'div',
+					{ },
+					snwidgetselectorinputcontrol
+				)
+			);
+		} else if (widgettype.sys_id === WIDGETTYPE_INTERACTIVEFILTERS_SYS_ID) {
+			var snwidgetselectorinputcontrol;
+			if (this.props.onSave) {
+				snwidgetselectorinputcontrol = e(
+					ReactBootstrapTypeahead.AsyncTypeahead,
+					{
+						inputProps: { id: 'canvas-details-interactivefilter-input' },
+						isLoading: this.state.interactive_filtersloading,
+						minLength: 0,
+						labelKey: 'name',
+						clearButton: true,
+						filterBy: this.returnTrue,
+						onSearch: this.interactiveFilterOnSearch,
+						onChange: this.interactiveFilterOnChange,
+						options: this.state.interactive_filter_results,
+						disabled: this.state.disabled,
+						selected: this.state.interactive_filters,
+						placeholder: getMessage("Select existing interactive filter"),
+						selectHintOnEnter: true,
+						//bodyContainer: true, //bij rtl komt dit niet goed, daarom positionFixed gebruiken
+						positionFixed: true,
+						useCache: false, //werkt niet goed,
+						promptText: getMessage('Type to search...'),
+						emptyLabel: getMessage('No matches found.'),
+						autoComplete: 'off'
+					}
+				);
+			} else {
+				var labeltoshow = this.state.interactive_filters.map(function (a) { return a.name; }).join(", ");
+				if (!labeltoshow) labeltoshow = "(none)";
+
+				snwidgetselectorinputcontrol = e(
+					'p',
+					{ className: 'form-control-static' },
+					labeltoshow
+				);
+			}
+			snwidgetselectorinput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-interactivefilter-input' },
+					getMessage('Interactive filter')
+				),
+				e(
+					'div',
+					{ },
+					snwidgetselectorinputcontrol
+				)
+			);
+		} else if (widgettype.sys_id === WIDGETTYPE_SPOTLIGHTS_SYS_ID && this.props.spotlight_installed === true) {
+			var snwidgetselectorinputcontrol;
+			if (this.props.onSave) {
+				snwidgetselectorinputcontrol = e(
+					ReactBootstrapTypeahead.AsyncTypeahead,
+					{
+						inputProps: { id: 'canvas-details-spotlight-input' },
+						isLoading: this.state.spotlight_groupsloading,
+						minLength: 0,
+						labelKey: 'name',
+						clearButton: true,
+						filterBy: this.returnTrue,
+						onSearch: this.spotlightGroupOnSearch,
+						onChange: this.spotlightGroupOnChange,
+						options: this.state.spotlight_group_results,
+						disabled: this.state.disabled,
+						selected: this.state.spotlight_groups,
+						placeholder: getMessage("Select existing spotlight group"),
+						selectHintOnEnter: true,
+						//bodyContainer: true, //bij rtl komt dit niet goed, daarom positionFixed gebruiken
+						positionFixed: true,
+						useCache: false, //werkt niet goed,
+						promptText: getMessage('Type to search...'),
+						emptyLabel: getMessage('No matches found.'),
+						autoComplete: 'off'
+					}
+				);
+			} else {
+				var labeltoshow = this.state.spotlight_groups.map(function (a) { return a.name; }).join(", ");
+				if (!labeltoshow) labeltoshow = "(none)";
+
+				snwidgetselectorinputcontrol = e(
+					'p',
+					{ className: 'form-control-static' },
+					labeltoshow
+				);
+			}
+			snwidgetselectorinput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-spotlight-input' },
+					getMessage('Spotlight group')
+				),
+				e(
+					'div',
+					{ },
+					snwidgetselectorinputcontrol
+				)
+			);
+		} else if (widgettype.sys_id === WIDGETTYPE_CONTENTBLOCK_SYS_ID) {
+			var snwidgetselectorinputcontrol;
+			if (this.props.onSave) {
+				snwidgetselectorinputcontrol = e(
+					ReactBootstrapTypeahead.AsyncTypeahead,
+					{
+						inputProps: { id: 'canvas-details-contentblock-input' },
+						isLoading: this.state.content_blocksloading,
+						minLength: 0,
+						labelKey: 'name',
+						clearButton: true,
+						filterBy: this.returnTrue,
+						onSearch: this.contentBlockOnSearch,
+						onChange: this.contentBlockOnChange,
+						options: this.state.content_block_results,
+						disabled: this.state.disabled,
+						selected: this.state.content_blocks,
+						placeholder: getMessage("Select existing content block"),
+						selectHintOnEnter: true,
+						//bodyContainer: true, //bij rtl komt dit niet goed, daarom positionFixed gebruiken
+						positionFixed: true,
+						useCache: false, //werkt niet goed,
+						promptText: getMessage('Type to search...'),
+						emptyLabel: getMessage('No matches found.'),
+						autoComplete: 'off'
+					}
+				);
+			} else {
+				var labeltoshow = this.state.content_blocks.map(function (a) { return a.name; }).join(", ");
+				if (!labeltoshow) labeltoshow = "(none)";
+
+				snwidgetselectorinputcontrol = e(
+					'p',
+					{ className: 'form-control-static' },
+					labeltoshow
+				);
+			}
+			snwidgetselectorinput = e(
+				'div',
+				{ className: 'form-group' },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-contentblock-input' },
+					getMessage('Content block')
+				),
+				e(
+					'div',
+					{ },
+					snwidgetselectorinputcontrol
+				)
+			);
+		}
+
+		var savebutton = null;
+		if (this.props.onSave) {
+			savebutton = e(
+				'button',
+				{ type: 'button', className: 'btn btn-primary', disabled: this.state.disabled || !this.state.widgetvisualisationsys_id || !this.state.title, onClick: this.save },
+				getMessage('Save')
+			);
+		}
+
+		return e(
+			Reactstrap.Modal,
+			{'isOpen': true, size: 'sm', className: 'canvasmodal', onOpened: this.onOpened, backdrop: 'static', toggle: this.cancel },
+			e(
+				Reactstrap.ModalHeader,
+				{'toggle': this.cancel, close: closeButton},
+				getMessage('Canvas details')
+			),
+			e(
+				Reactstrap.ModalBody,
+				{},
+				e(
+					'form',
+					{ autoComplete: 'nope', onSubmit: this.handleSubmit },
+					e(
+						'div',
+						{ className: 'form-group' },
+						e(
+							'label',
+							{ className: 'control-label bold', htmlFor: 'canvas-details-widget-input' },
+							getMessage('Widget type')
+						),
+						e(
+							'div',
+							{ },
+							widgettypeinputcontrol
+						)
+					),
+					widgetvisualisationinput,
+					titleinput,
+					descriptioninput,
+					followelementinput,
+					followinteractivefilterinput,
+					timeseriesinput,
+					measurementsinput,
+					extraannotation,
+					snwidgetselectorinput
+				)
+			),
+			e(
+				Reactstrap.ModalFooter,
+				{},
+				savebutton,
+				e(
+					'button',
+					{ type: 'button', className: 'btn sn-btn-outline-secondary', disabled: this.state.disabled, onClick: this.cancel },
+					this.props.onSave ? getMessage('Cancel') : getMessage('Close')
+				)
+			),
+			loadingOverlay
+		);
+	}
+});]]></script>
+        <script_name>DashboardCanvasModal</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-29 14:05:30</sys_created_on>
+        <sys_id>88947af91babff00bcb985507e4bcb23</sys_id>
+        <sys_mod_count>117</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardCanvasModal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_88947af91babff00bcb985507e4bcb23</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-05-17 07:34:37</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

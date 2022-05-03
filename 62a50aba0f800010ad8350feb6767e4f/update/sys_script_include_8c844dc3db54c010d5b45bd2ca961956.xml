@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskCreateBreakdown</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskCreateBreakdown</name>
+        <script><![CDATA[var ProjectTaskCreateBreakdown = Class.create();
+ProjectTaskCreateBreakdown.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	createtasks: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectTaskCreateBreakdown");	
+			
+		// Select all breakdowns from a project
+		var breakdowns = this._projectApi.breakdownsInProject(data);
+		
+		for(var bdx = 0; bdx<breakdowns.length; bdx++) {
+			
+			var breakdown = breakdowns[bdx];
+
+			var defRecId = breakdown.sys_id;
+			var defTableNm = 'sn_kpi_composer_breakdown';
+
+			var taskDefRec = this._addOrGetTaskDefinitionRecord(defTableNm, defRecId, data.project.sys_id);
+			if (this.trace) this._debug.push("Lookup DefRecId 1: " + defRecId + " for DefRecTableNm: " + defTableNm + " => " + JSON.stringify(taskDefRec));
+			
+			// Generic update of the status
+			this._updateTaskDefinitionStatus(taskDefRec, breakdown, breakdown.pa_breakdown, data);
+
+			// Set artifact source table
+			taskDefRec.artifact_table = 'pa_breakdowns';
+
+			// Set artifact record
+			taskDefRec.artifact_record = breakdown.pa_breakdown;
+
+			var desc = taskDefRec.validationerrors;
+			
+			desc += gs.getMessage("Breakdown name: '{0}'", breakdown.name || "(empty)");
+			if (breakdown.facts_table) desc += gs.getMessage("\nFacts table: {0}", breakdown.facts_table);
+			if (breakdown.conditions) desc += gs.getMessage("\nConditions: {0}", breakdown.conditions);
+			desc += gs.getMessage("\nMappings: ");
+
+			// Get all other indicator defs
+			var indDefs = this._projectApi.indicatorDefsByBreakdown(breakdown, data);
+			if (this.trace) this._debug.push("Other indDefs: " + JSON.stringify(indDefs));
+
+			// Multiple indicator defs could point to the same fact_table
+			// Make a distinct to the fact table
+			var factsTables = [];
+			for(var ind = 0; ind<indDefs.length; ind++) {
+				var i = indDefs[ind];
+				if (i.facts_table == null) {
+					desc += gs.getMessage("The breakdown mapping to '{0}' has no table defined", i.name);
+				} else {
+					if (factsTables.indexOf(i.facts_table)<0)
+						factsTables.push(i.facts_table);
+				} 
+			}
+
+			for(var ftb = 0; ftb<factsTables.length; ftb++) {									
+				desc += "\n- " + factsTables[ftb];
+			}
+
+			taskDefRec.description = desc;
+
+			var result = this._updateTaskDefinitionRecord(taskDefRec);
+
+		}													
+	},
+
+    type: 'ProjectTaskCreateBreakdown'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-09 09:56:19</sys_created_on>
+        <sys_id>8c844dc3db54c010d5b45bd2ca961956</sys_id>
+        <sys_mod_count>32</sys_mod_count>
+        <sys_name>ProjectTaskCreateBreakdown</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_8c844dc3db54c010d5b45bd2ca961956</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-14 09:41:03</sys_updated_on>
+    </sys_script_include>
+</record_update>

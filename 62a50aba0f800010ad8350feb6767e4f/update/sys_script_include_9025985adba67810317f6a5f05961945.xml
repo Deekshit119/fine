@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskClearTaskDefDependencies</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskClearTaskDefDependencies</name>
+        <script><![CDATA[var ProjectTaskClearTaskDefDependencies = Class.create();
+ProjectTaskClearTaskDefDependencies.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	cleardependencies: function(data) {
+		
+		var that = this;
+
+		if (this.trace) this._debug.push("ProjectTaskClearTaskDefDependencies (for project: " + data.project.sys_id + ")");	
+
+		var gr_tasks = new GlideRecord("sn_kpi_composer_task_definition");
+		gr_tasks.addQuery("projects", "CONTAINS", data.project.sys_id);
+		gr_tasks.query();
+
+
+		var taskDefsInProject = [];
+
+		// First, collect all taskDefs that are used in this project
+		while(gr_tasks.next()) {
+			taskDefsInProject.push(gr_tasks.getValue("sys_id"));
+		}
+
+		// Go back to the beginning
+		gr_tasks.query();
+
+		// if a taskDef, refs to a other taskDef that is not used in this project anymore,
+		// we should remove the dependency form the taskDef
+		while(gr_tasks.next()) {
+
+			// If a dependency is not found, this value goes to true
+			var dependencyChanged = false;
+
+			// Store all dependencies that are still used
+			var newListOfDependencies = [];
+
+			var dependsOn = gr_tasks.getValue("dependencies") &&  gr_tasks.getValue("dependencies").split(",") || [];
+
+			if (this.trace) this._debug.push("TaskDef '" + gr_tasks.getValue("sys_id") + "' depents on: " + dependsOn.join(", "));
+
+			dependsOn.forEach(function(depensOnTaskDef) {
+				if (taskDefsInProject.indexOf(depensOnTaskDef)<0) {
+					if (that.trace) that._debug.push("TaskDef '" + gr_tasks.getValue("sys_id") + "' does not use taskDef '" + depensOnTaskDef + "' anymore");
+					dependencyChanged = true;
+				} else {
+					// Store the dependencies, if there is a dependency not found, this is the list that will be saved
+					newListOfDependencies.push(depensOnTaskDef);
+				}
+			})
+
+			// Any dependecies that are not used anymore, save the new list
+			if (dependencyChanged) {
+				var newList = newListOfDependencies.join(",");
+				if (this.trace) this._debug.push("TaskDef UPDATE '" + gr_tasks.getValue("sys_id") + "' depents on: " + newList);
+				gr_tasks.setValue("dependencies", newList);
+				gr_tasks.update();
+			}
+		}    
+	},
+
+    type: 'ProjectTaskClearTaskDefDependencies'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-09-14 07:29:40</sys_created_on>
+        <sys_id>9025985adba67810317f6a5f05961945</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>ProjectTaskClearTaskDefDependencies</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_9025985adba67810317f6a5f05961945</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-14 10:36:23</sys_updated_on>
+    </sys_script_include>
+</record_update>

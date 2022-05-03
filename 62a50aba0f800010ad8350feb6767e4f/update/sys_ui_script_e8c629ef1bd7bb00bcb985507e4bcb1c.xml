@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubAddWidget</name>
+        <script><![CDATA[var NavHubAddWidget = createReactClass({
+	getInitialState: function() {
+		return { filter_text: "", widgettype_sysid: WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID };
+	},
+
+	handleFilterTextChange: function(event) {
+		this.setState({ filter_text: event.target.value });
+	},
+
+	handleWidgetTypeChange: function(event) {
+		this.setState({ widgettype_sysid: event.target.value });
+	},
+
+	handleSubmit: function(event) {
+		event.preventDefault();
+	},
+
+	render: function() {
+		var that = this;
+
+		var widgettypes = this.props.widgettypes.filter(function (widgettype) { return widgettype.sys_id === that.state.widgettype_sysid; });
+		if (widgettypes.length === 0 && this.props.widgettypes.length > 0)  {
+			widgettypes = this.props.widgettypes;
+		}
+		if (widgettypes.length === 0) {
+			console.log("Widget types not found!");
+			return e('div', {className: 'alert alert-danger'}, getMessage('Widget types not found'));
+		}
+		var widgettype = widgettypes[0];
+		var sourcevisualisationtypes = widgettype.visualisationtypes;
+		var visualisationtypes = null;
+		var filtering_is_on = false;
+		if (this.state.filter_text === "") {
+			visualisationtypes = sourcevisualisationtypes;
+		} else {
+			filtering_is_on = true;
+			var regex = new RegExp(sn_kpi_composer.ClientHelper.escapeRegex(this.state.filter_text), "i");
+			visualisationtypes = [];
+			for (var i = 0; i < sourcevisualisationtypes.length; i++) {
+				var vistype = sourcevisualisationtypes[i];
+				visualisationtypes.push(
+					{
+						sys_id: vistype.sys_id,
+						label: vistype.label,
+						widgetvisualisations: vistype.widgetvisualisations.filter(function (v) { return v.name.search(regex) > -1; })
+					}
+				);
+			}
+		}
+
+		var listtypes = visualisationtypes.filter(function (vt) { return vt.widgetvisualisations.length > 0; }).map(
+			function (vt) {
+				return e(
+					NavHubAddWidgetType,
+					{ key: vt.sys_id, widgetvisualisations: vt.widgetvisualisations, label: vt.label, filtering_is_on: filtering_is_on, disableDragging: that.props.readonly === true }
+				);
+			}
+		);
+
+		if (listtypes.length == 0) {
+			listtypes.push(
+				e(
+					'div',
+					{ key: 'empty', className: 'navhubvisualisationtype no-items' },
+					getMessage('(no widgets found)')
+				)
+			);
+		}
+
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+				{className: 'sn-aside-header'},
+				e(
+					'span',
+					null,
+					getMessage('Add Widgets')
+				),
+				e(
+					'div',
+					{className : 'sn-aside-btn icon-cross', 'aria-label': 'Close Add Widgets Panel', role: 'button', tabIndex: '0', onClick: this.props.onCloseActiveAside}
+				)
+			),
+			e(
+				'div',
+				{className: 'sn-aside-body wb-pa-aside-body'},
+				e(
+					'div',
+					{ className: 'navhubvisualisationtype visualisation-filter-search' },
+					e(
+						'select',
+						{ className: 'form-control', value: this.state.widgettype_sysid, onChange: this.handleWidgetTypeChange },
+						this.props.widgettypes.filter(function (widgettype) { return widgettype.inactive === "0"; }).map(function (widgettype) {
+							return e(
+								'option',
+								{ key: widgettype.sys_id, value: widgettype.sys_id },
+								widgettype.label
+							);
+						})
+					)
+				),
+				e(
+					'form',
+					{ className: 'navhubvisualisationtype visualisation-filter-search', onSubmit: this.handleSubmit },
+					e(
+						'div',
+						{ className: 'input-group-transparent' },
+						e(
+							'span',
+							{className: 'input-group-addon-transparent icon-filter'}
+						),
+						e(
+							'input',
+							{ className: 'form-control form-control-search', 'aria-label': getMessage('Filter'), type: 'search', placeholder: getMessage('Filter'), value: this.state.filter_text, onChange: this.handleFilterTextChange }
+						)
+					)
+				),
+				listtypes
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubAddWidget</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-22 08:39:14</sys_created_on>
+        <sys_id>e8c629ef1bd7bb00bcb985507e4bcb1c</sys_id>
+        <sys_mod_count>34</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubAddWidget</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_e8c629ef1bd7bb00bcb985507e4bcb1c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-05-17 07:33:11</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

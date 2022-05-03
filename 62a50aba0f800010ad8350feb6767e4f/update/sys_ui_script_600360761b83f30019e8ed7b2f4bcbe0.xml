@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardDetail</name>
+        <script><![CDATA[var DashboardDetail = createReactClass({
+	getInitialState: function() {
+		return { selecteddashboardtabid: null, tabisnew: false };
+	},
+	
+	dashboardTabSelect: function(dashboardtab, tabisnew) {
+		this.setState({selecteddashboardtabid:dashboardtab.sys_id, tabisnew: tabisnew === true});
+	},
+	
+	dashboardTabSaveName: function(dashboardtabsysid, name, callback) {
+		this.props.onDashboardTabSaveName(this.props.dashboard.sys_id, dashboardtabsysid, name, callback);
+	},
+
+	dashboardTabAdd: function(data, callback) {
+		this.props.onDashboardTabAdd(this.props.dashboard.sys_id, data, callback);
+	},
+	
+	dashboardTabMoveTo: function(direction, dashboardtabsysid, callback) {
+		this.props.onDashboardTabMoveTo(direction, this.props.dashboard.sys_id, dashboardtabsysid, callback);
+	},
+	
+	dashboardTabDelete: function(dashboardtabsysid, callback) {
+		this.props.onDashboardTabDelete(this.props.dashboard.sys_id, dashboardtabsysid, callback);
+	},
+
+	dashboardTabAddAsTemplate: function(dashboardtabsysid, data, callback) {
+		this.props.onDashboardTabAddAsTemplate(this.props.dashboard.sys_id, dashboardtabsysid, data, callback);
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var selecteddashboardtabid = this.state.selecteddashboardtabid;
+		if (selecteddashboardtabid != null) {
+			var tab = this.props.dashboardtabs.filter(function (t) { return t.sys_id === selecteddashboardtabid;});
+			if (tab.length == 0) {
+				selecteddashboardtabid = null;
+			}
+		}
+		if (selecteddashboardtabid == null && this.props.dashboardtabs.length > 0) {
+			selecteddashboardtabid = this.props.dashboardtabs[0].sys_id;
+		}
+		
+		
+		var dashboardtabdetail = null;
+		if (selecteddashboardtabid != null) {
+			var dashboardtab = this.props.dashboardtabs.filter(function (d) { return d.sys_id === selecteddashboardtabid; });
+			if (dashboardtab.length > 0) {
+				var detailprops = {
+					key: 'detail',
+					dashboardtab: dashboardtab[0],
+					dashboardtabrows: this.props["dashboardtabrows_" + dashboardtab[0].sys_id],
+					widgettypes: this.props.widgettypes,
+					entities: this.props.entities,
+					timeseries: this.props.timeseries,
+					spotlight_installed: this.props.spotlight_installed,
+					tabisnew: this.state.tabisnew,
+					onDashboardTabRowAdd: this.props.onDashboardTabRowAdd,
+					onDashboardTabRowDelete: this.props.onDashboardTabRowDelete,
+					onDashboardTabRowEdit: this.props.onDashboardTabRowEdit,
+					onDashboardTabRowMoveTo: this.props.onDashboardTabRowMoveTo,
+					onDashboardTabRowCanvasSaveTitle: this.props.onDashboardTabRowCanvasSaveTitle,
+					onDashboardTabRowCanvasEdit: this.props.onDashboardTabRowCanvasEdit,
+					onDashboardTabRowCanvasEntityDelete: this.props.onDashboardTabRowCanvasEntityDelete,
+					onDashboardTabRowCanvasEntityInsert: this.props.onDashboardTabRowCanvasEntityInsert,
+					onDashboardTabRowCanvasSaveWidgetVisualisation: this.props.onDashboardTabRowCanvasSaveWidgetVisualisation,
+					onDashboardTabRowCanvasMoveTo: this.props.onDashboardTabRowCanvasMoveTo
+				};
+				//canvasses
+				for (var r = 0; r < detailprops.dashboardtabrows.length; r++) {
+					var canvasses = this.props["dashboardtabrowcanvasses_" + detailprops.dashboardtabrows[r].sys_id];
+					detailprops["dashboardtabrowcanvasses_" + detailprops.dashboardtabrows[r].sys_id] = canvasses;
+				}
+				dashboardtabdetail = e(
+					DashboardTabDetail,
+					detailprops
+				);
+			}
+		}
+		
+		return [
+			e(
+				DashboardTabList,
+				{
+					key: 'list',
+					onDashboardTabSelect: this.dashboardTabSelect,
+					selecteddashboardtabid: selecteddashboardtabid,
+					dashboardtabs: this.props.dashboardtabs,
+					onDashboardTabDelete: this.props.onDashboardTabDelete ? this.dashboardTabDelete : null,
+					onDashboardTabAddAsTemplate: this.props.onDashboardTabAddAsTemplate ? this.dashboardTabAddAsTemplate : null,
+					onDashboardTabMoveTo: this.props.onDashboardTabMoveTo ? this.dashboardTabMoveTo : null,
+					onDashboardTabSaveName: this.props.onDashboardTabSaveName ? this.dashboardTabSaveName : null,
+					onDashboardTabAdd: this.props.onDashboardTabAdd ? this.dashboardTabAdd : null,
+					getPossibleDashboardTabTemplates: this.props.getPossibleDashboardTabTemplates
+				}
+			),
+			dashboardtabdetail
+		];
+	}
+});]]></script>
+        <script_name>DashboardDetail</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-07 09:32:36</sys_created_on>
+        <sys_id>600360761b83f30019e8ed7b2f4bcbe0</sys_id>
+        <sys_mod_count>37</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardDetail</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_600360761b83f30019e8ed7b2f4bcbe0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 15:50:46</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

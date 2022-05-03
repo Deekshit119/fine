@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.BaseTask</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Basic task handling function like, clearing tasks for a project, helper function to add task(s)</description>
+        <name>BaseTask</name>
+        <script><![CDATA[var BaseTask = Class.create();
+BaseTask.prototype = Object.extendsObject(sn_kpi_composer.RecordApi, {
+
+	_projectApi: new  sn_kpi_composer.ProjectApi(),
+	
+	/*
+	* Add a project_task record to the current project of the user
+	*/
+	_addProjectTask: function(task, input) {
+
+		var result = {};
+		result.success = false;
+		
+		if (this.trace) this._debug.push("Add task: '" + JSON.stringify(task) + "' to project: " + this._projectApi.project(input).sys_id);
+		
+		// Insert values
+		var vt = new GlideAggregate('sn_kpi_composer_project_task');
+		vt.addAggregate('COUNT');
+		vt.addQuery("project", this._projectApi.project(input).sys_id);
+		vt.query();
+		vt.next();
+		var cnt = vt.getAggregate('COUNT') + 1;
+		
+		vt = new GlideRecord('sn_kpi_composer_project_task');
+		vt.initialize();
+		if (typeof task === 'string') {
+			vt.setValue("description", task);
+			vt.setValue("type", this._projectTaskGeneric);
+		} else {
+			
+			if (task.description)
+				vt.setValue("description",task.description);
+			
+			if (task.record) 
+				vt.setValue("record", task.record);
+
+			if (task.table) 
+				vt.setValue("table", task.table);
+
+			if (task.pa_record) 
+				vt.setValue("pa_record", task.pa_record);
+
+			if (task.pa_table) 
+				vt.setValue("pa_table", task.pa_table);
+			
+			
+			if (task.title) 
+				vt.setValue("title", task.title);
+						
+			if (task.type) 
+				vt.setValue("type", task.type);						
+			else vt.setValue("type", this._projectTaskGeneric);
+			
+			vt.setValue("implemented", 0);
+		}
+		
+		vt.setValue("project", this._projectApi.project(input).sys_id);
+		vt.setValue("order", cnt);
+		
+		vt.insert();					
+		
+		result.task = this._projecttask_record(vt);
+		result.success = true;
+		
+	},
+		
+	_hasValidationError: function(sys_id, input) {
+		var response = {};
+		response.success = false;
+		response.validationerror = false;
+		response.validations = [];
+
+		var pv = new GlideRecord('sn_kpi_composer_project_validation');
+		pv.addQuery("project", this._projectApi.project(input).sys_id);
+		pv.addQuery("record", sys_id);
+		// Error only
+		pv.addQuery("severity", 3);
+		pv.query();
+		while(pv.next()) {
+			response.validationerror = true;
+			response.validations.push(pv.getValue("description"));
+		}
+		return response;		
+	},
+
+	_getTaskDefinitionRecord: function(defTableNm, defRecId) {
+
+		var td = new GlideRecord('sn_kpi_composer_task_definition');
+		td.addQuery("definition_record", defRecId);
+		td.addQuery("definition_table", defTableNm);
+		td.query();
+		var taskDefRec = {};
+		taskDefRec.result = "Unknown";
+		taskDefRec.sys_id = "unknown";
+		taskDefRec.success = false;
+
+		if (td.next())
+		{
+			// Record found, 
+			taskDefRec = this._task_definition(td);
+			taskDefRec.result = "existing";
+			taskDefRec.success = true;
+		}
+
+		return taskDefRec;
+	},
+
+	_addOrGetTaskDefinitionRecord: function(defTableNm, defRecId, project)
+	{
+		var td = new GlideRecord('sn_kpi_composer_task_definition');
+		td.addQuery("definition_record", defRecId);
+		td.addQuery("definition_table", defTableNm);
+		td.query();
+		var taskDefRec = {};
+		taskDefRec.result = "Unknown";
+
+		if (td.next())
+		{
+			// Record found, 
+			taskDefRec = this._task_definition(td);
+			taskDefRec.result = "existing";
+
+			// Check if the current project (sys_id) is in the list of projects of this taskDefinition, else add the project
+			if (global.JSUtil.notNil(taskDefRec.projects)) {
+				if (taskDefRec.projects.indexOf(project)<0) {
+					taskDefRec.projects += "," + project;					
+				}
+			} else {
+				taskDefRec.projects = project;
+			}
+						
+
+		} else {
+			// Create record
+			td.initialize();
+			td.setValue("definition_record", defRecId);
+			td.setValue("definition_table", defTableNm);
+			td.setValue("status", '' + this._taskDefinitionStatusOk);
+			td.setValue("projects", project)
+
+			if (td.insert()) {
+				taskDefRec = this._task_definition(td);
+				taskDefRec.result = "insert";
+			} else {
+				taskDefRec.result = "Error, could not create";
+			}
+		}
+		return taskDefRec;
+	},
+
+	_updateTaskDefinitionRecord: function(taskDefinition) {
+
+		var result = {};
+		result.success = false;
+
+		try {
+			// Find the existing record
+			var td = new GlideRecord('sn_kpi_composer_task_definition');
+			td.addQuery("definition_record", taskDefinition.definition_record);
+			td.addQuery("definition_table", taskDefinition.definition_table);
+			td.query();
+			// Is there a record?
+			if (td.next()) {
+
+				// Is there a value updated?
+				var hasUpdate = false;
+				// Update data if changed
+				if (td.description != taskDefinition.description) {
+					td.setValue("description", taskDefinition.description);
+					hasUpdate = true;
+				}
+
+				if (td.status != taskDefinition.status) {
+					td.setValue("status", taskDefinition.status);
+					hasUpdate = true;
+				}
+
+				if (td.dependencies != taskDefinition.dependencies) {
+					td.setValue("dependencies", taskDefinition.dependencies);
+					hasUpdate = true;
+				}
+				
+				if (td.artifact_table != taskDefinition.artifact_table) {
+					td.setValue("artifact_table", taskDefinition.artifact_table);
+					hasUpdate = true;
+				}
+
+				if (td.artifact_record != taskDefinition.artifact_record) {
+					td.setValue("artifact_record", taskDefinition.artifact_record);
+					hasUpdate = true;
+				}				
+
+				if (td.projects != taskDefinition.projects) {
+					td.setValue("projects", taskDefinition.projects);
+					hasUpdate = true;
+				}				
+
+				// Update the record if changed
+				if (hasUpdate) {
+					td.update();
+					result.success = true;
+					result.updated = true;
+				} else {
+					result.success = true;
+					result.updated = false;
+				}
+			} else {
+				// Record not found
+				throw "Record not found for table: '" + taskDefinition.definition_table + "' with sys_id: '" + taskDefinition.definition_record;
+			}
+		}
+		catch(ex) {
+			result.success = false;
+			result.exception = JSON.stringify(ex);
+		}
+		return result;
+	},
+	
+	/*
+
+		taskDefinition => the task definition
+		definition_record => the breakdown/indicator/etc definition record from KPI composer
+		artifact_record => the PA (linked) record to the indicator/breakdown/etc etc (if exists)
+		data => the general data structure generated by our framework
+
+	*/
+	_updateTaskDefinitionStatus: function(taskDefinition, definition_record, artifact_record, data, ignore_entity_validation_errors) {
+		
+		if (ignore_entity_validation_errors == null)
+			ignore_entity_validation_errors = false;
+
+		if (this.trace) this._debug.push("TaskDefinition: " + JSON.stringify(taskDefinition));
+		if (this.trace) this._debug.push("DefinitionRecord: " + JSON.stringify(definition_record));
+		if (this.trace) this._debug.push("ArtifactRecord: " + JSON.stringify(artifact_record));
+		if (this.trace) this._debug.push("ignore_entity_validation_errors: " + ignore_entity_validation_errors);
+		
+
+		taskDefinition.validationerror = false;
+		taskDefinition.validationerrors = "";
+
+		// Check validation error on definition record
+		var validationErrors = this._hasValidationError(definition_record.sys_id, data);		
+		if (definition_record && validationErrors.validationerror) {
+			// if (this.trace) this._debug.push("Definition '" + JSON.stringify(definition_record) + "' record has a validation error. TaskDefinition status set to incomplete. " + JSON.stringify(validationErrors.validations));
+
+			taskDefinition.status = '' + this._taskDefinitionStatusIncomplete;		
+			taskDefinition.validationerror = true;
+			taskDefinition.validationerrors = gs.getMessage("Validation errors: {0}\n", validationErrors.validations.join(", "));
+
+			return taskDefinition;
+		}
+
+		// Check validation errors on linked entities
+		if (definition_record.entities && ignore_entity_validation_errors == false) {
+			var entities = definition_record.entities.split(",");
+
+			// if (this.trace) this._debug.push("ENTITIES !!!: " + JSON.stringify(entities));
+
+			for(var idx =0; idx<entities.length; idx++) {
+				
+				var entity = entities[idx];
+
+				var validationErrors = this._hasValidationError(entity, data);		
+
+				if (this.trace) this._debug.push("ENTITY !!!: " + JSON.stringify(entity) + "  ValidationErrors: " + JSON.stringify(validationErrors));
+				
+				if (validationErrors.validationerror) {
+
+					// if (this.trace) this._debug.push("Definition '" + JSON.stringify(definition_record) + "' record has artifact '" + JSON.stringify(entity) + "' with a validation error. TaskDefinition status set to incomplete. " + JSON.stringify(validationErrors.validations));
+		
+					taskDefinition.status = '' + this._taskDefinitionStatusIncomplete;		
+					taskDefinition.validationerror = true;
+					taskDefinition.validationerrors = gs.getMessage("Validation errors: {0}\n", validationErrors.validations.join(", "));
+		
+					return taskDefinition;
+				}	
+			}		
+		};
+	
+
+		if (global.JSUtil.nil(artifact_record)) {
+
+			taskDefinition.status = '' + this._taskDefinitionStatusCreate;		
+			// if (this.trace) this._debug.push("Definition '" + JSON.stringify(definition_record) + "' record has no linked artifact. TaskDefinition status set to create.");
+			return taskDefinition;
+		}
+
+		if (global.JSUtil.notNil(artifact_record) && taskDefinition.last_status_ok && definition_record.definition_updated && taskDefinition.last_status_ok<definition_record.definition_updated) {
+			if (this.trace) this._debug.push("Definition '" + JSON.stringify(definition_record) + "' record artifact updated. TaskDefinition status set to update (LastStatusOk: " + taskDefinition.last_status_ok + ").");
+			taskDefinition.status = '' + this._taskDefinitionStatusUpdate;
+			return taskDefinition;
+		}
+		
+		taskDefinition.status = '' + this._taskDefinitionStatusOk;
+		return taskDefinition;
+
+	},
+		
+	
+    type: 'BaseTask'
+	
+});
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-28 10:49:26</sys_created_on>
+        <sys_id>46bf3c501be4b3404e6921be6e4bcbf7</sys_id>
+        <sys_mod_count>63</sys_mod_count>
+        <sys_name>BaseTask</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_46bf3c501be4b3404e6921be6e4bcbf7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-06 14:10:27</sys_updated_on>
+    </sys_script_include>
+</record_update>

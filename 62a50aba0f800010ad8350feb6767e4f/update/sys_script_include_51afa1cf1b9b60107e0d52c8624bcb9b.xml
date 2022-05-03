@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationMeasureHasMultipleDefinitions</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationMeasureHasMultipleDefinitions</name>
+        <script><![CDATA[var ProjectValidationMeasureHasMultipleDefinitions = Class.create();
+ProjectValidationMeasureHasMultipleDefinitions.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationMeasureHasMultipleDefinitions");
+
+        data.entities.forEach(function(e) {
+            if (e.indicator_definition && e.report_definition) {
+                that._addProjectValidationWarning(
+                    { 
+                        description: gs.getMessage("Artifact '{0}' has a report definition and indicator definition.", [e.name]),
+                        table: "sn_kpi_composer_entity",
+                        record: e.sys_id,
+                    }, { project: { sys_id: data.project.sys_id } });	
+            }            
+        });
+	},
+    type: 'ProjectValidationMeasureHasMultipleDefinitions'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-04-08 08:34:22</sys_created_on>
+        <sys_id>51afa1cf1b9b60107e0d52c8624bcb9b</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>ProjectValidationMeasureHasMultipleDefinitions</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_51afa1cf1b9b60107e0d52c8624bcb9b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 15:05:33</sys_updated_on>
+    </sys_script_include>
+</record_update>

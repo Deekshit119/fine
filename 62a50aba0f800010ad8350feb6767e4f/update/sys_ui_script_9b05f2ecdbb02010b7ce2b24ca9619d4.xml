@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubShareEdit</name>
+        <script><![CDATA[var NavHubShareEdit = createReactClass({
+    getInitialState: function() {
+		return { write: this.props.permission.write, saving: false };
+	},
+
+    writeChanged: function(event) {
+        this.setState({write: (event.target.value === "yes")});
+    },
+
+    submit: function(evt) {
+        evt.preventDefault();
+        var that = this;
+        this.setState({saving: true}, function() {
+            that.props.onSave(that.props.permission, that.state.write);
+        });
+    },
+
+	render: function() {
+        var that = this;
+        
+        var target = null;
+        if (this.props.permission.permissiontype === "User") {
+            target = e(
+                'div',
+                {className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+                e(
+                    'label',
+                    null,
+                    "User"
+                ),
+                e(
+                    'div',
+                    { className: "form-control-static wb-pa-permission-item name" },
+                    this.props.permission.user
+                )
+            );
+        } else {
+            target = e(
+                'div',
+                {className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+                e(
+                    'label',
+                    null,
+                    "Group"
+                ),
+                e(
+                    'div',
+                    { className: "form-control-static wb-pa-permission-item name" },
+                    this.props.permission.group
+                )
+            );
+        }
+		
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+                {className: 'sn-aside-header'},
+                e(
+                    'button',
+                    { className: "sn-aside-btn icon-chevron-left btn btn-icon", disabled: this.state.saving, onClick: this.props.onCancel }
+                ),
+				e(
+					'span',
+					null,
+					getMessage('Share')
+				),
+				e(
+					'div',
+					{className : 'sn-aside-btn icon-cross', 'aria-label': getMessage('Close Share Panel'), role: 'button', tabIndex: '0', onClick: this.props.onCloseActiveAside}
+				)
+			),
+			e(
+				'div',
+                {className: 'sn-aside-body wb-pa-aside-body'},
+                e(
+                    'form',
+                    { onSubmit: this.submit },
+                    target,
+                    e(
+                        'div',
+                        {className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+                        e(
+                            'label',
+                            null,
+                            "Access"
+                        ),
+                        e(
+                            'select',
+                            { className: "form-control", disabled: this.state.saving, value: this.state.write ? "yes" : "no", onChange: this.writeChanged },
+                            e(
+                                'option',
+                                { value: 'no' },
+                                "Can view"
+                            ),
+                            e(
+                                'option',
+                                { value: 'yes' },
+                                "Can edit"
+                            )
+                        )
+                    ),
+                    e(
+                        'div',
+                        {className: 'sn-widget sn-widget_border-bottom sn-widget-form', style: { display: 'flex'}},
+                        e(
+                            'button',
+                            {type: 'button', className: 'btn btn-default', disabled: this.state.saving, onClick: this.props.onCancel, style: {flex: 1, marginRight: 5}},
+                            "Cancel"
+                        ),
+                        e(
+                            'button',
+                            {type: 'submit', className: 'btn btn-primary', style: {flex: 1, marginLeft: 5}, disabled: this.state.saving},
+                            "Update"
+                        )
+                    )
+                )
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubShareEdit</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-11-27 12:36:03</sys_created_on>
+        <sys_id>9b05f2ecdbb02010b7ce2b24ca9619d4</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubShareEdit</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_9b05f2ecdbb02010b7ce2b24ca9619d4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-11-27 16:45:15</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

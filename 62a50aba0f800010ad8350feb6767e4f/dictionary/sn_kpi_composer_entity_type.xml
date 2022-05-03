@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Entity Type" max_length="40" name="sn_kpi_composer_entity_type" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Allow Breakdown" max_length="40" name="allow_breakdown" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Allow on Canvas" max_length="40" name="allow_on_canvas" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Allow Persona" max_length="40" name="allow_persona" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Color" max_length="32" name="color" reference="sys_report_color" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="2000" name="description" type="string"/>
+        <element label="Name" max_length="40" name="name" type="translated_field"/>
+        <element attributes="edge_encryption_enabled=true" label="Order" max_length="40" name="order" type="integer"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <element attributes="edge_encryption_enabled=true" label="Tooltip" max_length="1000" name="tooltip" type="string"/>
+        <index name="index">
+            <element name="color"/>
+        </index>
+        <index name="index2">
+            <element name="sys_domain"/>
+        </index>
+    </element>
+</database>

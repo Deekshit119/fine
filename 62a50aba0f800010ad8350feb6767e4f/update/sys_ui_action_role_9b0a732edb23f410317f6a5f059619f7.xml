@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_action_role">
+    <sys_ui_action_role action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_ui_action_role</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-11-04 11:49:19</sys_created_on>
+        <sys_id>9b0a732edb23f410317f6a5f059619f7</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Export KPI Composer Project.sn_kpi_composer.user</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_ui_action display_value="Export KPI Composer Project">47e80e8d5be32010c1e73eaa3d81c71f</sys_ui_action>
+        <sys_update_name>sys_ui_action_role_9b0a732edb23f410317f6a5f059619f7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-04 11:49:19</sys_updated_on>
+        <sys_user_role display_value="sn_kpi_composer.user" name="sn_kpi_composer.user">7bc17c1f1b3f2300055f96002d4bcbe3</sys_user_role>
+    </sys_ui_action_role>
+</record_update>

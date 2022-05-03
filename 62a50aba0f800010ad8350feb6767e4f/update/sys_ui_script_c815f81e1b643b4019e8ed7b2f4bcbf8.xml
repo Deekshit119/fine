@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.ReviewContent</name>
+        <script><![CDATA[var ReviewContent = createReactClass({
+    getInitialState: function() {
+        return {
+            validations_refreshing: false,
+            tasks_saving: false,
+            taskdefs_saving: false,
+            assignToGroupHover: false,
+            clearAssignToGroup: false
+        };
+    },
+
+    refreshValidations: function() {
+        var that = this;
+        this.setState({
+            validations_refreshing: true
+        });
+
+        this.props.projectCreateValidations(function(error) {
+            that.setState({
+                validations_refreshing: false
+            });
+        });
+    },
+
+    refreshTasks: function() {
+        var that = this;
+        this.setState({
+            tasks_saving: true
+        });
+
+        this.props.projectCreateTasks(function(error) {
+            that.setState({
+                tasks_saving: false
+            });
+        });
+    },
+
+    assignmentGroupSelected: function(group, callback) {
+        if (group) {
+            var that = this;
+            this.setState({taskdefs_saving: true}, function () {
+                that.props.onAssignToGroupEdit(group, function(error){
+                    callback(error);
+                    that.setState({ taskdefs_saving: false });
+                });
+            });
+        }       
+    },
+
+    assignToGroupOnMouseEnter: function() {
+		this.setState({ assignToGroupHover: true });
+	},
+	
+	assignToGroupOnMouseLeave: function() {
+		this.setState({ assignToGroupHover: false });
+	},
+
+    onAssignToGroupDeleteClick: function(evt) {
+        evt.stopPropagation();
+		this.setState({ clearAssignToGroup: true });
+	},
+	
+	onAssignToGroupDeleteNo: function() {
+		this.setState({ clearAssignToGroup: false });
+	},
+	
+	onAssignToGroupDeleteYes: function() {
+        var that = this;
+        this.setState({taskdefs_saving: true}, function () {
+            that.props.onAssignToGroupEdit(null, function(error){
+                //todo: show error
+                that.setState({ taskdefs_saving: false, clearAssignToGroup: false });
+            });
+        });
+	},
+
+    render: function() {
+        var that = this;
+        var entitytypenames = this.props.entitytypes.map(function(entitytype) {
+            return entitytype.name + "s";
+        }).join(", ");
+        var summaryitems = this.props.entitytypes.map(function(entitytype) {
+            return e(
+                ReviewBadgeItem, {
+                    key: 'entitytype-' + entitytype.sys_id,
+                    link: 'nav_to.do?uri=%2Fsn_kpi_composer_entity_list.do%3Fsysparm_query%3Dsys_id%253Djavascript:sn_kpi_composer.projectEntities({"project": {"sys_id":"' + that.props.project_sys_id + '"}})' + '%255Eentity_type%253D' + entitytype.sys_id + '%26sysparm_first_row%3D1%26sysparm_view%3D',
+                    linktarget: '_blank',
+                    number: that.props.entities.filter(function(ent) {
+                        return ent.entitytype === entitytype.sys_id;
+                    }).length,
+                    label: entitytype.name + "s"
+                }
+            );
+        });
+        summaryitems.push(
+            e(
+                ReviewBadgeItem, {
+                    key: 'personas',
+                    link: 'nav_to.do?uri=%2Fsn_kpi_composer_persona_list.do%3Fsysparm_query%3Dsys_id%253Djavascript:sn_kpi_composer.projectPersonas()%26sysparm_first_row%3D1%26sysparm_view%3D',
+                    linktarget: '_blank',
+                    number: this.props.personas.filter(function(persona) {
+                        return that.props.entities.filter(function(ent) {
+                            return ent.personas.indexOf(persona.sys_id) > -1;
+                        }).length > 0
+                    }).length,
+                    label: getMessage("Personas")
+                }
+            )
+        );
+
+        var paelementitems = [
+            e(
+                ReviewBadgeItem, {
+                    key: 'indicatordef',
+                    link: 'nav_to.do?uri=%2Fsn_kpi_composer_indicator_definition_list.do%3Fsysparm_query%3Dsys_id%253Djavascript:sn_kpi_composer.projectIndicatorDefinitions({"project": {"sys_id":"' + that.props.project_sys_id + '"}})%26sysparm_first_row%3D1%26sysparm_view%3D',
+                    linktarget: '_blank',
+                    number: this.props.indicatordefinitions.length,
+                    label: getMessage("Indicator Definitions")
+                }
+            ),
+            e(
+                ReviewBadgeItem, {
+                    key: 'reportdef',
+                    link: 'nav_to.do?uri=%2Fsn_kpi_composer_report_definition_list.do%3Fsysparm_query%3Dsys_id%253Djavascript:sn_kpi_composer.projectReportDefinitions({"project": {"sys_id":"' + that.props.project_sys_id + '"}})%26sysparm_first_row%3D1%26sysparm_view%3D',
+                    linktarget: '_blank',
+                    number: this.props.report_definitions.length,
+                    label: getMessage("Report Definitions")
+                }
+            ),			
+            e(
+                ReviewBadgeItem, {
+                    key: 'breakdowndef',
+                    link: 'nav_to.do?uri=%2Fsn_kpi_composer_breakdown_list.do%3Fsysparm_query%3Dsys_id%253Djavascript:sn_kpi_composer.projectBreakdowns({"project": {"sys_id":"' + that.props.project_sys_id + '"}})%26sysparm_first_row%3D1%26sysparm_view%3D',
+                    linktarget: '_blank',
+                    number: this.props.breakdowns.filter(function(breakdown) {
+                        return that.props.entities.filter(function(ent) {
+                            return ent.breakdowns.indexOf(breakdown.sys_id) > -1;
+                        }).length > 0
+                    }).length,
+                    label: getMessage("Breakdown Definitions")
+                }
+            )
+        ];
+
+        var projectvalidationbuttoncontent = [];
+        if (this.state.validations_refreshing == true) {
+            projectvalidationbuttoncontent.push(e('span', {
+                key: 'icon',
+                className: 'icon-refreshing',
+                style: {
+                    marginRight: '5px'
+                }
+            }));
+            projectvalidationbuttoncontent.push(e('span', {
+                key: 'label'
+            }, getMessage('Refreshing data')));
+        } else {
+            projectvalidationbuttoncontent.push(e('span', {
+                key: 'label'
+            }, getMessage('Refresh data')));
+        }
+
+        var projectvalidationbutton = null;
+        if (this.props.readonly !== true) {
+            projectvalidationbutton = e(
+                'button', {
+                    type: 'button',
+                    className: 'btn btn-primary',
+                    disabled: this.state.validations_refreshing,
+                    onClick: this.refreshValidations
+                },
+                projectvalidationbuttoncontent
+            );
+        }
+
+        var projectvalidations = this.props.validations.filter(function(v) {
+            return v.severity != 0;
+        }).map(function(validation) {
+            var badgecolor = null;
+            if (validation.severity == 0) {
+                badgecolor = "badge-green";
+            } else if (validation.severity == 1) {
+                badgecolor = "badge-grey";
+            } else if (validation.severity == 2) {
+                badgecolor = "badge-orange";
+            } else if (validation.severity == 3) {
+                badgecolor = "badge-red";
+            }
+
+            return e(
+                ReviewBadgeItem, {
+                    key: 'validation-' + validation.severity,
+                    link: 'nav_to.do?uri=%2Fsn_kpi_composer_project_validation_list.do%3Fsysparm_query%3Dproject%253D' + that.props.project_sys_id + '%255Eseverity%253D' + validation.severity + '%26sysparm_first_row%3D1%26sysparm_view%3D',
+                    linktarget: '_blank',
+                    number: validation.count,
+                    label: validation.description,
+                    badgecolor: badgecolor
+                }
+            );
+        });
+
+        var projecttasks = this.props.tasks.map(function(task, idx) {
+            return e(
+                ReviewBadgeItem, {
+                    key: 'task-' + idx,
+                    link: 'nav_to.do?uri=' + encodeURIComponent(task.url),
+                    linktarget: '_blank',
+                    number: task.count,
+                    label: task.description
+                }
+            );
+        });
+
+        var projecttaskbuttoncontent = [];
+        if (this.state.tasks_saving === true) {
+            projecttaskbuttoncontent.push(e('span', {
+                key: 'icon',
+                className: 'icon-refreshing',
+                style: {
+                    marginRight: '5px'
+                }
+            }));
+            projecttaskbuttoncontent.push(e('span', {
+                key: 'label'
+            }, getMessage('Generating tasks')));
+        } else {
+            projecttaskbuttoncontent.push(e('span', {
+                key: 'label'
+            }, getMessage('Generate tasks')));
+        }
+
+        var assignmentgroupctrl = null;
+        if (this.props.readonly === true || this.props.taskdefs.assignmentgroup) {
+            var divprops = {className:"assigntogroupcontainer"};
+            if (this.props.readonly !== true) {
+                divprops.onMouseEnter = this.assignToGroupOnMouseEnter;
+                divprops.onMouseLeave = this.assignToGroupOnMouseLeave;
+            }
+            var buttons = null;
+            if (this.state.assignToGroupHover === true && this.props.onAssignToGroupEdit && this.state.tasks_saving == false) {
+                buttons = e(
+                    'div',
+                    { className: 'icon-contain' },
+                    e(
+                        'span',
+                        { className: 'icon icon-delete sn-tooltip-basic', 'title': getMessage("Clear"), onClick: this.onAssignToGroupDeleteClick }
+                    )
+                );
+            }
+            
+            assignmentgroupctrl = e(
+                'div',
+                divprops,
+                e(
+                    'div',
+                    {className: 'icon-type'},
+                    e(
+                        'span',
+                        {className: 'icon sn-tooltip-basic icon-user-group', title: getMessage("Group")}
+                    )
+                ),
+                e(
+                    'a',
+                    { className: "name", target: "_blank", href: "nav_to.do?uri=sys_user_group.do?sys_id=" + this.props.taskdefs.assignmentgroup },
+                    this.props.taskdefs.assignmentgroup_dv
+                ),
+                buttons
+
+            );
+        } else {
+            assignmentgroupctrl = e(
+                GroupSelector,
+                { placeholder: getMessage('Select group'), disabled: that.state.tasks_saving || that.state.taskdefs_saving, multiple: false, autoFocus: false, onGroupSelected: that.assignmentGroupSelected }
+            );
+        }
+
+        var projecttaskassigntogroup = e(
+            'form', 
+            {key: "assigntogroup", className: "assigntogroup"},
+            e(
+                'label',
+                null,
+                getMessage("Assign to group")
+            ),
+            assignmentgroupctrl
+        );
+        var assigntogroupconfirmremoval = null;
+		if (this.state.clearAssignToGroup === true) {
+			assigntogroupconfirmremoval = e(
+				ConfirmRemoval,
+				{ onYes: this.onAssignToGroupDeleteYes, onNo: this.onAssignToGroupDeleteNo, title: getMessage('Confirm clear'), content: getMessage('Are you sure you wish to clear this?') }
+			);
+		}
+
+        var projecttaskbutton = null;
+        if (this.props.readonly !== true) {
+            projecttaskbutton = e(
+                'button',
+                {
+                    key: "refresh",
+                    type: 'button',
+                    className: 'btn btn-primary',
+                    disabled: this.state.tasks_saving || this.state.taskdefs_saving || !this.props.taskdefs.assignmentgroup,
+                    onClick: this.refreshTasks
+                },
+                projecttaskbuttoncontent
+            );
+        }
+
+        return [
+            e(
+                'div', {
+                    key: 'middle',
+                    className: 'cards-container'
+                },
+                e(
+                    'ol', {
+                        className: 'board-list clearfix'
+                    },
+                    e(
+                        'li', {
+                            className: 'sn-wb-pa-content-library'
+                        },
+                        e(
+                            'div', {
+                                className: 'h-card'
+                            },
+                            e(
+                                'div', {
+                                    className: 'row'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'icon-info sn-wb-pa-icon-override'
+                                    }
+                                ),
+                                e(
+                                    'div', {
+                                        className: 'sn-wb-pa-card-header'
+                                    },
+                                    e(
+                                        'div', {
+                                            className: 'sn-card-component sn-card-component_headline'
+                                        },
+                                        getMessage('Summary')
+                                    )
+                                )
+                            ),
+                            e(
+                                'hr'
+                            ),
+                            e(
+                                'div', {
+                                    className: 'row description'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'col-xs-12 sn-card-component sn-card-component_meta extra-padding-sm'
+                                    },
+                                    e(
+                                        'strong',
+                                        null,
+                                        this.props.project_name
+                                    ),
+                                    e(
+                                        'br'
+                                    ),
+                                    e(
+                                        'br'
+                                    ),
+                                    e(
+                                        'span',
+                                        null,
+                                        new GwtMessage().getMessage('{0} and Personas defined in this project.', entitytypenames)
+                                    )
+                                )
+                            ),
+                            e(
+                                'div', {
+                                    className: 'row'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'col-xs-12'
+                                    },
+                                    e(
+                                        'div', {
+                                            className: 'sn-wb-pa-card-filler'
+                                        }
+                                    ),
+                                    summaryitems
+                                )
+                            )
+                        )
+                    ),
+                    e(
+                        'li', {
+                            className: 'sn-wb-pa-content-library'
+                        },
+                        e(
+                            'div', {
+                                className: 'h-card'
+                            },
+                            e(
+                                'div', {
+                                    className: 'row'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'icon-dashboard sn-wb-pa-icon-override'
+                                    }
+                                ),
+                                e(
+                                    'div', {
+                                        className: 'sn-wb-pa-card-header'
+                                    },
+                                    e(
+                                        'div', {
+                                            className: 'sn-card-component sn-card-component_headline'
+                                        },
+                                        getMessage('PA Artifacts')
+                                    )
+                                )
+                            ),
+                            e(
+                                'hr'
+                            ),
+                            e(
+                                'div', {
+                                    className: 'row description'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'col-xs-12 sn-card-component sn-card-component_meta extra-padding-sm'
+                                    },
+                                    e(
+                                        'span',
+                                        null,
+                                        getMessage('Performance Analytics artifacts defined within the design')
+                                    )
+                                )
+                            ),
+							e(
+								'div', {
+									className: 'row'
+								},
+								e(
+									'div', {
+										className: 'col-xs-12'
+									},
+									e(
+										'div', {
+											className: 'sn-wb-pa-card-filler'
+										}
+									),
+									paelementitems
+								)
+							)
+                        )
+                    ),
+					e(
+                        'li', {
+                            className: 'sn-wb-pa-content-library'
+                        },
+                        e(
+                            'div', {
+                                className: 'h-card'
+                            },
+                            e(
+                                'div', {
+                                    className: 'row'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'icon-alert-triangle sn-wb-pa-icon-override'
+                                    }
+                                ),
+                                e(
+                                    'div', {
+                                        className: 'sn-wb-pa-card-header'
+                                    },
+                                    e(
+                                        'div', {
+                                            className: 'sn-card-component sn-card-component_headline'
+                                        },
+                                        getMessage('Project validation')
+                                    )
+                                )
+                            ),
+                            e(
+                                'hr'
+                            ),
+                            e(
+                                'div', {
+                                    className: 'row description'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'col-xs-12 sn-card-component sn-card-component_meta extra-padding-sm'
+                                    },
+                                    projectvalidationbutton
+                                )
+                            ),
+                            e(
+                                'div', {
+                                    className: 'row'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'col-xs-12'
+                                    },
+                                    e(
+                                        'div', {
+                                            className: 'sn-wb-pa-card-filler'
+                                        }
+                                    ),
+                                    projectvalidations
+                                )
+                            )
+                        )
+                    ),
+					e(
+                        'li', {
+                            className: 'sn-wb-pa-content-library'
+                        },
+                        e(
+                            'div', {
+                                className: 'h-card'
+                            },
+                            e(
+                                'div', {
+                                    className: 'row'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'icon-checkbox-checked sn-wb-pa-icon-override'
+                                    }
+                                ),
+                                e(
+                                    'div', {
+                                        className: 'sn-wb-pa-card-header'
+                                    },
+                                    e(
+                                        'div', {
+                                            className: 'sn-card-component sn-card-component_headline'
+                                        },
+                                        getMessage('Tasks')
+                                    )
+                                )
+                            ),
+                            e(
+                                'hr'
+                            ),
+                            e(
+                                'div', {
+                                    className: 'row description'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'col-xs-12 sn-card-component sn-card-component_meta extra-padding-sm'
+                                    },
+                                    projecttaskassigntogroup,
+                                    projecttaskbutton,
+                                    assigntogroupconfirmremoval
+                                )
+                            ),
+                            e(
+                                'div', {
+                                    className: 'row'
+                                },
+                                e(
+                                    'div', {
+                                        className: 'col-xs-12'
+                                    },
+                                    e(
+                                        'div', {
+                                            className: 'sn-wb-pa-card-filler'
+                                        }
+                                    ),
+                                    projecttasks
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        ];
+    }
+});]]></script>
+        <script_name>ReviewContent</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-04-03 14:57:01</sys_created_on>
+        <sys_id>c815f81e1b643b4019e8ed7b2f4bcbf8</sys_id>
+        <sys_mod_count>102</sys_mod_count>
+        <sys_name>sn_kpi_composer.ReviewContent</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_c815f81e1b643b4019e8ed7b2f4bcbf8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-12 08:53:22</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

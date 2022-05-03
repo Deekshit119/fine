@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskCreateTaskDefDependencies_DashboardBreakdowns</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskCreateTaskDefDependencies_DashboardBreakdowns</name>
+        <script><![CDATA[var ProjectTaskCreateTaskDefDependencies_DashboardBreakdowns = Class.create();
+ProjectTaskCreateTaskDefDependencies_DashboardBreakdowns.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	createdependencies: function(data) {
+		
+		// Not on indicator only widget
+		if (this.trace) this._debug.push("ProjectTaskCreateTaskDefDependencies_DashboardBreakdowns");	
+
+		var that = this;
+
+		// that._debug.push("Data: " + JSON.stringify(data));
+
+		data.dashboards.forEach(function(d) {
+			
+			if (global.JSUtil.notNil(d.breakdowns))
+				
+				{
+				var defRecId = d.sys_id;
+				var defTableNm = 'sn_kpi_composer_dashboard';
+
+				if (that.trace) that._debug.push("DefRecId: " + defRecId + "  DefRecTableNm: " + defTableNm);
+				var taskDefRec = that._getTaskDefinitionRecord(defTableNm, defRecId);
+				if (that.trace) that._debug.push("taskDefRec: " + JSON.stringify(taskDefRec));
+
+				var dependencies = (taskDefRec.dependencies && taskDefRec.dependencies.split(",")) || [];
+
+				// Breakdowns
+				d.breakdowns.split(",").forEach(function(breakdown_sys_id) {
+
+					var depRecId = breakdown_sys_id;
+					var depTableNm = 'sn_kpi_composer_breakdown';
+
+					var depTaskDefRec = that._addOrGetTaskDefinitionRecord(depTableNm, depRecId, data.project.sys_id);
+
+					if (that.trace) that._debug.push("Found dep taskdef: " + JSON.stringify(depTaskDefRec));
+
+					if (depTaskDefRec && dependencies.indexOf(depTaskDefRec.sys_id)<0)
+						dependencies.push(depTaskDefRec.sys_id);
+
+				});
+
+				// Set dependencies
+				taskDefRec.dependencies = dependencies.join();
+
+				// Update record
+				var result = that._updateTaskDefinitionRecord(taskDefRec);
+				
+			}
+
+		});
+
+	},
+
+    type: 'ProjectTaskCreateTaskDefDependencies_DashboardBreakdowns'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-09-09 13:44:08</sys_created_on>
+        <sys_id>78fab3e8dbaa7410317f6a5f05961902</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>ProjectTaskCreateTaskDefDependencies_DashboardBreakdowns</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_78fab3e8dbaa7410317f6a5f05961902</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-06 08:42:07</sys_updated_on>
+    </sys_script_include>
+</record_update>

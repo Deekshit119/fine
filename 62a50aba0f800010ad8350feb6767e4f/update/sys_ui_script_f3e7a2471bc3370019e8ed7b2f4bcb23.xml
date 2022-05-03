@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardTabDetail</name>
+        <script><![CDATA[var DashboardTabDetail = createReactClass({
+	getInitialState: function() {
+		return {
+			addrow: this.props.onDashboardTabRowAdd && this.props.tabisnew === true && this.props.dashboardtabrows.length === 0
+		};
+	},
+
+	componentDidUpdate: function(prevProps) {
+		if (this.props.onDashboardTabRowAdd && this.props.tabisnew === true && prevProps.tabisnew !== true && this.props.dashboardtabrows.length === 0) {
+			this.setState({ addrow: true });
+		}
+	},
+
+// 	dashboardTabAreaSaveName: function(dashboardtabareasysid, name, callback) {
+// 	this.props.onDashboardTabAreaSaveName(this.props.dashboardtab.sys_id, dashboardtabareasysid, name, callback);
+// },
+	
+// 	dashboardTabAreaDelete: function(dashboardtabareasysid, callback) {
+// 		this.props.onDashboardTabAreaDelete(this.props.dashboardtab.sys_id, dashboardtabareasysid, callback);
+// 	},
+	
+	addRow: function() {
+		this.setState({addrow: true});
+	},
+	
+	addRowOnCancel: function() {
+		this.setState({addrow: false});
+	},
+	
+	addRowOnSave: function(rowdetails) {
+		var that = this;
+		this.props.onDashboardTabRowAdd(
+			this.props.dashboardtab.sys_id,
+			rowdetails.nrofcanvasses,
+			function() {
+				that.setState({addrow: false});	
+			}
+		);
+	},
+	
+	dashboardTabRowEdit: function (rowsys_id, nrofcanvasses, callback) {
+		this.props.onDashboardTabRowEdit(this.props.dashboardtab.sys_id, rowsys_id, nrofcanvasses, callback);
+	},
+	
+	dashboardTabRowDelete: function (rowsys_id, callback) {
+		this.props.onDashboardTabRowDelete(this.props.dashboardtab.sys_id, rowsys_id, callback);
+	},
+	
+	dashboardTabRowMoveTo: function (direction, rowsys_id, callback) {
+		this.props.onDashboardTabRowMoveTo(direction, this.props.dashboardtab.sys_id, rowsys_id, callback);
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var rowaddmodal = null;
+		if (this.state.addrow == true) {
+			rowaddmodal = e(
+				DashboardRowModal,
+				{ key: 'addmodal', onSave: this.addRowOnSave, onCancel: this.addRowOnCancel }
+			);
+		}
+		//'tab: ' + this.props.dashboardtab.name + ' nr of rows: ' + this.props.dashboardtabrows.length
+		
+		var rows = this.props.dashboardtabrows.map(
+			function (row, index, arr) {
+				return e(
+					DashboardRowDetail,
+					{
+						key: row.sys_id,
+						row: row,
+						allowmoveup: index > 0,
+						allowmovedown: index < arr.length - 1,
+						canvasses: that.props["dashboardtabrowcanvasses_" + row.sys_id],
+						widgettypes: that.props.widgettypes,
+						entities: that.props.entities,
+						timeseries: that.props.timeseries,
+						spotlight_installed: that.props.spotlight_installed,
+						onDashboardTabRowDelete: that.props.onDashboardTabRowDelete ? that.dashboardTabRowDelete : null,
+						onDashboardTabRowEdit: that.props.onDashboardTabRowEdit ? that.dashboardTabRowEdit : null,
+						onDashboardTabRowMoveTo: that.props.onDashboardTabRowMoveTo ? that.dashboardTabRowMoveTo : null,
+						onDashboardTabRowCanvasSaveTitle: that.props.onDashboardTabRowCanvasSaveTitle,
+						onDashboardTabRowCanvasEdit: that.props.onDashboardTabRowCanvasEdit,
+						onDashboardTabRowCanvasEntityDelete: that.props.onDashboardTabRowCanvasEntityDelete,
+						onDashboardTabRowCanvasEntityInsert: that.props.onDashboardTabRowCanvasEntityInsert,
+						onDashboardTabRowCanvasSaveWidgetVisualisation: that.props.onDashboardTabRowCanvasSaveWidgetVisualisation,
+						onDashboardTabRowCanvasMoveTo: that.props.onDashboardTabRowCanvasMoveTo
+					}
+				);
+			}
+		);
+		
+		if (this.props.onDashboardTabRowAdd) {
+			rows.push(
+				e(
+					'div',
+					{ key: 'add', className: 'row' },
+					e(
+						'div',
+						{ className: 'col-md-12'},
+						e(
+							'button',
+							{ type: 'button', className: 'btn btn-primary', onClick: this.addRow },
+							getMessage('Add Row')
+						)
+					)
+				)
+			);
+
+			if (rowaddmodal != null) {
+				rows.push(rowaddmodal);
+			}
+		}
+		
+		return e(
+			'div',
+			{ className: 'wb-pa-dashboardtabdetail' },
+			rows
+		);
+	}
+});]]></script>
+        <script_name>DashboardTabDetail</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-08 13:51:21</sys_created_on>
+        <sys_id>f3e7a2471bc3370019e8ed7b2f4bcb23</sys_id>
+        <sys_mod_count>33</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardTabDetail</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_f3e7a2471bc3370019e8ed7b2f4bcb23</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 15:54:25</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

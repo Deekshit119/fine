@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.RecordApi</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>The most basic class definition (all other classes (could) be derived from this class&#13;
+All constant definitions and DTO/POCO object convention from record to object structure.&#13;
+</description>
+        <name>RecordApi</name>
+        <script><![CDATA[var RecordApi = Class.create();
+RecordApi.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+    /*
+     * Local vars
+     */
+
+    // Store debug log lines
+    _debug: [],
+    // Trace the code (store result in _debug)
+    trace: false,
+
+    /*
+     RecordApi => 4bed153b1b847b004e6921be6e4bcb6a
+     BaseApi => a1ccacdadb1feb006dd37914b9961933
+     EntityApi => 6873e3591b03e3004e6921be6e4bcb5f	 
+     TestApi => 8db5767a1bfbe300055f96002d4bcbe1
+     projectPersona => 876855ae1b283b40055f96002d4bcb3d
+     ProjectValidation => 9ef3bb371b1c73404e6921be6e4bcb42
+     globalFunctions => 0ae593ba1b0c04504e6921be6e4bcbf5
+    */
+
+
+    /*
+     * Const  (+/-)
+     */
+    _defaultDimensionsColors: ['Breakdown1', 'Breakdown2', 'Breakdown3', 'Breakdown4', 'Breakdown5', 'Breakdown6', 'Breakdown7', 'Breakdown8', 'Breakdown9', 'Breakdown10', 'Breakdown11', 'Breakdown12', 'Breakdown13', 'Breakdown14', 'Breakdown15'],
+
+    _indicatorDefinitionAutomatedColorSysId : JSON.parse(gs.getProperty("sn_kpi_composer.record_api.constants"))._indicatorDefinitionAutomatedColorSysId,
+    _indicatorDefinitionFormulaColorSysId: JSON.parse(gs.getProperty("sn_kpi_composer.record_api.constants"))._indicatorDefinitionFormulaColorSysId,
+    _indicatorDefinitionManualColorSysId: JSON.parse(gs.getProperty("sn_kpi_composer.record_api.constants"))._indicatorDefinitionManualColorSysId,
+
+    _projectValidationSeverityOk: 0,
+    _projectValidationSeverityInfo: 1,
+    _projectValidationSeverityWarning: 2,
+    _projectValidationSeverityDefinitionError: 3,
+
+    _projectTaskGeneric: 0,
+    _projectTaskCreateBreakdown: 1,
+    _projectTaskCreateIndicator: 2,
+    _projectTaskValidateBreakdown: 3,
+    _projectTaskValidateIndicator: 4,
+    _projectTaskCreateWidget: 5,
+    _projectTaskCreateReport: 6,
+	_projectTaskCreateInteractiveFilter: 7,
+	_projectTaskCreateSpotlight: 8,
+	_projectTaskCreateContentBlock: 9,
+
+    _indicatorDefinitionTypeAutomated: 1,
+    _indicatorDefinitionTypeFormula: 2,
+    _indicatorDefinitionTypeManual: 3,
+
+    _indicatorDirectionNone: 1,
+    _indicatorDirectionMin: 2,
+    _indicatorDirectionMax: 3,
+
+    _entityTypeBusinessGoal: JSON.parse(gs.getProperty("sn_kpi_composer.record_api.constants"))._entityTypeBusinessGoal,
+    _entityTypeCriticalSuccessFactor: JSON.parse(gs.getProperty("sn_kpi_composer.record_api.constants"))._entityTypeCriticalSuccessFactor,
+    _entityTypeMeasurement: JSON.parse(gs.getProperty("sn_kpi_composer.record_api.constants"))._entityTypeMeasurement,
+
+    _taskDefinitionStatusOk: 0,
+    _taskDefinitionStatusIncomplete: 1,
+    //_taskDefinitionStatusWait: 2,
+    _taskDefinitionStatusCreate: 3,
+    _taskDefinitionStatusUpdate: 4,
+    _taskDefinitionStatusDelete: 5,
+
+	/*
+	* Create abbreviation for a word
+	* Examples: Manager-> MA, Servicedesk Agent -> SA, Service Desk -> SD
+	*/
+	_abbreviation: function(input) {
+        var result = "";
+        result = input.match(/\b\w/g).join('');
+        if (result.length>2) {
+          result = result.substring(0, 2);
+        }
+        if (result.length<2) {
+          if (input.length>1)
+            result = result + input[1];
+        }
+        result = result.toUpperCase();
+        return result;
+    },
+
+    /*
+     * Functions that translate records to objects 
+     * by using this function the result will always be the same
+     * Kind of DTO object/layer
+     */
+    _indicatordefinition_record: function(rec) {
+
+        var indT = rec.getValue('indicator_type');
+
+        var color = '#000000';
+        //voor Pepijn: this._getColor bestaat niet (zit in BaseApi.js)
+        // if (indT == 1) color = this._getColor(this._indicatorDefinitionAutomatedColorSysId).color;
+        // if (indT == 2) color = this._getColor(this._indicatorDefinitionFormulaColorSysId).color;
+        // if (indT == 3) color = this._getColor(this._indicatorDefinitionManualColorSysId).color;
+
+        if (this.trace) this._debug.push("IndicatorType: " + indT + ", Color:" + JSON.stringify(color));
+
+        return {
+            sys_id: rec.getValue('sys_id'),
+            aggregation: rec.getValue('aggregation'),
+            dv_aggregation: rec.getDisplayValue('aggregation'),
+            condition: rec.getValue('condition'),
+            description: rec.getValue('description'),
+            direction: rec.getValue('direction'),
+            dv_direction: rec.getDisplayValue('direction'),
+            facts_table: rec.getValue('facts_table'),
+            formula: rec.getValue('formula'),
+            frequency: rec.getValue('frequency'),
+            dv_frequency: rec.getDisplayValue('frequency'),
+            indicator_type: indT,
+            dv_indicator_type: rec.getDisplayValue('indicator_type'),
+            name: rec.getValue('name'),
+            pa_indicator: rec.getValue('pa_indicator'),
+            pa_indicator_name: rec.getValue('pa_indicator.name'),
+            dv_pa_indicator: rec.getDisplayValue('pa_indicator'),
+            project: rec.getValue('project'),
+			development_instructions: rec.getValue('development_instructions'),
+			target: rec.getValue('target'),
+            definition_updated: rec.getValue('definition_updated'),
+            //voor nu even geen kleuren per specifiek type
+            //color: color,
+        };
+    },
+
+    /* Color record to object */
+    _color_record: function(rec) {
+        var color = {
+            sys_id: rec.getValue('sys_id'),
+            name: rec.getValue('name'),
+            description: rec.getValue('description'),
+            color: rec.getValue('color'),
+            display: rec.getValue('display'),
+            sys_name: rec.getValue('sys_name'),
+            sys_scope: rec.getValue('sys_scope'),
+        };
+        return color;
+    },
+
+    /* Project record to object */
+    _project_record: function(rec) {
+        var pApi = new sn_kpi_composer.ProjectApi;
+        var projectRec = {
+            sys_id: rec.getValue('sys_id'),
+            name: rec.getValue('name'),
+            description: rec.getValue('description'),
+            objective: rec.getValue('objective'),
+            defaultentityrelationtype: rec.getValue('default_entity_relation_type'),
+            contacts: rec.getValue('contacts') || "",
+            contacts_dv: rec.getDisplayValue('contacts'),
+            owners: rec.getValue('owners') || "",
+            owners_dv: rec.getDisplayValue('owners'),
+            knowledgearticles: rec.getValue('knowledgearticles') || "",
+            comments: rec.comments.getJournalEntry(-1),
+            readonly: !rec.canWrite(),
+            cancreate: rec.canCreate(),
+            candelete: rec.canDelete(),
+            library: (rec.getValue('library') == "1" ? true : false),
+            library_public: (rec.getValue('library_public') == "1" ? true : false),
+            library_owner: (rec.sys_created_by == gs.getUserName()),
+            top_nodes: pApi._projectTopNodes(rec.getValue('sys_id')),
+        };
+        // modify comments data
+        if (projectRec.comments) {
+            var re = /(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [a-zA-Z -0-9]* \(Comments\)[\n])/;
+            var items = projectRec.comments.split(re);
+            var i = 1;
+            var comment_items = [];
+            while(i<items.length) {
+                var comment = {};                
+                var user_date = items[i].split(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) - /);
+                if (user_date.length>1) {
+                    comment.date = user_date[1].replace(' - ').trimRight();
+                } else { comment.date = "Error decoding"; }
+                if (user_date.length>2) {
+                    comment.user = user_date[2].replace(' (Comments)', '').trimRight(); }
+                    else { comment.user = "Error decoding"; }
+                
+                comment.data = "";
+                i++;
+                if (i<items.length) {
+                    comment.data = items[i];
+                }
+                i++;
+                comment.data = comment.data.trimRight();
+                comment_items.push(comment);
+            }
+            projectRec.comments = comment_items;
+        }
+
+        var ac = new sn_kpi_composer.AccessControl;
+        projectRec.readonly | !ac.project_write(projectRec.sys_id);
+
+        return projectRec;
+    },
+
+    _entity_record: function(rec, prefix) {
+        if (!prefix) prefix = "";
+        var entity = {
+            sys_id: rec.getValue(prefix + 'sys_id'),
+            org_sys_id: rec.getValue(prefix + 'sys_id'),
+            name: rec.getDisplayValue(prefix + 'name'),
+            category: "Entity",
+            description: rec.getDisplayValue(prefix + 'description'),
+            entitytype: rec.getValue(prefix + 'entity_type'),
+            entitytype_dv: rec.getDisplayValue(prefix + 'entity_type'),
+            contacts: rec.getValue(prefix + 'contacts') || "",
+            owners: rec.getValue(prefix + 'owners') || "",
+            knowledgearticles: rec.getValue(prefix + 'knowledgearticles') || "",
+            indicator_definition: rec.getValue(prefix + 'indicator_definition'),
+            report_definition: rec.getValue(prefix + 'report_definition'),
+            // collapsed << moved tp sep table, red when total entity is red
+			// collapsed: (rec.getValue('collapsed') == "1" ? true : false),
+			// collapseddd: (rec.getValue('collapseddd') == "1" ? true : false),
+			order: rec.getValue(prefix + 'order'),
+            target: rec.getValue(prefix + 'target'),
+            // Will be set (calculated) if this node is a root element in the current project
+            root: false,
+            library: (rec.getElement(prefix + "project.library") == "1" ? true : false),
+            library_root: false,
+            project_sys_id: rec.getElement(prefix + "project.sys_id").toString(),
+        };
+        return entity;
+    },
+    _relation_record: function(rec) {
+        var entity = {
+            sys_id: rec.getValue('sys_id'),
+            description: rec.getDisplayValue('description'),
+            from: rec.getValue('from_entity'), // || "null",
+            from_org_sys_id: rec.getValue('from_entity') || "null",
+            from_dv: rec.getDisplayValue('from_entity'),
+            to: rec.getValue('to_entity') || "null",
+            to_dv: rec.getDisplayValue('to_entity'),
+            to_org_sys_id: rec.getValue('to_entity') || "null",
+            project: rec.getValue('project'),
+            relationtype: rec.getValue('relation_type'),
+            to_project: rec.getElement('to_entity.project.sys_id').toString(),
+            inc_depth: (rec.getValue('project') !== rec.getElement('to_entity.project.sys_id').toString() ? 1 : 0),
+        };
+        return entity;
+    },
+
+    /* IndicatorDef_IndicatorDef record to object */
+    _indicatordefinition_indicatordefinition_record: function(rec) {
+        var indicatordefinition_indicatordefinition = {
+            sys_id: rec.getValue('sys_id'),
+            main_indicator_definition: rec.getValue('main_indicator_definition'),
+            sup_indicator_definition: rec.getValue('sup_indicator_definition')
+        };
+        return indicatordefinition_indicatordefinition;
+    },
+
+    /* ProjectValidation record to object */
+    _projectvalidation_record: function(rec) {
+        var validation = {};
+        validation.description = rec.getValue("description");
+        validation.severity = rec.getValue("severity");
+        validation.project = rec.getValue("project");
+        validation.sys_id = rec.getValue("sys_id");
+        validation.order = rec.getValue("order");
+        validation.record = rec.getValue("record");
+        validation.table = rec.getValue("table");
+        return validation;
+    },
+
+    /* Breakdown record to object */
+    _breakdown_record: function(rec) {
+        var breakdown = {};
+        breakdown.sys_id = rec.getValue('sys_id');
+        breakdown.name = rec.getValue('name');
+        breakdown.color = rec.getDisplayValue('color.color');
+        breakdown.facts_table = rec.getValue('facts_table');
+        breakdown.pa_breakdown = rec.getValue('pa_breakdown');
+        breakdown.pa_breakdown_dv = rec.getDisplayValue('pa_breakdown');
+        breakdown.conditions = rec.getValue('conditions');
+        breakdown.definition_updated = rec.getValue('definition_updated');
+        return breakdown;
+    },
+    /* Persona record to object */
+    _persona_record: function(rec) {
+        var persona = {};
+        persona.sys_id = rec.getValue('sys_id');
+        persona.name = rec.getValue('name');
+        persona.abbreviation = rec.getValue('abbreviation');
+        persona.project = rec.getValue("project");
+        return persona;
+    },
+
+    /* ProjectTask record to object */
+    _projecttask_record: function(rec) {
+        var task = {};
+        task.description = rec.getValue("description");
+        task.type = rec.getValue("type");
+        task.project = rec.getValue("project");
+        task.sys_id = rec.getValue("sys_id");
+        task.order = rec.getValue("order");
+        task.record = rec.getValue("record");
+        task.table = rec.getValue("table");
+        return task;
+    },
+
+    /* Dashboard record to object */
+    _dashboard_record: function(rec) {
+        var dashboard = {};
+        dashboard.description = rec.getValue("description");
+        dashboard.project = rec.getValue("project");
+        dashboard.sys_id = rec.getValue("sys_id");
+        dashboard.breakdowns = rec.getValue("breakdowns");
+        dashboard.name = rec.getValue("name");
+        dashboard.persona = rec.getValue("persona");
+        dashboard.order = rec.getValue("order");
+        dashboard.pa_dashboard = rec.getValue("pa_dashboard");
+        dashboard.definition_updated = rec.getValue('definition_updated');
+
+        return dashboard;
+    },
+
+    _pa_dashboard_record: function(rec) {
+        var pa_dashboard = {};
+        pa_dashboard.name = rec.getValue("name");
+        pa_dashboard.sys_id = rec.getValue("sys_id");
+        pa_dashboard.display = rec.getValue("sys_name");
+        return pa_dashboard;
+    },
+
+
+    /* Tab record to object */
+    _tab_record: function(rec) {
+        var tab = {};
+        tab.caption = rec.getValue("caption");
+        tab.dashboard = rec.getValue("dashboard");
+        tab.sys_id = rec.getValue("sys_id");
+        tab.order = parseInt(rec.getValue("order"));
+        tab.template = (rec.getValue('template') == "1" ? true : false);
+        tab.template_public = (rec.getValue('template_public') == "1" ? true : false);
+        tab.template_description = rec.getValue("template_description");
+        return tab;
+    },
+
+    /* Row record to object */
+    _row_record: function(rec) {
+        var row = {};
+        row.nrofcanvasses = rec.getValue("nrofcanvasses");
+        row.order = rec.getValue("order");
+        row.tab = rec.getValue("tab");
+        row.sys_id = rec.getValue("sys_id");
+        return row;
+    },
+
+
+    /* Canvas record to object */
+    _canvas_record: function(rec) {
+        var canvas = {};
+        canvas.description = rec.getValue("description");
+        canvas.sys_id = rec.getValue("sys_id");
+        canvas.order = rec.getValue("order");
+        canvas.entities = rec.getValue("entities");
+        canvas.row = rec.getValue("row");
+        canvas.title = rec.getValue("title");
+        canvas.widgetvisualisation = rec.getValue("widgetvisualisation");
+        canvas.widgetvisualisation_dv = rec.getDisplayValue("widgetvisualisation");
+        canvas.widget_type = rec.getDisplayValue('widgetvisualisation.widget_type');
+        canvas.follow_element = (rec.getValue('follow_element') == "1" ? true : false);
+        canvas.follow_interactive_filter = (rec.getValue('follow_interactive_filter') == "1" ? true : false);        
+        canvas.pa_widget = rec.getValue("pa_widget");
+        canvas.report = rec.getValue("report");
+        canvas.spotlight_group = rec.getValue("spotlight_group");
+        canvas.interactive_filter = rec.getValue("interactive_filter");
+        canvas.content_block = rec.getValue("content_block");
+        canvas.time_serie = rec.getValue("time_serie");
+        canvas.time_serie_dv = rec.getDisplayValue("time_serie");
+        canvas.definition_updated = rec.getValue('definition_updated');
+        return canvas;
+    },
+
+    /* Row record to object */
+    _widgetvisualisation_record: function(rec) {
+        var widgetvisualisation = {};
+        widgetvisualisation.name = rec.getDisplayValue("name");
+        //widgetvisualisation.order = rec.getValue("order");
+        widgetvisualisation.onecolimg = rec.getValue("onecolimg");
+        widgetvisualisation.twocolimg = rec.getValue("twocolimg");
+        widgetvisualisation.threecolimg = rec.getValue("threecolimg");
+        widgetvisualisation.fourcolimg = rec.getValue("fourcolimg");
+        widgetvisualisation.sixcolimg = rec.getValue("sixcolimg");
+        widgetvisualisation.twelvecolimg = rec.getValue("twelvecolimg");
+        //widgetvisualisation.onecolurl = rec.getValue("onecolurl");
+        //widgetvisualisation.twocolurl = rec.getValue("twocolurl");
+        //widgetvisualisation.threecolurl = rec.getValue("threecolurl");
+        widgetvisualisation.sys_id = rec.getValue("sys_id");
+        widgetvisualisation.max_number_of_artifacts =  parseInt(rec.getValue("max_number_of_artifacts"));
+        widgetvisualisation.visualisationtype = rec.getValue("visualisationtype");
+        widgetvisualisation.widgettype = rec.getValue("widget_type");
+        return widgetvisualisation;
+    },
+
+
+    _report_record: function(rec) {
+        var report = {};
+        if (rec) {
+            report.name = rec.getValue("sys_name");
+            report.title = rec.getValue("title");
+            report.description = rec.getValue("description");
+            report.sys_id = rec.getValue("sys_id");
+            report.definition_updated = rec.getValue('definition_updated');
+        } else {
+            report.exception = "Rec object is NULL";
+        }
+        return report;
+    },
+
+
+    _interactive_filter_record: function(rec) {
+        var interactive_filter = {};
+        interactive_filter.name = rec.getValue("name");
+        interactive_filter.look_up_name = rec.getValue("look_up_name");
+        interactive_filter.sys_id = rec.getValue("sys_id");
+        return interactive_filter;
+    },
+
+    _spotlight_group_record: function(rec) {
+        var spotlight_group = {};
+        spotlight_group.name = rec.getValue("name");
+        spotlight_group.sys_id = rec.getValue("sys_id");
+        return spotlight_group;
+    },    
+
+    _content_block_record: function(rec) {
+        var content_block = {};
+        content_block.name = rec.getValue("name");
+        content_block.sys_id = rec.getValue("sys_id");
+        return content_block;
+    },
+
+
+    _knowledgearticle_record: function(rec) {
+        var knowledgearticle = {
+            sys_id: rec.getValue('sys_id'),
+            number: rec.getValue('number'),
+            short_description: rec.getValue('short_description'),
+            description: rec.getValue('description') 
+        };
+        return knowledgearticle;
+    },
+
+    _pa_widget_record: function(rec) {
+        var widget = {
+            sys_id: rec.getValue('sys_id'),
+            label: rec.getValue('compare_main_label'),
+            sys_name: rec.getValue('sys_name'),
+            name: rec.getValue('name'),
+            description: rec.getValue('description'),
+        };
+        return widget;
+    },
+
+    _group_record: function(rec) {
+        // 	
+        var group = {
+            sys_id: rec.getValue('sys_id'),
+            name: rec.getValue('name'),
+            description: rec.getValue('description'),
+        };
+        return group;
+    },
+
+    _project_permission_record: function(rec) {
+        // 	
+        var permission = {
+            sys_id: rec.getValue('sys_id'),
+            group: rec.getDisplayValue('group'),
+            group_sys_id: rec.getValue('group'),
+            user: rec.getDisplayValue('user'),
+            user_sys_id: rec.getValue('user'),
+            write: (rec.getValue('write') == "1" ? true : false),
+            permissiontype: rec.getDisplayValue('permissiontype'),
+        };
+        return permission;
+    },
+
+    _user_record: function(rec) {
+
+        var t = new RecordApi();
+
+        var user = {};        
+        if (rec) {
+            var name = rec.getValue('name'); 
+            user.sys_id = rec.getValue('sys_id');
+            user.name = rec.getValue('name');
+            user.email = rec.getValue('email');
+            user.abbreviation = t._abbreviation(name);
+        }
+        return user;
+    },
+
+
+    _report_definition_record: function(rec) {
+
+        var t = new RecordApi();
+        var report_definition = {};        
+        if (rec) {
+            report_definition.sys_id = rec.getValue('sys_id');
+            report_definition.name = rec.getValue('name');
+            report_definition.condition = rec.getValue('condition');
+			report_definition.facts_table = rec.getValue('facts_table');
+			report_definition.development_instructions = rec.getValue('development_instructions');
+			report_definition.report_source = rec.getValue('report_source');
+			report_definition.report_source_dv = rec.getDisplayValue('report_source');
+        }
+        return report_definition;
+    },    
+
+    _task_definition: function(rec) {
+
+        var task_definition = {};        
+        if (rec) {
+            task_definition.sys_id = rec.getValue('sys_id');
+            task_definition.name = rec.getElement('definition_record.sys_id').toString();
+            task_definition.name_dv = rec.getDisplayValue('definition_record');
+            task_definition.definition_record = rec.getValue('definition_record');
+			task_definition.definition_table = rec.getValue('definition_table');
+			task_definition.artifact_table = rec.getValue('artifact_table');
+			task_definition.artifact_record = rec.getValue('artifact_record');
+			task_definition.dependencies = rec.getValue('dependencies');
+			task_definition.description = rec.getValue('description');
+			task_definition.projects = rec.getValue('projects');
+			task_definition.status = rec.getValue('status');
+            task_definition.status_dv = rec.getDisplayValue('status');			
+            task_definition.task = rec.getDisplayValue('task');
+            //task_definition.last_status_ok = rec.getDisplayValue('last_status_ok');
+            task_definition.last_status_ok = rec.getValue('last_status_ok');
+        }
+        return task_definition;
+    },    
+
+
+    /*
+     * Helper functions
+     */
+
+    _getDistinctArrayFromCSS: function(str) {
+        var result = [];
+        if (str && str.length > 0) {
+            var items = str.split(",");
+            for (var i = 0; i < items.length; i++) {
+                if (result.indexOf(items[i]) < 0)
+                    result.push(items[i]);
+            }
+        }
+        return result;
+    },
+
+    _getObjectsFromArrayBySysId: function(arrOfObjs, arrOfSysIds) {
+        var result = [];
+        if (arrOfObjs && arrOfSysIds) {
+            for (var i = 0; i < arrOfSysIds.length; i++) {
+                var sys_id = arrOfSysIds[i];
+                for (var y = 0; y < arrOfObjs.length; y++) {
+                    var obj = arrOfObjs[y];
+                    if (obj.sys_id && obj.sys_id === sys_id)
+                        result.push(obj);
+                }
+            }
+        }
+        return result;
+    },
+
+    // If the functions is called from the client
+    // The request could hold (input) parameters
+    // This function take the input parameters and override existing parameters 
+    _getInputParam: function(input) {
+        try {
+            // Read the parameters
+            var inputStr = this.getParameter('sysparm_input');
+
+            // If there is a value, reconstruct from json
+            if (inputStr) {
+                var newInput = JSON.parse(inputStr);
+
+                // Override existing
+                if (newInput) input = newInput;
+            }
+
+            // While we are here check if we should trace the code
+            if (input) {
+                if (input.trace === true)
+                    this.trace = true;
+            }
+        } catch (ex) {
+            this._debug.push("Exception while reading input param. " + JSON.stringify(ex));
+        }
+        // Return overwritten or default input value
+        return input;
+    },
+
+
+
+    _apply_on_dashboards: function(dashboards, func) {
+        if (dashboards) {
+            for (var di = 0, dm = dashboards.length; di < dm; di++) {
+                var dashboard = dashboards[di];
+                if (dashboard && func) func(dashboard);
+            }
+        }
+    },
+
+    _apply_on_tabs: function(tabs, func) {
+        if (tabs) {
+            for (var ti = 0, tm = tabs.length; ti < tm; ti++) {
+                var tab = tabs[ti];
+                if (tab && func) func(tab);
+            }
+        }
+    },
+
+
+    _apply_on_rows: function(rows, func) {
+        if (rows) {
+            for (var ri = 0, rm = rows.length; ri < rm; ri++) {
+                var row = rows[ri];
+                if (row && func) func(row);
+            }
+        }
+    },
+
+    _apply_on_canvasses: function(canvasses, func) {
+        if (canvasses) {
+            for (var ci = 0, cm = canvasses.length; ci < cm; ci++) {
+                var canvas = canvasses[ci];
+                if (canvas && func) func(canvas);
+            }
+        }
+    },
+
+    // Return arry of sys_id's from entities in a dashboard (by -> tabs-rows-canvas-entities)
+    // Not distinct!!
+    _all_used_entities_in_dashboard: function(dashboard) {
+        var entities = [];
+        var that = this;
+
+        that._apply_on_tabs(dashboard.tabs,
+            function(tab) {
+                that._apply_on_rows(tab.rows,
+                    function(row) {
+                        that._apply_on_canvasses(row.canvasses, function(canvas) {
+                            var canvas_entities = that._getDistinctArrayFromCSS(canvas.entities);
+
+                            // Check all elements, all should follow breakdowns
+                            for (var ei = 0, em = canvas_entities.length; ei < em; ei++) {
+                                var canvas_entity = canvas_entities[ei];
+                                entities.push(canvas_entity);
+                            }
+                        });
+                    });
+            });
+        return entities;
+    },
+
+    type: 'RecordApi'
+
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-14 13:20:34</sys_created_on>
+        <sys_id>4bed153b1b847b004e6921be6e4bcb6a</sys_id>
+        <sys_mod_count>178</sys_mod_count>
+        <sys_name>RecordApi</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_4bed153b1b847b004e6921be6e4bcb6a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-04 10:28:08</sys_updated_on>
+    </sys_script_include>
+</record_update>

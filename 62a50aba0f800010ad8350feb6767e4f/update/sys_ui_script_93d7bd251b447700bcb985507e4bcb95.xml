@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.IndDesignNavHub</name>
+        <script><![CDATA[var IndicatorDesignNavHub = createReactClass({
+	getInitialState: function() {
+		return {
+			filter_text: this.props.filter_text
+		};
+	},
+
+	handleFilterTextChange: function(event) {
+		this.setState({ filter_text: event.target.value });
+	},
+	
+	handleFilterTextBlur: function(event) {
+		this.handleFilterTextChanged();
+	},
+	
+	handleFilterTextSubmit: function(event) {
+		event.preventDefault();
+		this.handleFilterTextChanged();
+	},
+	
+	handleFilterTextChanged: function() {
+		this.props.onFilterTextChange(this.state.filter_text);
+	},
+
+	handleFilterStatusChanged: function(event) {
+		var that = this;
+		this.setState({ filter_status: event.target.value }, function() { that.props.onFilterStatusChange(that.state.filter_status); });
+	},
+	
+	componentDidUpdate: function (prevProps) {
+		var newstate = null;
+		if (this.props.filter_text !== prevProps.filter_text && this.props.filter_text !== this.state.filter_text) {
+			newstate = { filter_text: this.props.filter_text };
+		}
+		if (this.props.filter_status !== prevProps.filter_status && this.props.filter_status !== this.state.filter_status) {
+			if (newstate == null) {
+				newstate = {};
+			}
+			newstate.filter_status = this.props.filter_status;
+		}
+		if (newstate) {
+			this.setState(newstate);
+		}
+	},
+
+	render: function() {
+		var filteringIsOn = null;
+		if (this.props.filtering_is_on) {
+			filteringIsOn = e(
+				'div',
+				{ className: 'sn-navhub-content sn-navhub-content_static' },
+				e(
+					'div',
+					{ className: 'wb-pa-board-filter-label' },
+					e(
+						'span',
+						null,
+						getMessage('Filtering is On')
+					),
+					e(
+						'span',
+						{ className: 'icon-cross', "aria-label": getMessage('Clear filter'), role: 'button', onClick: this.props.onClearFilter }
+					)
+				)
+			);
+		}
+
+		var sharebutton = null;
+		if (this.props.project_library !== true) {
+			sharebutton = e(
+				NavHubButton,
+				{ key: 'share', id: 'share', iconClass: 'icon-share', paddingBottom: 2, title: getMessage('Share'), isActive: this.props.activeAside === 'share', onActiveAsideChange: this.props.onActiveAsideChange  }
+			);
+		}
+
+		return e(
+			'div',
+			{ key: 'navhub', className: 'sn-navhub' },
+			e(
+				NavHubTitle,
+				{ title: this.props.title, showSeparator: false, returnUrl: this.props.returnUrl, project_library: this.props.project_library }
+			),
+			e(
+				'div',
+				{ className: 'sn-navhub-content sn-navhub-content_static sn-navhub-content_separator' },
+				filteringIsOn,
+				e(
+					'div',
+					{ className: 'sn-navhub-content' },
+					e(
+						'form',
+						{ className: 'wb-pa-board-filter-search', onSubmit: this.handleFilterTextSubmit },
+						e(
+							'div',
+							{ className: 'input-group-transparent' },
+							e(
+								'span',
+								{className: 'input-group-addon-transparent icon-filter'}
+							),
+							e(
+								'input',
+								{ className: 'form-control form-control-search', 'aria-label': getMessage('Filter by name'), type: 'search', placeholder: getMessage('Filter by name'), value: this.state.filter_text, onChange: this.handleFilterTextChange, onBlur: this.handleFilterTextBlur }
+							)
+						)
+					)
+				),
+				e(
+					'div',
+					{ className: 'sn-navhub-content sn-navhub-content_separator filter-status-container' },
+					e(
+						'select',
+						{ className: 'form-control form-control-filter-status', 'aria-label': getMessage('Filter by task'), defaultValue: this.props.filter_status, value: this.state.filter_status, onChange: this.handleFilterStatusChanged },
+						e(
+							'option',
+							{ value: "", disabled: true },
+							getMessage('Filter by task')
+						),
+						e(
+							'option',
+							{ value: "createdefinition" },
+							getMessage('Create definition')
+						),
+						e(
+							'option',
+							{ value: "linkpaindicator" },
+							getMessage('Link PA Indicator')
+						)
+					)
+				)
+			),
+			e(
+				'div',
+				{ className: 'sn-navhub-content sn-navhub-content_static sn-navhub-content_constrain sn-navhub-content sn-navhub-content_justify-right' },
+				e(
+					NavHubButton,
+					{ key: 'info', id: 'info', iconClass: 'icon-info', title: getMessage('Info'), isActive: this.props.activeAside === 'info', onActiveAsideChange: this.props.onActiveAsideChange  }
+				),
+				e(
+					NavHubButton,
+					{ key: 'journal', id: 'journal', iconClass: 'icon-livefeed', title: getMessage('Journal'), isActive: this.props.activeAside === 'journal', onActiveAsideChange: this.props.onActiveAsideChange  }
+				),
+				sharebutton
+			)
+		);
+	}
+});]]></script>
+        <script_name>IndDesignNavHub</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-07 15:22:19</sys_created_on>
+        <sys_id>93d7bd251b447700bcb985507e4bcb95</sys_id>
+        <sys_mod_count>35</sys_mod_count>
+        <sys_name>sn_kpi_composer.IndDesignNavHub</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_93d7bd251b447700bcb985507e4bcb95</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-26 17:25:13</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

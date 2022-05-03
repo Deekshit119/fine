@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.ReviewBadgeItem</name>
+        <script><![CDATA[var ReviewBadgeItem = createReactClass({
+	getDefaultProps: function() {
+		return {
+			badgecolor: 'badge-grey'
+		};
+	},
+	
+	render: function() {
+		return e(
+			'div',
+			{ className: 'sn-card-component sn-card-component_meta extra-padding-lg' },
+			e(
+				'a',
+				{ className: 'sn-wb-pa-cursor', href: this.props.link, target: this.props.linktarget },
+				e(
+					'span',
+					{ className: ('badge ' + this.props.badgecolor)},
+					this.props.number
+				),
+				e(
+					'span',
+					{ className: 'sn-wb-pa-badge-label'},
+					this.props.label
+				)
+			)
+		);
+	}
+});]]></script>
+        <script_name>ReviewBadgeItem</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-04-04 09:24:40</sys_created_on>
+        <sys_id>7d92b8e61ba8f740bcb985507e4bcb24</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>sn_kpi_composer.ReviewBadgeItem</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_7d92b8e61ba8f740bcb985507e4bcb24</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-04-04 12:31:19</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

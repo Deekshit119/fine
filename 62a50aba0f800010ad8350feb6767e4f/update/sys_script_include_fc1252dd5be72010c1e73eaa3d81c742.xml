@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectImport</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Adds all records related to a KPI Composer Project from a json</description>
+        <name>ProjectImport</name>
+        <script><![CDATA[var ProjectImport = Class.create();
+ProjectImport.prototype = {
+    initialize: function() {
+    },
+	importProjectFromJson: function(jsonStr) {
+	var tables = ['sn_kpi_composer_project', 'sn_kpi_composer_canvas', 'sn_kpi_composer_row', 'sn_kpi_composer_tab', 'sn_kpi_composer_dashboard', 'sn_kpi_composer_indicator_def_indicator_def_m2m', 'sn_kpi_composer_indicator_definition', 'sn_kpi_composer_entities_entities_m2m', 'sn_kpi_composer_entity', 'sn_kpi_composer_entity_relation', 'sn_kpi_composer_persona', 'sn_kpi_composer_entity_persona_m2m', 'sn_kpi_composer_report_definition', 'sn_kpi_composer_breakdowns_projects_m2m', 'sn_kpi_composer_breakdown', 'sn_kpi_composer_entity_breakdown_m2m'];
+
+		//Parse json string to object
+		var parsedJson = new global.JSON().decode(jsonStr);		
+
+		gs.info("Analyse import data.");
+		// Take all project_sys_id's from the import json
+		// Because all project will be removed/deleted before import
+		// all existing relations to the project will also be removed
+		// store the existing relation (relations form a project - not in the import - to a project in the import)
+		// and restore the relation after the import is finished
+		var jsonProjects = parsedJson["sn_kpi_composer_project"];
+
+		// FK project sys_id - contains all projects that will be imported		
+		var importProjectSysIds = [];
+
+		// Get all project's from the json
+		if(jsonProjects.length > 0) {
+			for(var y = 0; y< jsonProjects.length; y++) {
+				var record = jsonProjects[y];
+				var sys_id = record.sys_id;
+				gs.info("Found project sys_id: {0}", sys_id);
+				importProjectSysIds.push(sys_id);
+			}
+		}		
+		gs.info("Import: Found {0} projects.", this.importProjectFromJson.length);
+		gs.info("Import: Projects in the import: '{0}'", JSON.stringify(importProjectSysIds));
+
+		// Look for existing relation to one of the projects
+		var gr_fk_relation = new GlideRecord("sn_kpi_composer_entities_entities_m2m");
+		//gr_fk_relation.addQuery("from_entity.project", "NOT IN", importProjectSysIds);
+		//gr_fk_relation.addQuery("to_entity.project", "IN", importProjectSysIds);
+		
+		// Check for foreign library relations, they can be root items as well
+		var query = "from_entity.project.sys_idNOT IN" + importProjectSysIds + "^ORfrom_entity.projectISEMPTY";
+		gr_fk_relation.addEncodedQuery(query);
+		gr_fk_relation.addQuery("to_entity.project", "IN", importProjectSysIds);
+		gr_fk_relation.query();
+		gs.info("Import: Found {0} FK relations to the imported project(s).", gr_fk_relation.getRowCount());
+
+		// Use Export functions
+		var exportData = new ProjectExport();
+
+		// List of json objects to restore
+		var jsonEntityEntityToRestore =  exportData.convertGrToJSON(gr_fk_relation);
+
+		gs.info("Import: Relations to restore: '{0}'", JSON.stringify(jsonEntityEntityToRestore));
+
+		gs.info("Import: Loading Project: {0}", parsedJson.sn_kpi_composer_project[0].name);
+		//Iterate over the list of tables and insert all records from the json.
+		for(var i = 0; i<tables.length; i++){
+			gs.info("Import: Table from loop: '{0}'", tables[i]);
+			//gs.info("Table JSON from loop: '{0}'" + parsedJson[tables[i]]);
+
+			// If the insert/update is a project, remove the existing project first
+			if (tables[i] == 'sn_kpi_composer_project') {
+				var json = parsedJson[tables[i]];
+				if(json.length > 0) {
+					// Loop records (walk the ...)					
+					for(var y = 0; y< json.length; y++) {
+						var record = json[y];
+						var sys_id = record.sys_id;
+						gs.info("Removed project sys_id: '{0}'", sys_id);
+						if (record) {
+							var projectApi = new sn_kpi_composer.ProjectApi();
+							var input = { project: { sys_id: sys_id } };
+							var result = projectApi._deleteProject(input, true, false); 
+							gs.info("Removed project result: '{0}'", JSON.stringify(result));
+						}
+					}
+				}
+			}
+
+			this.insertRecordsForTable(parsedJson[tables[i]], tables[i]);
+		}
+
+		// If there are any relation to restore, restore them now
+		if (jsonEntityEntityToRestore.length>0) {
+			gs.info("Restoring existing relations");
+			this.insertRecordsForTable(jsonEntityEntityToRestore, "sn_kpi_composer_entities_entities_m2m");			
+		} else {
+			gs.info("Not restoring any relations");
+		}
+
+	},
+	insertRecordsForTable: function(json, table) {
+		var gr1 = new GlideRecord(table);
+		gs.info("Table name:" +  table);
+
+		// if(json.length == 0) gs.info("Not Inserting Empty Rows for table: {0}", table);
+		
+		//There can be multiple rows for the json, so we need to iterate over the array for this particular table in the json
+		for(var i = 0; i< json.length; i++){
+			if(gr1.get(json[i].sys_id)){
+				gs.info("Update record With Value '{0}' for table '{1}'", json[i][item], table);
+				for (item in json[i]) {
+					for (item in json[i]) {
+						if(item == 'comments'){
+							gs.info("Updating Journal Field: " + item + " With Value: " + json[i][item]);
+							gr1.comments = json[i][item];
+						}
+						else {
+						// gs.info("Updating: " + item + " With Value: " + json[i][item]);
+						gr1.setValue(item, json[i][item]);
+					}
+				}
+				}
+				gr1.update();
+			} else {
+				gr1.initialize();
+				for (item in json[i]) {
+					//Need to preserve sys_id from the source. setNewGuidValue("oldsysid") inserts the new record and assigns it the oldsysid.
+					if(item =='sys_id'){
+						gs.info("Inserting while maintaining sys_id With Value '{0}' for table '{1}'", json[i][item], table);
+						gr1.setNewGuidValue(json[i][item]);
+					} else if(item == 'comments'){
+						gs.info("Inserting Journal Field: " + item + " With Value: " + json[i][item]);
+						gr1.comments = json[i][item];
+					} else {
+						// gs.info("Inserting: " + item + " With Value: " + json[i][item]);
+						gr1.setValue(item, json[i][item]);
+					}
+				}
+				gr1.insert();
+			}
+		}
+	},
+    type: 'ProjectImport'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-04-15 10:53:39</sys_created_on>
+        <sys_id>fc1252dd5be72010c1e73eaa3d81c742</sys_id>
+        <sys_mod_count>34</sys_mod_count>
+        <sys_name>ProjectImport</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_fc1252dd5be72010c1e73eaa3d81c742</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-10 13:49:37</sys_updated_on>
+    </sys_script_include>
+</record_update>

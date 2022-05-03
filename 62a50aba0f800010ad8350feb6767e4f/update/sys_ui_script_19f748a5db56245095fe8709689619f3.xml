@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.CreateLibraryModal</name>
+        <script><![CDATA[var CreateLibraryModal = createReactClass({	
+	getInitialState: function() {
+		return {
+			name: this.props.name,
+			description: '',
+            saving: false
+		};
+	},
+
+	close: function() {
+		this.props.onCancel();
+	},
+
+    submit: function(event) {
+        event.preventDefault();
+        var that = this;
+        that.setState({ saving: true });
+
+		this.props.onSubmit(this.state.name, this.state.description, function(error) {
+            if (error != null) {
+                that.setState({ saving: false });
+            }
+        });
+	},
+
+	handleInputNameChange: function(event) {
+		this.setState({ name: event.target.value });
+	},
+
+	handleInputDescriptionChange: function(event) {
+		this.setState({ description: event.target.value });
+	},
+
+	onOpened: function() {
+		if (this.refs.nameinput) {
+			this.refs.nameinput.focus();
+			this.refs.nameinput.select();
+		}
+	},
+
+	render: function() {
+		var that = this;
+
+		var closeButton = e(
+			'button',
+			{ type: 'button', title: getMessage('Close'), className: 'btn btn-icon icon-cross btn-close', onClick: this.close, disabled: this.state.saving }
+		);
+
+		return [
+			e(
+				Reactstrap.Modal,
+				{ key:'createlibrarymodal', backdrop: 'static', 'isOpen': true, className: 'createlibrarymodal', onOpened: this.onOpened, toggle: this.close },
+				e(
+					Reactstrap.ModalHeader,
+					{ close: closeButton, toggle: this.close },
+					getMessage("Create library element")
+				),
+                e(
+                    'form',
+                    { className: 'form-horizontal', onSubmit: this.submit},
+                    e(
+                        Reactstrap.ModalBody,
+                        {},
+                        e(
+                            'div',
+                            {className: ('form-group' + (this.state.name ? '' : ' is-required'))},
+                            e(
+                                'label',
+                                { className: "col-md-3 control-label"},
+                                getMessage("Name"),
+                                e(
+                                    'span',
+                                    { className: "required-marker"}
+                                )
+                            ),
+                            e(
+                                'div',
+                                {className: "col-md-9"},
+                                e(
+                                    'input',
+                                    { type: 'text', ref: 'nameinput', placeholder: getMessage('Name'), 'aria-label': getMessage('Name'), className: 'form-control', disabled: this.state.saving, value: this.state.name, onChange: this.handleInputNameChange }
+                                )
+                            )
+                        ),
+                        e(
+                            'div',
+                            {className: 'form-group'},
+                            e(
+                                'label',
+                                { className: "col-md-3 control-label"},
+                                getMessage("Description")
+                            ),
+                            e(
+                                'div',
+                                {className: "col-md-9"},
+                                e(
+                                    'textarea',
+                                    { placeholder: getMessage('Description'), rows: 5, 'aria-label': getMessage('Description'), className: 'form-control', disabled: this.state.saving, value: this.state.description, onChange: this.handleInputDescriptionChange }
+                                )
+                            )
+                        ),
+                        e(
+                            'div',
+                            { className: "row"},
+                            e(
+                                'label',
+                                { className: "col-md-3 control-label"},
+                                ""
+                            ),
+                            e(
+                                'div',
+                                {className: "col-md-9"},
+                                e(
+                                    'div',
+                                    { className: 'alert alert-warning' },
+                                    "By converting this element into a library element, all child elements are created in the library element and removed as stand-alone elements from the current project"
+                                )
+                            )
+                        )
+                    ),
+                    e(
+                        Reactstrap.ModalFooter,
+                        {  },
+                        e(
+                            "button",
+                            {type:"submit", className: "btn btn-primary pull-left", disabled: this.state.saving || !this.state.name },
+                            getMessage("Create Library Element")
+                        ),
+                        e(
+                            "button",
+                            {type:"button", className: "btn btn-default pull-right", disabled: this.state.saving, onClick: this.close },
+                            getMessage("Cancel")
+                        )
+                    )
+                )
+			)
+		];
+	}
+});]]></script>
+        <script_name>CreateLibraryModal</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-02-12 16:07:52</sys_created_on>
+        <sys_id>19f748a5db56245095fe8709689619f3</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>sn_kpi_composer.CreateLibraryModal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_19f748a5db56245095fe8709689619f3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-05-17 07:51:14</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

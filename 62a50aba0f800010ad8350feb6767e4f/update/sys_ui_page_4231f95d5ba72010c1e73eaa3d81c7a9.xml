@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_page">
+    <sys_ui_page action="INSERT_OR_UPDATE">
+        <category>general</category>
+        <client_script><![CDATA[function readText(event) {
+    try {
+        var fileToLoad = document.getElementById("attachFile").files[0];
+        var fileReader = new FileReader();
+        fileReader.onload = function(fileLoadedEvent) {
+            var text = fileLoadedEvent.target.result;
+            document.getElementById("jsonText").value = text;
+        };
+        fileReader.readAsText(fileToLoad, "UTF-8");
+    } catch (e) {
+       gs.info("Failed to open file. Error: " + e);
+    }
+}
+
+function verify(){
+	if (document.getElementById("jsonText").value == ""){
+		alert("No project file selected.");
+	}
+	return true;
+}]]></client_script>
+        <description>Import a KPI Composer project</description>
+        <direct>false</direct>
+        <endpoint>sn_kpi_composer_import_project.do</endpoint>
+        <html><![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+
+	<style>
+		.import {
+		margin: 20px;
+		}
+	</style>
+	
+	<div class="import">
+		<g:ui_form>
+			<h4>${gs.getMessage('Upload project file:')}</h4>
+			<p><input id="attachFile" name="attachFile" type="file" accept="application/json" onchange="readText(event)"/></p>
+			<p>${gs.getMessage('When importing a project which already exists, the current project will be overwritten.')}</p>
+			<input type="hidden" id="jsonText" name="jsonText" value=""/>
+			<button name="import" id="import" class="btn btn-primary" onClick="verify()"> ${gs.getMessage('Import')}
+			</button>
+		</g:ui_form>
+	</div>
+</j:jelly>]]></html>
+        <name>import_project</name>
+        <processing_script><![CDATA[var status = 0;
+var projectNm = '';
+if (jsonText != ""){
+	try{
+		new sn_kpi_composer.ProjectImport().importProjectFromJson(jsonText);
+		var parsedJson = JSON.parse(jsonText);
+		projectNm= parsedJson.sn_kpi_composer_project[0].name;
+	}catch(e){
+		status = 1;
+		gs.info("Failed parsing input file. Error: " + e);
+	}
+	if(status == 0){
+		gs.addInfoMessage(gs.getMessage("Project {0} imported successfully", projectNm));
+	}else {
+		gs.addErrorMessage(gs.getMessage("Project import failed"));
+	}
+}]]></processing_script>
+        <sys_class_name>sys_ui_page</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-04-15 08:38:56</sys_created_on>
+        <sys_id>4231f95d5ba72010c1e73eaa3d81c7a9</sys_id>
+        <sys_mod_count>118</sys_mod_count>
+        <sys_name>import_project</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_page_4231f95d5ba72010c1e73eaa3d81c7a9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-10 13:42:51</sys_updated_on>
+    </sys_ui_page>
+</record_update>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskCreateReport</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskCreateReport</name>
+        <script><![CDATA[var ProjectTaskCreateReport = Class.create();
+ProjectTaskCreateReport.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	createtasks: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectTaskCreateReport");	
+
+		var globals_x = sn_kpi_composer.globalFunctions();
+
+		that._apply_on_dashboards(data.dashboards, 
+			function(dashboard) { 			
+				that._apply_on_tabs(dashboard.tabs,
+					function(tab) {
+						that._apply_on_rows(tab.rows, 
+							function(row) {
+								that._apply_on_canvasses(row.canvasses, 
+									function(canvas) {
+										if (canvas.widget_type == "Reports") {
+											
+											var defRecId = canvas.sys_id;
+											var defTableNm = 'sn_kpi_composer_canvas';
+											
+											// Find related entities and report definitions
+											var rd = {};
+											if (canvas.entities){
+												var entities = canvas.entities.split(",");
+												entities.forEach(function(entity) {
+													// Find the main entity record
+													var entity_record = {};
+													entity_record = sn_kpi_composer.findBySysId(data.entities, entity);
+													
+													// Get the report definition
+													if (entity_record.report_definition) {
+														rd = sn_kpi_composer.findBySysId(data.report_definitions, entity_record.report_definition);
+													}		
+												});
+											}
+												
+											var taskDefRec = that._addOrGetTaskDefinitionRecord(defTableNm, defRecId, data.project.sys_id);
+											if (that.trace) that._debug.push("Lookup DefRecId 9: " + defRecId + " for DefRecTableNm: " + defTableNm + " => " + JSON.stringify(taskDefRec));
+											
+											// Generic update of the status
+											that._updateTaskDefinitionStatus(taskDefRec, canvas, canvas.report, data, (canvas.report != null));
+								
+											// Set artifact source table
+											taskDefRec.artifact_table = 'sys_report';
+								
+											// Set the artifact target record
+											taskDefRec.artifact_record = canvas.report;
+								
+											var desc = gs.getMessage("{0}Report name '{1}'", [taskDefRec.validationerrors ,canvas.title]);
+											desc += gs.getMessage("\nDescription: {0}", canvas.description || "(empty)");
+											desc +=  gs.getMessage("\nVisualisation: '{0}'", canvas.widgetvisualisation_dv);
+											desc +=  gs.getMessage("\nFollow interactive filter: '{0}'", canvas.follow_interactive_filter);
+											
+											// Related report definition info
+											if (rd.facts_table) desc +=  gs.getMessage("\nFacts table: '{0}'", rd.facts_table);
+											if (rd.report_source) desc +=  gs.getMessage("\nReport source: '{0}'", rd.report_source_dv);
+											if (rd.condition) desc +=  gs.getMessage("\nConditions: '{0}'", rd.condition);											
+
+											taskDefRec.description = desc;
+			
+											var result = that._updateTaskDefinitionRecord(taskDefRec);							
+										}									
+								});							
+						});					
+				});
+			});			
+	},											
+    type: 'ProjectTaskCreateReport'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-10-08 12:32:00</sys_created_on>
+        <sys_id>3ba491a0db3f9010fd0f577e68961945</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>ProjectTaskCreateReport</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_3ba491a0db3f9010fd0f577e68961945</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-19 14:39:29</sys_updated_on>
+    </sys_script_include>
+</record_update>

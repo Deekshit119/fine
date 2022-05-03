@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Diseño de ficha" max_length="40" name="sn_kpi_composer_tab" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Caption" mandatory="true" max_length="40" name="caption" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Dashboard" max_length="32" name="dashboard" reference="sn_kpi_composer_dashboard" reference_cascade_rule="cascade" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Order" max_length="40" name="order" type="integer"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <element label="Template" max_length="40" name="template" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Template description" max_length="4000" name="template_description" type="string"/>
+        <element label="Template global" max_length="40" name="template_public" type="boolean"/>
+        <index name="index">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index2">
+            <element name="dashboard"/>
+        </index>
+    </element>
+</database>

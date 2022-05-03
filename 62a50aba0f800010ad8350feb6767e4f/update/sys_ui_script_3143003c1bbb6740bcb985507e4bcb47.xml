@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.UserList</name>
+        <script><![CDATA[var UserList = createReactClass({
+	getInitialState: function() {
+		return { add: false };
+	},
+
+	addClick: function() {
+		this.setState({ add: true, saving: false });
+	},
+	
+	onAdd: function(user, callback) {
+		if (this.props.users.filter(function (u) { return u.sys_id === user.sys_id; }).length == 0) {
+			this.setState({ saving: true });
+			var that = this;
+			this.props.onUserAdd(user, function(error) {
+				that.setState({ add: false });
+				callback(error);
+			});
+		} else {
+			//todo: user behoort al tot de lijst, toon bericht
+			callback(null);
+		}
+	},
+	
+	/**
+	 * When the KnowledgeArticleSelector is hidden on blur
+	 * If the user selects something with the mouse click
+	 * it would just hide the element and not wait for the async requests
+	 * Therefore we need to keep the element there until it actually finishes the selection
+	onBlur: function() {
+		if (this.state.saving == true) return;
+		
+		this.setState({ add: false });
+	},
+	*/
+	
+	onDelete: function(sys_id) {
+		this.props.onUserDelete(sys_id, function (error){
+			//todo: show error
+		});
+	},
+
+	handleSubmit: function(event) {
+		event.preventDefault();
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var userlis = this.props.users.map(
+			function (user) {
+				return e(
+					UserListItem,
+					{ key: user.sys_id, user: user, onDelete: that.props.onUserDelete != null ? that.onDelete : null }
+				);
+			}
+		);
+		
+		if (this.props.onUserAdd != null) {
+			if (this.state.add) {
+				userlis.push(
+					e(
+						'li',
+						{ key: 'addnew', className: 'addnew' },
+						e(
+							'span',
+							{ className: 'icon-add-circle-empty icon'}
+						),
+						e(
+							'form',
+							{className: 'item-name', onSubmit: this.handleSubmit},
+							e(
+								UserSelector,
+								{ placeholder: this.props.addPlaceholder, disabled: this.state.saving, onUserSelected: this.onAdd }
+							)
+						)
+					)
+				);
+			} else {
+				userlis.push(
+					e(
+						'li',
+						{ key: 'addnew', className: 'addnew', onClick: this.addClick },
+						e(
+							'span',
+							{ className: 'icon-add-circle-empty icon'}
+						),
+						e(
+							'div',
+							{ className: 'item-name' },
+							this.props.addPlaceholder
+						)
+					)
+				);
+			}
+		} else {
+			if (userlis.length == 0) {
+				userlis.push(e(NoneList, { key: 'none' }));
+			}
+		}
+		
+		return [
+			e(
+				'div',
+				{ className: 'sn-aside-group-title', key: 'title' },
+				e(
+					'span',
+					null,
+					this.props.title
+				)
+			),
+			e(
+				'ul',
+				{ className: 'sn-widget-datalist', key: 'list' },
+				userlis
+			)
+		];
+	}
+});]]></script>
+        <script_name>UserList</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-20 12:41:34</sys_created_on>
+        <sys_id>3143003c1bbb6740bcb985507e4bcb47</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>sn_kpi_composer.UserList</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_3143003c1bbb6740bcb985507e4bcb47</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 14:56:58</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

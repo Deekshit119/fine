@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.PaDashboardListItem</name>
+        <script><![CDATA[var PaDashboardListItem = createReactClass({
+	getInitialState: function() {
+		return { hover: false, delete: false };
+	},
+	
+	onMouseEnter: function() {
+		this.setState({ hover: true });
+	},
+	
+	onMouseLeave: function() {
+		this.setState({ hover: false });
+	},
+	
+	onDeleteClick: function() {
+		this.setState({ delete: true });
+	},
+	
+	onDeleteNo: function() {
+		this.setState({ delete: false });
+	},
+	
+	onDeleteYes: function() {
+		this.props.onDelete(this.props.pa_dashboard.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	render: function() {
+		var confirmremoval = null;
+		var buttons = null;
+		var liprops = null;
+		
+		if (this.props.onDelete != null) {
+			liprops = { onMouseEnter: this.onMouseEnter, onMouseLeave: this.onMouseLeave };
+			if (this.state.delete === true) {
+				confirmremoval = e(
+					ConfirmRemoval,
+					{ onYes: this.onDeleteYes, onNo: this.onDeleteNo }
+				);
+			}
+
+			if (this.state.hover === true) {
+				buttons = e(
+					'div',
+					{ className: 'icon-contain' },
+					e(
+						'span',
+						{ className: 'icon icon-delete sn-tooltip-basic', 'title': getMessage("Delete item"), onClick: this.onDeleteClick}
+					)
+				);
+			}
+		}
+		
+		return e(
+			'li',
+			liprops,
+			e(
+				'div',
+				{ className: 'wb-pa-padashboards-container' },
+				e(
+					'div',
+					{ className: 'wb-pa-padashboards-name' },
+					e(
+						'a',
+						{ href: 'nav_to.do?uri=%2F$pa_dashboard.do%3Fsysparm_dashboard%3D' + this.props.pa_dashboard.sys_id, target: '_blank' },
+						this.props.pa_dashboard.name	
+					)
+				)
+				
+			),
+			buttons,
+			confirmremoval
+		);
+	}
+});]]></script>
+        <script_name>PaDashboardListItem</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-09-25 08:16:47</sys_created_on>
+        <sys_id>0cb720e6db8c0050b841ba103996191f</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>sn_kpi_composer.PaDashboardListItem</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_0cb720e6db8c0050b841ba103996191f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-11-11 15:59:20</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

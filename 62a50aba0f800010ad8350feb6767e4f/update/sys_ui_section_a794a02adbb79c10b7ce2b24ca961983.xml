@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_section caption="Linked indicator properties" section_id="a794a02adbb79c10b7ce2b24ca961983" sys_domain="global" table="sn_kpi_composer_indicator_definition" version="3" view="Test">
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>pa_indicator.direction</element>
+            <position>0</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:19:32</sys_created_on>
+            <sys_id>59d6e86adbb79c10b7ce2b24ca96196b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Linked indicator properties" display_value="Linked indicator properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">a794a02adbb79c10b7ce2b24ca961983</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:19:32</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>pa_indicator.type</element>
+            <position>1</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:19:32</sys_created_on>
+            <sys_id>d9d6e86adbb79c10b7ce2b24ca96196b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Linked indicator properties" display_value="Linked indicator properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">a794a02adbb79c10b7ce2b24ca961983</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:19:32</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>pa_indicator.aggregate</element>
+            <position>2</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:19:32</sys_created_on>
+            <sys_id>5dd6e86adbb79c10b7ce2b24ca96196b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Linked indicator properties" display_value="Linked indicator properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">a794a02adbb79c10b7ce2b24ca961983</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:19:32</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>pa_indicator.frequency</element>
+            <position>3</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:19:32</sys_created_on>
+            <sys_id>ddd6e86adbb79c10b7ce2b24ca96196b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Linked indicator properties" display_value="Linked indicator properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">a794a02adbb79c10b7ce2b24ca961983</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:19:32</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>indicator_details</element>
+            <position>4</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:19:32</sys_created_on>
+            <sys_id>51d6e86adbb79c10b7ce2b24ca96196c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Linked indicator properties" display_value="Linked indicator properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">a794a02adbb79c10b7ce2b24ca961983</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:19:32</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>pa_indicator.formula</element>
+            <position>5</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:19:32</sys_created_on>
+            <sys_id>d1d6e86adbb79c10b7ce2b24ca96196c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="Linked indicator properties" display_value="Linked indicator properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">a794a02adbb79c10b7ce2b24ca961983</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:19:32</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_section action="INSERT_OR_UPDATE">
+            <caption>Linked indicator properties</caption>
+            <header>false</header>
+            <name>sn_kpi_composer_indicator_definition</name>
+            <roles/>
+            <sys_class_name>sys_ui_section</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:09:52</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a794a02adbb79c10b7ce2b24ca961983</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_name>sn_kpi_composer_indicator_definition</sys_name>
+            <sys_overrides/>
+            <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+            <sys_update_name>sys_ui_section_a794a02adbb79c10b7ce2b24ca961983</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:12:03</sys_updated_on>
+            <sys_user/>
+            <title>false</title>
+            <view display_value="Test" name="Test">654d73cd1b8c3700055f96002d4bcb9f</view>
+            <view_name/>
+        </sys_ui_section>
+    </sys_ui_section>
+</record_update>

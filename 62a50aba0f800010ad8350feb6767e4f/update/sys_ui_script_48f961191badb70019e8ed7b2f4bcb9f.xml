@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.OverviewMainApp</name>
+        <script><![CDATA[var MainApp = createReactClass({
+	getInitialState: function() {
+		return {
+			initialDataLoaded: false,
+			initialDataLoadError: null,
+			settingProjectAsActive: false,
+			projects: null,
+			filter_text: "",
+			cancreate: false,
+			currentTab: "all"
+		};
+	},
+	
+	componentDidMount: function() {
+		var that = this;
+		sn_kpi_composer.ClientApi.projectsHistory(
+			{},
+			function(data) {
+				//console.log(data);
+				that.setState({
+					initialDataLoaded: true,
+					projects: data.projects.filter(function (proj) { return proj.library === that.props.library; }),
+					cancreate: data.cancreate === true
+				});
+			},
+			function (result) {
+				//console.log(result);
+				that.setState({
+					initialDataLoaded: true,
+					initialDataLoadError: result
+				});
+			}
+		);
+	},
+	
+	onClearFilter: function() {
+		this.setState({filter_text: ""});
+	},
+	
+	onFilterTextChange: function(filter_text) {
+		this.setState({filter_text: filter_text});
+	},
+
+	onTabChanged: function(tab) {
+		this.setState({currentTab: tab});
+	},
+	
+	onProjectAdd: function(name) {
+		this.setState({settingProjectAsActive: true});
+		var that = this;
+		var input = {};
+		input.name = name;
+		sn_kpi_composer.ClientApi.addProject(
+			input,
+			function(data) {
+				g_navigation.open('sn_kpi_composer_composer.do?project_sys_id=' + data.project.sys_id);
+			},
+			function (result) {
+				//console.log(result);
+				that.setState({
+					settingProjectAsActive: false
+				});
+			}
+		);
+	},
+
+	onProjectDelete: function(project_sys_id, callback) {
+		var that = this;
+		var input = {};
+		input.project = {};
+		input.project.sys_id = project_sys_id;
+
+		sn_kpi_composer.ClientApi.deleteProject(
+			input,
+			function(result) {
+				//console.log(result);
+				if (result.success) {
+					that.setState(function(state){
+						var newprojects = state.projects.filter(function (proj) { return proj.sys_id !== project_sys_id;});
+						return { projects: newprojects };
+					}, function() {
+						callback(null);
+					});
+				} else {
+					log(result);
+					callback(result); // errormessage meegeven	
+					console.error('Save FAILED:' + JSON.stringify(result));
+				}
+			},
+			function (result) {
+				log(result);
+                callback(result); // errormessage meegeven	
+                console.error('Save FAILED:' + JSON.stringify(result));
+			}
+		);
+	},
+	
+	//gaat nu via href:
+	// onProjectSelected: function(project) {
+	// 	this.setState({settingProjectAsActive: true});
+	// 	var that = this;
+	// 	var input = {};
+	// 	input.project = {};
+	// 	input.project.sys_id = project.sys_id;
+	// 	sn_kpi_composer.ClientApi.setActiveProject(
+	// 		input,
+	// 		function(data) {
+	// 			g_navigation.open('sn_kpi_composer_composer.do?project_sys_id=' + project.sys_id);
+	// 		},
+	// 		function (result) {
+	// 			//console.log(result);
+	// 			that.setState({
+	// 				settingProjectAsActive: false
+	// 			});
+	// 		}
+	// 	);
+	// },
+	
+	render: function() {
+		var componentsToShow = null;
+		if (this.state.initialDataLoaded === false) {
+			componentsToShow = e(OverviewLoading);
+		} else if (this.state.settingProjectAsActive === true) {
+			componentsToShow = e(OverviewLoading, { title: "Please wait" });
+		} else if (this.state.initialDataLoadError != null) {
+			//todo: show error
+		} else {
+			var filterregex = this.state.filter_text !== "" ? new RegExp(sn_kpi_composer.ClientHelper.escapeRegex(this.state.filter_text), "i") : null;
+			var tabfilter = null;
+			var returnUrl = "";
+			if (this.props.library) {
+				returnUrl = "&returnUrl=" + encodeURIComponent("sn_kpi_composer_library_elements.do");
+				if (this.state.currentTab === "public") {
+					tabfilter = function (p) { return p.library_public === true; };
+				} else if (this.state.currentTab === "owner") {
+					tabfilter = function (p) { return p.library_owner === true; };
+				}
+			} else {
+				if (this.state.currentTab === "responsible") {
+					tabfilter = function (p) { return p.responsible === true; };
+				} else if (this.state.currentTab === "shared") {
+					tabfilter = function (p) { return p.shared === true; };
+				}				
+			}
+			componentsToShow = [
+				e(
+					OverviewHeader,
+					{
+						key: 'header',
+						onProjectAdd: this.state.cancreate ? this.onProjectAdd : null,
+						library: this.props.library
+					}
+				),
+				e(
+					OverviewTabsAndFilter,
+					{
+						key: 'tabsandfilter',
+						filter_text: this.state.filter_text,
+						onClearFilter: this.onClearFilter,
+						onFilterTextChange: this.onFilterTextChange,
+						currentTab: this.state.currentTab,
+						onTabChanged: this.onTabChanged
+					}
+				),
+				e(
+					OverviewProjects,
+					{ 
+						key: 'content',
+						projects: this.state.projects.filter(function (proj) { return (filterregex == null || (proj.name && proj.name.search(filterregex) > -1)) && (tabfilter == null || tabfilter(proj)); }),
+						returnUrl: returnUrl,
+						onProjectDelete: this.props.library ? null : this.onProjectDelete //library voorlopig geen delete knop
+						//gaat nu via href
+						//,onProjectSelected: this.onProjectSelected
+					}
+				)
+			];
+		}
+		
+		return e(
+			'div',
+			{ className: "pa-overview-container" },
+			componentsToShow
+		);
+	}
+});]]></script>
+        <script_name>OverviewMainApp</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-05-20 09:17:28</sys_created_on>
+        <sys_id>48f961191badb70019e8ed7b2f4bcb9f</sys_id>
+        <sys_mod_count>63</sys_mod_count>
+        <sys_name>sn_kpi_composer.OverviewMainApp</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_48f961191badb70019e8ed7b2f4bcb9f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-03-26 11:08:10</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

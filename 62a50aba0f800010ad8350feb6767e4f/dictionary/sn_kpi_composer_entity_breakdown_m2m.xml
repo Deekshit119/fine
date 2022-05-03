@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Desglose de entidad" max_length="40" name="sn_kpi_composer_entity_breakdown_m2m" type="collection">
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Breakdown" max_length="32" name="breakdown" reference="sn_kpi_composer_breakdown" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Entity" max_length="32" name="entity" reference="sn_kpi_composer_entity" type="reference"/>
+        <element attributes="encode_utf8=false" label="Project" max_length="32" name="project" reference="sn_kpi_composer_project" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <index name="index">
+            <element name="breakdown"/>
+        </index>
+        <index name="index2">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index3">
+            <element name="project"/>
+        </index>
+        <index name="index4">
+            <element name="entity"/>
+        </index>
+    </element>
+</database>

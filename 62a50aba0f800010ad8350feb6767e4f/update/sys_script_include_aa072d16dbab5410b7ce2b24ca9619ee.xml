@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationReportDefinitionNotLinkedInCanvas</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationReportDefinitionNotLinkedInCanvas</name>
+        <script><![CDATA[var ProjectValidationReportDefinitionNotLinkedInCanvas = Class.create();
+ProjectValidationReportDefinitionNotLinkedInCanvas.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationReportDefinitionNotLinkedInCanvas");
+        
+        // For all entities in the project, check if a entity has a related report_definition, if so
+        // the entity should be used in a dashboard of a canvas with a report visualisation, if not give a waring 
+        data.entities.forEach(function(entity) {
+            // check if the entity has a report definition            
+            if (entity.report_definition !== null) {
+
+                var hasCanvasWithReportVisualisation = false;
+                // Scan all canvasses, at lease one (with this entity related) 
+                that._apply_on_dashboards(data.dashboards, 
+                    function(dashboard) { 
+                        that._apply_on_tabs(dashboard.tabs,										
+                            function(tab) {		
+                                that._apply_on_rows(tab.rows, 
+                                    function(row) {
+                                        that._apply_on_canvasses(row.canvasses, function(canvas) {
+
+                                            // If this canvas is a report, continue with the check
+                                            if (canvas.widget_type == "Reports") {
+                                                
+                                                // Take all entities (sys_id's) 
+                                                var canvas_entities = that._getDistinctArrayFromCSS(canvas.entities);
+                                                
+                                                // check if this is the entity we are checking, then it's ok!
+                                                canvas_entities.forEach(function(entity_sys_id) { 
+                                                    if (entity_sys_id == entity.sys_id) 
+                                                            hasCanvasWithReportVisualisation = true;
+                                                    }
+                                                );
+                                            }
+                                        });
+                                });
+                            }
+                        );
+                    if (!hasCanvasWithReportVisualisation) {
+                        that._addProjectValidationInfo(
+                            { 
+                                description: gs.getMessage("Artifact '{0}' has a report definition, but there is no report visualisation on any dashboard.", [entity.name, entity.report_definition]),
+                                table: "sn_kpi_composer_entity",
+                                record: entity.sys_id,
+                            }, { project: { sys_id: data.project.sys_id } });
+                    }									
+
+                });
+            }
+        });
+    },
+
+    type: 'ProjectValidationReportDefinitionNotLinkedInCanvas'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-10-01 14:05:52</sys_created_on>
+        <sys_id>aa072d16dbab5410b7ce2b24ca9619ee</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>ProjectValidationReportDefinitionNotLinkedInCanvas</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_aa072d16dbab5410b7ce2b24ca9619ee</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 15:05:33</sys_updated_on>
+    </sys_script_include>
+</record_update>

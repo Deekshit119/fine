@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationWidgetWithoutMeasurement</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationWidgetWithoutMeasurement</name>
+        <script><![CDATA[var ProjectValidationWidgetWithoutMeasurement = Class.create();
+ProjectValidationWidgetWithoutMeasurement.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationWidgetWithoutMeasurement");
+		
+		this._apply_on_dashboards(data.dashboards, 
+			function(dashboard) { 
+				that._apply_on_tabs(dashboard.tabs,										
+					function(tab) {		
+						that._apply_on_rows(tab.rows, 
+							function(row) {
+								that._apply_on_canvasses(row.canvasses, function(canvas) {
+									// Check if a canvas (widget) has one or more entities (measurements/cf/?)
+									var canvas_entities = that._getDistinctArrayFromCSS(canvas.entities);
+									// ----------------------------------------------
+									// Widget definition has no related measurements
+									// ----------------------------------------------
+									if (canvas_entities.length == 0 && canvas.widgetvisualisation) {
+										that._addProjectValidationDefinitionError(
+											{ 
+												description: gs.getMessage("Widget definition '{0}' on dashboard/tab:'{1}.{2}' has no related measurements", [canvas.title, dashboard.name, tab.caption]),
+												table: "sn_kpi_composer_canvas",
+												record: canvas.sys_id,
+											}, { project: { sys_id: data.project.sys_id } });											
+									}									
+								});
+						});
+					}
+				);
+		});
+	},
+
+    type: 'ProjectValidationWidgetWithoutMeasurement'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-02 09:53:02</sys_created_on>
+        <sys_id>38bef47cdbd88850d5b45bd2ca961958</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>ProjectValidationWidgetWithoutMeasurement</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_38bef47cdbd88850d5b45bd2ca961958</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 15:00:25</sys_updated_on>
+    </sys_script_include>
+</record_update>

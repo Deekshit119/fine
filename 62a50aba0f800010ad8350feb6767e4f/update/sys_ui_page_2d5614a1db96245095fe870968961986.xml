@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_page">
+    <sys_ui_page action="INSERT_OR_UPDATE">
+        <category>general</category>
+        <client_script/>
+        <description/>
+        <direct>false</direct>
+        <endpoint>sn_kpi_composer_library_elements.do</endpoint>
+        <html><![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+	
+	<!-- Project css -->
+	<link href="a35b91d91b6db70019e8ed7b2f4bcb1c.cssdbx?v=wb211104" rel="stylesheet" type="text/css"></link>
+
+	<div id="overview-app"></div>
+	<script language="javascript" src="sn_kpi_composer.lib_BundleReact.jsdbx" />
+	<script language="javascript" src="sn_kpi_composer.ClientHelper.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.ClientApi.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.ConfirmRemoval.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.ReactBootstrap.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.OverviewLoading.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.OverviewHeader.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.OverviewTab.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.OverviewTabsAndFilter.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.OverviewProjects.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.OverviewProject.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.OverviewAddProject.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.OverviewMainApp.jsdbx?v=wb211104" />
+	<script language="javascript" src="sn_kpi_composer.LibraryOverviewBootstrap.jsdbx?v=wb211104" />
+</j:jelly>]]></html>
+        <name>library_elements</name>
+        <processing_script/>
+        <sys_class_name>sys_ui_page</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-02-12 17:11:45</sys_created_on>
+        <sys_id>2d5614a1db96245095fe870968961986</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>library_elements</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_page_2d5614a1db96245095fe870968961986</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-04 12:29:51</sys_updated_on>
+    </sys_ui_page>
+</record_update>

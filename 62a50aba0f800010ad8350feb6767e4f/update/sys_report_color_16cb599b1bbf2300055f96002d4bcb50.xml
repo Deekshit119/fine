@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_report_color">
+    <sys_report_color action="INSERT_OR_UPDATE">
+        <color>#525252</color>
+        <display>background-color:#525252</display>
+        <name>Breakdown10</name>
+        <sys_class_name>sys_report_color</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-28 13:33:04</sys_created_on>
+        <sys_id>16cb599b1bbf2300055f96002d4bcb50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Breakdown10</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_report_color_16cb599b1bbf2300055f96002d4bcb50</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-02-28 13:33:04</sys_updated_on>
+    </sys_report_color>
+</record_update>

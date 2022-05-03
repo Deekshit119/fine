@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubBreakdownList</name>
+        <script><![CDATA[var NavHubBreakdownList = createReactClass({
+	getInitialState: function() {
+		return { detail: false, show: this.props.breakdown.show};
+	},
+	
+	componentDidUpdate: function(prevProps) {
+		//dit is voor de refresh van de breakdowns
+		if (this.props.breakdown.show !== this.state.show && this.state.saving_show !== true) {
+			this.setState({show: this.props.breakdown.show });
+		}
+	},
+
+	onDetailClick: function () {
+		this.setState({detail: true});
+	},
+	
+	breakdownDefinitionClose: function(result) {
+		if (result && result.refresh === true) {
+			var that = this;
+			this.props.onRefreshBreakdownDefinitions(function () {
+				that.setState({ detail: false });
+			});
+		} else {
+			this.setState({ detail: false });
+		}
+	},
+	
+	saveShow: function(event) {
+		this.setState({ saving_show: true, show: event.target.checked });
+		var that = this;
+		this.props.onBreakdownSetShow(this.props.breakdown.sys_id, event.target.checked, function(error) {
+			that.setState({ saving_show: false });
+		});
+	},
+	
+	render: function() {
+		var switchctrl;
+		if (this.props.onBreakdownSetShow) {
+			switchctrl = e(
+				'span',
+				{ className: 'input-switch' },
+				e(
+					'input',
+					{ 'aria-label': getMessage('Toggle breakdown'), id: 'edit_show_' + this.props.breakdown.sys_id, type: 'checkbox', name: 'edit_show_' + this.props.breakdown.sys_id, disabled: this.state.saving_show, checked: this.state.show, onChange: this.saveShow }
+				),
+				e(
+					'label',
+					{ className: 'switch', 'aria-hidden': true, htmlFor: 'edit_show_' + this.props.breakdown.sys_id }
+				)
+			);
+		} else {
+			switchctrl = null;
+		}
+
+		var detailmodal = null;
+		if (this.state.detail === true) {
+			detailmodal = e(
+				BreakdownDefinitionModal,
+				{
+					key: 'breakdowndefinition',
+					breakdown: this.props.breakdown,
+					onClose: this.breakdownDefinitionClose
+				}
+			);
+		}
+
+		return e(
+			'li',
+			{ },
+			e(
+				'div',
+				{ className: 'wb-pa-filter-pill-decoration', style: { backgroundColor: this.props.breakdown.color }}
+			),
+			e(
+				'div',
+				{ className: 'item-name' },
+				e(
+					'button',
+					{ className: 'btn btn-link', onClick: this.onDetailClick },
+					this.props.breakdown.name
+				)
+			),
+			switchctrl,
+			detailmodal
+		);
+	}
+});]]></script>
+        <script_name>NavHubBreakdownList</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-08 11:21:40</sys_created_on>
+        <sys_id>d5edf5741be3ef00bcb985507e4bcba7</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubBreakdownList</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_d5edf5741be3ef00bcb985507e4bcba7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-17 13:16:09</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

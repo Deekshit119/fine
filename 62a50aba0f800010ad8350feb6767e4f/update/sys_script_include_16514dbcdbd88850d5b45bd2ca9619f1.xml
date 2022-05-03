@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationMeasurementMissingForPersona</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationMeasurementMissingForPersona</name>
+        <script><![CDATA[var ProjectValidationMeasurementMissingForPersona = Class.create();
+ProjectValidationMeasurementMissingForPersona.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationMeasurementMissingForPersona");	
+					
+		// Load this code
+		var personas_x = sn_kpi_composer.projectPersonas();
+		var globals_x = sn_kpi_composer.globalFunctions();
+
+		// Reading the persona's needs (by design) and applied entities (by dashboard)
+		var requiredEntities = sn_kpi_composer.entitiesPerPersonaRequired(data);
+		if (this.trace) this._debug.push("Required entities per persona");
+		//if (this.trace) this._debug.push(JSON.stringify(requiredEntities));
+		var appliedEntities = sn_kpi_composer.entitiesPerPersonaImplemented(data);
+		if (this.trace) this._debug.push("Applied entities per persona");
+		//if (this.trace) this._debug.push(JSON.stringify(appliedEntities));		
+		
+
+		// ----------------------------------------------
+		// Measurement "#M_NAME#" is missing for persona "#P_NAME#" in dashboard design
+		// ----------------------------------------------
+		// Check if the required entities -> missing is error
+		for(var ei = 0, em = requiredEntities.personas.length; ei<em; ei++) {
+			// sys_id => of persona
+			// name => name of the persona
+			// entities => [ {sys_id, name} ],
+			var persona_req = requiredEntities.personas[ei];
+			//this._debug.push("Req:" + JSON.stringify(persona_req));
+
+			// Now check of the persona has this entity applied
+			var persona_app = sn_kpi_composer.findBySysId(appliedEntities.personas, persona_req.sys_id);
+			//this._debug.push("Apl:" + JSON.stringify(persona_app));
+
+			// for each entity try to find matching applied entity with the same person
+			for(var eei = 0, eem = persona_req.entities.length; eei<eem; eei++) {
+				var entity_dv = persona_req.entities[eei];
+				// Are there any applied entities for the persona, and has this persona the entity in the list
+				if (!persona_app || sn_kpi_composer.findBySysId(persona_app.entities, entity_dv.sys_id) == null) {
+					// not ok
+					this._addProjectValidationDefinitionError(gs.getMessage("Entity '{0}' is missing for persona '{1}' in dashboard design", [entity_dv.name, persona_req.name]), { project: { sys_id: data.project.sys_id } });
+				}							
+			}
+		}
+	},
+	
+    type: 'ProjectValidationMeasurementMissingForPersona'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-02 09:56:46</sys_created_on>
+        <sys_id>16514dbcdbd88850d5b45bd2ca9619f1</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>ProjectValidationMeasurementMissingForPersona</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_16514dbcdbd88850d5b45bd2ca9619f1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 15:00:25</sys_updated_on>
+    </sys_script_include>
+</record_update>

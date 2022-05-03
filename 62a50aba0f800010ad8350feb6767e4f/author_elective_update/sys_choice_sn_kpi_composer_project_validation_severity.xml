@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="severity" table="sn_kpi_composer_project_validation" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>severity</element>
+            <name>sn_kpi_composer_project_validation</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_id>efebbae4875bc910115042ad0ebb3541</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>severity</sys_name>
+            <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+            <sys_update_name>sys_choice_sn_kpi_composer_project_validation_severity</sys_update_name>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>OK</label>
+            <language>en</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>afebbae4875bc910115042ad0ebb353e</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>0</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Info</label>
+            <language>en</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>6febbae4875bc910115042ad0ebb353e</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Warning</label>
+            <language>en</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>efebbae4875bc910115042ad0ebb353e</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Definition error</label>
+            <language>en</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence/>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>2febbae4875bc910115042ad0ebb353e</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Aceptar</label>
+            <language>es</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>61f2abb187298510115042ad0ebb354a</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>0</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>אישור</label>
+            <language>he</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>63ebbae4875bc910115042ad0ebb353f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>0</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>确定</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a7ebbae4875bc910115042ad0ebb353f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>0</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Información</label>
+            <language>es</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>65f2abb187298510115042ad0ebb354b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>מידע</label>
+            <language>he</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a3ebbae4875bc910115042ad0ebb353f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>信息</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>27ebbae4875bc910115042ad0ebb353f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Advertencia</label>
+            <language>es</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>25f2abb187298510115042ad0ebb354c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>אזהרה</label>
+            <language>he</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>23ebbae4875bc910115042ad0ebb353f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>警告</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e7ebbae4875bc910115042ad0ebb353f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Error de definición</label>
+            <language>es</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:13</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e1f2abb187298510115042ad0ebb354d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:13</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>שגיאת הגדרה</label>
+            <language>he</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e3ebbae4875bc910115042ad0ebb353f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>severity</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>定义错误</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_project_validation</name>
+            <sequence>0</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:11</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>67ebbae4875bc910115042ad0ebb353f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:11</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

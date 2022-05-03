@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.projectPersonas</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description>Project en persona related functions calls</description>
+        <name>projectPersonas</name>
+        <script><![CDATA[function projectPersonas(input) {
+	var entityApi = new sn_kpi_composer.EntityApi();	 
+	var data = entityApi.getData(input);	
+	return _projectPersonas(data);
+}
+
+function _projectPersonas (data) {
+	// All availible persona's
+	var personas = [];
+	for(var idx = 0; idx<data.entities.length; idx++) {
+		var entity = data.entities[idx];
+		for(var ip = 0; ip<entity.personas.length; ip++) {
+			if (personas.indexOf(entity.personas[ip])<0) {
+				personas.push(entity.personas[ip]);
+			}
+		}
+	}
+    return personas;	
+}
+
+	
+function _findBySysId(arr, sys_id) {
+	if (arr && sys_id) {
+		for(var i = 0, m = arr.length; i<m; i++) {
+			var e = arr[i];
+			if (e.sys_id == sys_id)
+				return e;
+		}	
+	}
+	return null;
+}
+	
+
+function _projectPersonasObjs(data) {
+	var persona_ids = _projectPersonas(data);
+	var personas = [];
+	for(var pi = 0, pm = persona_ids.length; pi<pm; pi++) {
+		var persona = {};
+		persona.sys_id = persona_ids[pi];
+		personas.push(persona);
+	}
+	return personas;
+}
+
+
+// Read a list of persona's
+// Every records holds a list of entity (sys_id's) that are markt
+// in the design as "needed" for this persona
+function entitiesPerPersonaRequired(data) {	
+	
+	// result
+	var result = {};
+	
+	// Read all persona's
+	var personas = [];
+	result.personas = personas;
+	
+	// Take all entities and check if the persona's needs the entity
+	for(var idx = 0; idx<data.entities.length; idx++) {		
+		// Take the entity
+		var entity = data.entities[idx];
+		// The entity could have a array of persona's that should see this entity
+		for(var ip = 0; ip<entity.personas.length; ip++) {
+			
+			// Find persona object (for detail information)
+			var persona_dv = this._findBySysId(data.personas, entity.personas[ip]);	
+			
+			// Check if the persona is already in result
+			var persona = this._findBySysId(personas, entity.personas[ip]);
+			if (persona) {				
+				// Add entity if not allready exists			
+				if (persona.entities.filter(function(e) { return e.sys_id == entity.sys_id; }).length == 0) {
+					// Add entity to list of persona				    					
+					persona.entities.push({ sys_id: entity.sys_id, name: entity.name });
+				}
+			} else {				
+				// Persona not in list yet, add								
+				personas.push({ sys_id: persona_dv.sys_id, name: persona_dv.name, entities: [{ sys_id: entity.sys_id, name: entity.name }] });				
+			}
+		}
+	}			
+	return result;
+}
+
+// Return a list of widgets (canvasses) from the data
+function all_canvasses(data) {
+	// Result
+	var result = {};		
+	var canvasses = [];
+	result.canvasses = canvasses;
+
+	for(var di = 0, dm = data.dashboards.length; di<dm; di++) {
+		var dashboard = data.dashboards[di];
+		// Only check if there are any persona's selected 
+		for(var ti = 0, tm = dashboard.tabs.length; ti<tm; ti++) {
+			var tab = dashboard.tabs[ti];
+
+			// Take the rows from the tabs
+			for(var ri = 0, rm = tab.rows.length; ri<rm; ri++) {
+				var row = tab.rows[ri];
+
+				// Take the canvas form row 
+				for(var vi = 0, vm = row.canvasses.length; vi<vm; vi++) {
+					var canvas = row.canvasses[vi];	
+					canvasses.push(canvas);
+				}
+			}
+		}
+	}
+	return result;	
+}
+
+// Returns a list of persona's with the "implemented" entities
+// Based on the dashboard design's, the selected persona (at a dashboard)
+// And all used entitites in that dashboard
+function entitiesPerPersonaImplemented(data) {
+	
+	// Result
+	var result = {};
+	
+	// Read all persona's
+	var personas = [];
+	
+	result.personas = personas;
+	
+	for(var di = 0, dm = data.dashboards.length; di<dm; di++) {
+		var dashboard = data.dashboards[di];
+		// Only check if there are any persona's selected 
+		if (dashboard.persona) {
+			// Take the tabs from the dashboard
+			for(var ti = 0, tm = dashboard.tabs.length; ti<tm; ti++) {
+				var tab = dashboard.tabs[ti];
+				
+				// Take the rows from the tabs
+				for(var ri = 0, rm = tab.rows.length; ri<rm; ri++) {
+					var row = tab.rows[ri];
+					
+					// Take the canvas form row 
+					for(var vi = 0, vm = row.canvasses.length; vi<vm; vi++) {
+						var canvas = row.canvasses[vi];										
+						
+						// Check if a canvas (widget) has one or more entities (measurements/cf/?)
+						if (canvas.entities != null && canvas.entities.length != 0) {
+							// get all persona's from the dashboard
+							var dashboard_persona_sysids = dashboard.persona.split(",");							
+							
+							// get all entities from the canvas
+							var entity_sysids = canvas.entities.split(",");
+							
+							for(var ei = 0, em = entity_sysids.length; ei<em; ei++) {
+								var entity_sysid = entity_sysids[ei];
+								
+								for(var dpi = 0, dpm = dashboard_persona_sysids.length; dpi<dpm; dpi++) {
+									// take the persona sys_id
+									var persona_sysid = dashboard_persona_sysids[dpi];
+									
+									// Find persona details information
+									var persona_dv = this._findBySysId(data.personas, persona_sysid);
+									// Find entity details
+									var entity_dv = this._findBySysId(data.entities, entity_sysid);
+									
+									// Check if the persona is already in the result
+									var persona = this._findBySysId(personas, persona_sysid);
+									if (persona && entity_dv) {
+										// Has this persona this entity already?
+										if (this._findBySysId(persona.entities, entity_sysid) == null) {
+											// Not, then add
+											persona.entities.push({ sys_id: entity_dv.sys_id, name: entity_dv.name});
+										}
+									} else {		
+										if (persona_dv == null) persona_dv = { sys_id: persona_sysid, name: "NOT FOUND (" + persona_sysid + ")" };
+										if (entity_dv == null) entity_dv = { sys_id: entity_sysid, name: "NOT FOUND (" + entity_sysid + ")" };
+										personas.push({ sys_id: persona_dv.sys_id, name: persona_dv.name, entities : [{ sys_id: entity_dv.sys_id, name: entity_dv.name}] });
+									}						
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}	
+	return result;
+}]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-04-04 12:12:55</sys_created_on>
+        <sys_id>876855ae1b283b40055f96002d4bcb3d</sys_id>
+        <sys_mod_count>89</sys_mod_count>
+        <sys_name>projectPersonas</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_876855ae1b283b40055f96002d4bcb3d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-08-26 13:31:16</sys_updated_on>
+    </sys_script_include>
+</record_update>

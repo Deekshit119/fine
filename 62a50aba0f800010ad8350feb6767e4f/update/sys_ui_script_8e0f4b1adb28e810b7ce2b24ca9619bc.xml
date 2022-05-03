@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubJournal</name>
+        <script><![CDATA[var NavHubJournal = createReactClass({
+	getInitialState: function() {
+		return {
+            new_comment: "",
+            saving_new_comment: false
+		};
+	},
+
+	handleInputChange: function(event) {
+		var target = event.target;
+		var value = target.type === 'checkbox' ? target.checked : target.value;
+		var name = target.name;
+
+		var partialState = {};
+		partialState[name] = value;
+		this.setState(partialState);
+	},
+	
+	handleInputBlur: function(event) {
+		this.saveCommentIfNeeded();
+	},
+	
+	handleNewCommentSubmit: function(event) {
+		event.preventDefault();
+		this.saveCommentIfNeeded();
+	},
+	
+	saveCommentIfNeeded: function() {
+		if (this.state.new_comment && this.state.saving_new_comment !== true) {
+			this.setState({saving_new_comment: true});
+			var that = this;
+			this.props.onProjectSaveComment(this.state.new_comment, function(error) {
+				that.setState({new_comment: "", saving_new_comment: false});
+			});
+		}
+	},
+		
+	render: function() {
+        var that = this;
+        
+        var projectComments = null;
+        if (this.props.project_comments) {
+            projectComments = this.props.project_comments.map(function (comment, i) {
+				return e(
+					'div',
+					{ key: i, className: "journalentry"},
+					e(
+						'div',
+						{ className: "row"},
+						e(
+							'div',
+							{ className: "col-md-6 user" },
+							comment.user
+						),
+						e(
+							'div',
+							{ className: "col-md-6 date" },
+							comment.date
+						)
+					),
+					e(
+						'div',
+						{ className: "row"},
+						e(
+							'div',
+							{ className: "col-md-12 data newlines" },
+							comment.data
+						)
+					)
+				);
+			}) ;
+        }
+		
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+				{className: 'sn-aside-header'},
+				e(
+					'span',
+					null,
+					getMessage('Project journal')
+				),
+				e(
+					'div',
+					{className : 'sn-aside-btn icon-cross', 'aria-label': getMessage('Close Journal Panel'), role: 'button', tabIndex: '0', onClick: this.props.onCloseActiveAside}
+				)
+			),
+			e(
+				'div',
+				{className: 'sn-aside-body wb-pa-aside-body'},
+				e(
+					'form',
+					{className: 'sn-widget sn-widget_border-bottom sn-widget-form', onSubmit: this.handleNewCommentSubmit},
+					e(
+						'textarea',
+						{ placeholder: getMessage('Additional comments'), 'aria-label': getMessage('Additional comments'), style: { "marginBottom": 5, "resize": "vertical" }, className: 'form-control', name: 'new_comment', disabled: this.state.saving_new_comment, value: this.state.new_comment, onChange: this.handleInputChange }
+					),
+					e(
+						'button',
+						{ type: "submit", style: { "float": "right", "marginRight": 0 } },
+						getMessage('Post')
+					)
+                ),
+                projectComments
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubJournal</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-11-20 14:44:22</sys_created_on>
+        <sys_id>8e0f4b1adb28e810b7ce2b24ca9619bc</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubJournal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_8e0f4b1adb28e810b7ce2b24ca9619bc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-01-12 12:57:11</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

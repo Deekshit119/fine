@@ -1,0 +1,3032 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.BaseApi</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Basic/Base functions, color translations, abbreviaitions;&#13;
+Read users, knowledge articles, Indicatordefinitions, Entities&#13;
+Major UPDATE function (for almost all API calls)</description>
+        <name>BaseApi</name>
+        <script><![CDATA[var BaseApi = Class.create();
+BaseApi.prototype = Object.extendsObject(sn_kpi_composer.RecordApi, {
+
+	_projectApi: new  sn_kpi_composer.ProjectApi(),
+
+
+	// All colors that are read (from database) are stored (temp) in this array
+	// When a color is used multiple times the cached version is used
+	_cachedColors: [],
+
+
+	// This function will check if there is any database upgrade needed
+	// This function could be removed when we know if there is any upgrade functionality in service now availible
+	_upgradeDbItems: function() {
+
+		try {
+			// Added Project to EntityPersona
+			// The project should be ref to the project of the entity
+			var ep_gr = new GlideRecord('sn_kpi_composer_entity_persona_m2m');
+			ep_gr.addNullQuery("project");
+			ep_gr.query();
+			while(ep_gr.next()) {
+				ep_gr.project = ep_gr.entity.project;
+				ep_gr.update();
+			}
+
+
+			// Added Project to EntityBreakdown
+			// The project should be ref to the project of the entity
+			var eb_gr = new GlideRecord('sn_kpi_composer_entity_breakdown_m2m');
+			eb_gr.addNullQuery("project");
+			eb_gr.query();
+			while(eb_gr.next()) {
+				eb_gr.project = eb_gr.entity.project;
+				eb_gr.update();
+			}
+		}
+		catch(e) {
+
+		}
+
+	},
+
+	// Reads color information from the sys_report_color table
+	// It finds a color by name and return a (custom) color object
+	// Can also be searched by the sys_id
+	// When the color is not found NULL is returned
+	_getColor: function(colorNameOrSysId) {
+
+		// Check if the color is already loaded in the cached values
+		if (this._cachedColors && this._cachedColors.length>0) {
+			for(var idx = 0; idx<this._cachedColors.length; idx++)
+				if (this._cachedColors[idx].name === colorNameOrSysId || this._cachedColors[idx].sys_id === colorNameOrSysId) {
+					// this._debug.push("Taking cached color value.");
+					return this._cachedColors[idx].color;
+				}
+		}
+
+		// Read the color from the database
+		var clr = new GlideRecord('sys_report_color');
+		// Create a filter where the name or sys_id is colorNameOrSysId
+		clr.addEncodedQuery("nameSTARTSWITH" + colorNameOrSysId + "^ORsys_idSTARTSWITH" + colorNameOrSysId);
+		if (this.trace) this._debug.push("WHERE colors: " + clr.getEncodedQuery());
+
+		// Run the query
+		clr.query();
+		if (clr.next()) {
+			// Create a color object
+			var c = this._color_record(clr);
+			// Store the color in the cached values
+			this._cachedColors.push({ name: c.name, sys_id: c.sys_id, color: c });
+			//this._debug.push("Create recored: " + JSON.stringify(c));
+			// Return the color
+			return c;
+		} else {
+			return null;
+		}
+	},
+
+	_getChoices: function(table, element) {
+
+		var results = [];
+
+		var gr_choices = new GlideRecord('sys_choice');
+		gr_choices.addQuery('name', table);
+		gr_choices.addQuery('element', element);
+		gr_choices.addQuery('language', gs.getSession().getLanguage());
+		gr_choices.orderBy('sequence');
+		gr_choices.query();
+
+		// Check if choices are found (language plugin might not have the added choice values yet, if not found default to English)
+		// Translation team has not yet translated all the widget types as they were added in later version. 
+		// Skip translations until full list is translated (should be at least 13 translations, not 7)
+		
+		if ((gr_choices.getRowCount() > 0) 
+			&& (!(table=="sn_kpi_composer_widgetvisualisation" && element=="visualisationtype" && gr_choices.getRowCount() < 13)))
+		{
+			while(gr_choices.next()) {
+				var result = {};
+				result.inactive = gr_choices.getValue('inactive');
+				result.label = gr_choices.getDisplayValue('label');
+				result.value = gr_choices.getValue('value');
+				result.sys_id = gr_choices.getValue('sys_id');
+				results.push(result);
+			}
+		}
+
+		// Default to English
+		else {
+			var gr_choices_en = new GlideRecord('sys_choice');
+			gr_choices_en.addQuery('name', table);
+			gr_choices_en.addQuery('element', element);
+			gr_choices_en.addQuery('language', 'en');
+			gr_choices_en.orderBy('sequence');
+			gr_choices_en.query();
+
+			while(gr_choices_en.next()) {
+				var result = {};
+				result.inactive = gr_choices_en.getValue('inactive');
+				result.label = gr_choices_en.getDisplayValue('label');
+				result.value = gr_choices_en.getValue('value');
+				result.sys_id = gr_choices_en.getValue('sys_id');
+				results.push(result);
+			}
+		}
+
+		return results;
+	},
+
+	// Generic function to add sys_id's to cs fields
+	_addToListField : function(fieldValue, value)  {
+		//local._debug.push("_addToListField() " + fieldValue + " '" + value +  "'");
+		if (fieldValue === null)
+		fieldValue = "";
+		var fieldValues = fieldValue.split(',');
+		if (fieldValues.indexOf(value)<1) {
+			fieldValues.push(value);
+			fieldValue = fieldValues.join(',');
+		}
+		//local._debug.push("_addToListField() result: " + fieldValue);
+		return fieldValue;
+	},
+
+	// Generic function to remove sys_id's to cs fields
+	_removeFromListField : function(fieldValue, value) {
+		// local._debug.push("_removeFromListField() " + fieldValue + " '" + value +  "'");
+		if (fieldValue === null)
+			fieldValue = "";
+		var fieldValues = fieldValue.split(',');
+		var idx = fieldValues.indexOf(value);
+		if (idx>-1) {
+			fieldValues.splice(idx, 1);
+		}
+		if (fieldValues.length === 0)
+			fieldValue = "";
+		if (fieldValues.length === 1)
+			fieldValue = fieldValues[0];
+		if (fieldValues.length>1)
+			fieldValue = fieldValues.join(',');
+		// local._debug.push("_removeFromListField() result: " + fieldValue);
+		return fieldValue;
+	},
+
+	abbreviation: function(value) {
+		return this._abbreviation(value);
+	},
+
+	/*
+	* Return the sys_id from of the first record markt as "default" from the entity_relation_type table
+	*/
+	defaultEntityRelationType: function() {
+		var result = {};
+		var sn = new GlideRecord('sn_kpi_composer_entity_relation_type');
+		sn.addQuery("default", true);
+		sn.query();
+		if (sn.next()) {
+			return sn.getValue('sys_id');
+		}
+		return null;
+	},
+
+
+	// Read all the User and Knowledge IDs from a project
+	// Return 2 array's with id's
+	_getAllUsersAndKnowledge: function (input) {
+
+		if (this.trace) this._debug.push("_getAllUsersAndKnowledge()");
+
+		var local = this;
+
+		// Add all items from the string (with comma sep items) and add then to l, return the new l
+		// no double (or empty) items will be added
+		addUniqueList = function(l, itemStr) {
+			if (l === null)
+				l = [];
+			if (itemStr === null)
+				itemStr = "";
+			var items = itemStr.split(',');
+			if (items) {
+				for(var i = 0; i<items.length; i++) {
+					if (l.indexOf(items[i])<0 && items[i] !== '') {
+						l.push(items[i]);
+					}
+				}
+			}
+			return l;
+		};
+
+		// Current project
+		var project = this._projectApi.project(input);
+
+		var user_ids = [];
+		var knowledgearticle_ids = [];
+
+		// All project data
+		user_ids = addUniqueList(user_ids, project.owners);
+		user_ids = addUniqueList(user_ids, project.contacts);
+		knowledgearticle_ids = addUniqueList(knowledgearticle_ids, project.knowledgearticles);
+
+		// All entity data
+		var en = new GlideRecord('sn_kpi_composer_entity');
+		en.addQuery("project", project.sys_id);
+		en.query();
+		while (en.next()) {
+			var contacts = en.getValue('contacts');
+			var owners = en.getValue('owners');
+			var knowledgearticles = en.getValue('knowledgearticles');
+			user_ids = addUniqueList(user_ids, contacts);
+			user_ids = addUniqueList(user_ids, owners);
+			knowledgearticle_ids = addUniqueList(knowledgearticle_ids, knowledgearticles);
+		}
+		var result = {};
+		result.users = user_ids;
+		result.knowledges = knowledgearticle_ids;
+		return result;
+	},
+
+
+	/// Detect is Spotlight plugin is installed and active
+	_getSpotlightInstalled: function() {
+		var result = {};
+		result.installed = false;
+		try {
+			var slg = new GlideRecordSecure('v_plugin');
+			slg.addQuery('id', 'com.snc.pa.spotlight');
+			slg.addQuery('active', 'active');
+			slg.query();
+			if (slg.next()) result.installed = true;
+		}
+		catch(e)	 {
+			// Explisit empty
+			result.exception = e;
+		}
+		return result;
+	},
+
+	/// Collect a list of canvases based on a memory array of dashboards
+	_getCanvases: function(dashboards) {
+		var canvases = [];
+		// Collect all pa_widget id's
+		if (dashboards) {
+			for(var di = 0, dm = dashboards.length; di<dm; di++) {
+				var dashboard = dashboards[di];
+				for(var ti = 0, tm = dashboard.tabs.length; ti<tm; ti++) {
+					var tab = dashboard.tabs[ti];
+					for(var ri = 0, rm = tab.rows.length; ri<rm; ri++) {
+						var row = tab.rows[ri];
+						for(var ci = 0, cm = row.canvasses.length; ci<cm; ci++) {
+							var canvas = row.canvasses[ci];
+							canvases.push(canvas);
+						}
+					}
+				}
+			}
+		}
+		return canvases;
+	},
+
+	/// Collect a list of reports based on a memory array of dashboards
+	_getReports: function(dashboards) {
+		var result = {};
+		result.success = false;
+		result.reports = [];
+		try {
+			if (dashboards) {
+				var report_sys_ids = [];
+				this._getCanvases(dashboards).forEach(function(canvas) {
+					if (canvas.report)
+						report_sys_ids.push(canvas.report);
+					});
+
+				// Store for debug
+				result.sys_ids = report_sys_ids;
+
+				var input = {};
+				// Set list of id's
+				input.sys_ids = report_sys_ids;
+				// Make sure all record will be returned (no max)
+				input.maxresult = 0;
+				// Get data
+				var selectReportsResult = this._selectReports(input);
+
+				if (selectReportsResult.success) {
+					result.reports = selectReportsResult.reports;
+					result.success = true;
+				} else {
+					throw "Could not load _selectReports: " + JSON.stringify(selectReportsResult);
+				}
+			} else {
+				throw "Dashboard parameter not set";
+			}
+		}
+		catch(e){
+			result.message = e.message;
+			result.exception = e;
+		}
+		return result;
+	},
+
+
+	_getContentBlocks: function(dashboards) {
+		var result = {};
+		result.success = false;
+		result.content_block = [];
+		try {
+			if (dashboards) {
+				var contentblock_sys_ids = [];
+				this._getCanvases(dashboards).forEach(function(canvas) {
+					if (canvas.content_block)
+					contentblock_sys_ids.push(canvas.content_block);
+					});
+
+				// Store for debug
+				result.sys_ids = contentblock_sys_ids;
+
+				var input = {};
+				// Set list of id's
+				input.sys_ids = contentblock_sys_ids;
+				// Make sure all record will be returned (no max)
+				input.maxresult = 0;
+				// Get data
+				var selectContentBlockResult = this._selectContentBlocks(input);
+
+				if (selectContentBlockResult.success) {
+					result.content_blocks = selectContentBlockResult.content_blocks;
+					result.success = true;
+				} else {
+					throw "Could not load _getContentBlocks: " + JSON.stringify(selectContentBlockResult);
+				}
+			} else {
+				throw "Dashboard parameter not set";
+			}
+		}
+		catch(e){
+			result.message = e.message;
+			result.exception = e;
+		}
+		return result;
+	},
+
+	_getInteractiveFilters: function(dashboards) {
+		var result = {};
+		result.success = false;
+		result.interactive_filter = [];
+		try {
+			if (dashboards) {
+				var interactive_filter_sys_ids = [];
+				this._getCanvases(dashboards).forEach(function(canvas) {
+					if (canvas.interactive_filter)
+					interactive_filter_sys_ids.push(canvas.interactive_filter);
+					});
+
+				// Store for debug
+				result.sys_ids = interactive_filter_sys_ids;
+
+				var input = {};
+				// Set list of id's
+				input.sys_ids = interactive_filter_sys_ids;
+				// Make sure all record will be returned (no max)
+				input.maxresult = 0;
+				// Get data
+				var selectInteractiveFilterResult = this._selectInteractiveFilters(input);
+
+				if (selectInteractiveFilterResult.success) {
+					result.interactive_filters = selectInteractiveFilterResult.interactive_filters;
+					result.success = true;
+				} else {
+					throw "Could not load _getInteractiveFilter: " + JSON.stringify(selectInteractiveFilterResult);
+				}
+			} else {
+				throw "Dashboard parameter not set";
+			}
+		}
+		catch(e){
+			result.message = e.message;
+			result.exception = e;
+		}
+		return result;
+	},
+
+	_getPaWidgets: function(dashboards) {
+
+		var result = {};
+		result.success = false;
+		result.pa_widgets = [];
+		try {
+			if (dashboards) {
+				var pa_widget_sys_ids = [];
+				this._getCanvases(dashboards).forEach(function(canvas) {
+					if (canvas.pa_widget)
+						pa_widget_sys_ids.push(canvas.pa_widget);
+					});
+
+				// Store for debug
+				result.sys_ids = pa_widget_sys_ids;
+
+				var input = {};
+				// Set list of id's
+				input.sys_ids = pa_widget_sys_ids;
+				// Make sure all record will be returned (no max)
+				input.maxresult = 0;
+				// Get data
+				var selectPaWidgetsResult = this._selectPaWidgets(input);
+
+				if (selectPaWidgetsResult.success) {
+					result.pa_widgets = selectPaWidgetsResult.pa_widgets;
+					result.success = true;
+				} else {
+					throw "Could not load _selectPaWidgets: " + JSON.stringify(selectPaWidgetsResult);
+				}
+			} else {
+				throw "Dashboard parameter not set";
+			}
+		}
+		catch(e){
+			result.message = e.message;
+			result.exception = e;
+		}
+		return result;
+	},
+
+
+	_getPaDashboards: function(dashboards) {
+
+		var result = {};
+		result.success = false;
+		result.pa_dashboards = [];
+		try {
+			if (dashboards) {
+				var pa_dashboard_sys_ids = [];
+
+				// Collect all pa_widget id's
+				for(var di = 0, dm = dashboards.length; di<dm; di++) {
+					var dashboard = dashboards[di];
+					if (dashboard.pa_dashboard) {
+						if (pa_dashboard_sys_ids.indexOf(dashboard.pa_dashboard) == -1) {
+							pa_dashboard_sys_ids.push(dashboard.pa_dashboard);
+							var gr_pa_dashboard = new GlideRecord('pa_dashboards');
+							if (gr_pa_dashboard.get(dashboard.pa_dashboard)) {
+								result.pa_dashboards.push(this._pa_dashboard_record(gr_pa_dashboard));
+							}
+						}
+					}
+				}
+				result.success = true;
+			} else {
+				throw "Dashboard parameter not set";
+			}
+		}
+		catch(e){
+			result.message = e.message;
+			result.exception = e;
+		}
+		return result;
+	},
+
+	_getTab: function(sys_id) {
+		var tab = {};
+		tab.caption = "Tab with sys_id: '" + sys_id + "' not found.";
+
+		var gr_tabs = new GlideRecord('sn_kpi_composer_tab');
+		if (gr_tabs.get(sys_id)) {
+			tab = this._tab_record(gr_tabs);
+
+			// Read rows
+			var rows = [];
+			tab.rows = rows;
+
+			var gr_rows = new GlideRecord('sn_kpi_composer_row');
+			gr_rows.addQuery('tab', tab.sys_id);
+			gr_rows.orderBy('order');
+			gr_rows.query();
+			while(gr_rows.next()) {
+				var row = this._row_record(gr_rows);
+				rows.push(row);
+
+				// Read Canvas
+				var canvasses = [];
+				row.canvasses = canvasses;
+
+				var gr_canvasses = new GlideRecord('sn_kpi_composer_canvas');
+				gr_canvasses.addQuery('row', row.sys_id);
+				gr_canvasses.orderBy('order');
+				gr_canvasses.query();
+				while(gr_canvasses.next()) {
+					var canvas = this._canvas_record(gr_canvasses);
+					canvasses.push(canvas);
+				}
+			}
+		}
+		return tab;
+	},
+
+	_getDashboards: function(input) {
+		var dashboards = [];
+		var result = {};
+		result.success = false;
+		result.dashboards = dashboards;
+
+		var project = this._projectApi.project(input);
+
+		if (project && project.sys_id) {
+			var gr_dashboards = new GlideRecord('sn_kpi_composer_dashboard');
+			//gr_dashboards.orderBy('order');
+			gr_dashboards.addQuery('project', project.sys_id);
+			gr_dashboards.query();
+			while (gr_dashboards.next()) {
+				var dashboard = this._dashboard_record(gr_dashboards);
+
+				// Get tabs
+				var tabs = [];
+				dashboard.tabs = tabs;
+
+				var gr_tabs = new GlideRecord('sn_kpi_composer_tab');
+				gr_tabs.addQuery('dashboard', dashboard.sys_id);
+				gr_tabs.orderBy('order');
+				gr_tabs.query();
+
+				while(gr_tabs.next()) {
+					var tab = this._getTab(gr_tabs.sys_id);
+					tabs.push(tab);
+				}
+				dashboards.push(dashboard);
+			}
+			result.success = true;
+		} else {
+			result.exception = "Please provide input.project";
+			result.input = JSON.stringify(input);
+		}
+		return result;
+	},
+
+	_getSpotlightGroups: function(dashboards) {
+		var result = {};
+		result.success = false;
+		result.spotlight_groups = [];
+		try {
+			if (dashboards) {
+				var spotlight_groups_sys_ids = [];
+				this._getCanvases(dashboards).forEach(function(canvas) {
+					if (canvas.spotlight_group)
+						spotlight_groups_sys_ids.push(canvas.spotlight_group);
+					});
+
+				// Store for debug
+				result.sys_ids = spotlight_groups_sys_ids;
+
+				var input = {};
+				// Set list of id's
+				input.sys_ids = spotlight_groups_sys_ids;
+				// Make sure all record will be returned (no max)
+				input.maxresult = 0;
+				// Get data
+				var selectSpotlightGroupsResult = this._selectSpotlightGroups(input);
+
+				if (selectSpotlightGroupsResult.success) {
+					result.spotlight_groups = selectSpotlightGroupsResult.spotlight_groups;
+					result.success = true;
+				} else {
+					throw "Could not load _getSpotlightGroups: " + JSON.stringify(selectSpotlightGroupsResult);
+				}
+			} else {
+				throw "Dashboard parameter not set";
+			}
+		}
+		catch(e){
+			result.message = e.message;
+			result.exception = e;
+		}
+		return result;
+	},
+
+
+
+	/*
+		Generic function to search in tables
+		Define:
+		- the table to search
+		- the fields to search in
+		- the result record (object function)
+		- max result
+		- startwith and contains options
+		- sys_id filter list (IN statement)
+		- order by field
+		- encodedQueries (optional) array string(s) with additional query/filter options
+
+		input.maxresult (default = 10, 0 = all record)
+		input.table_name = name of the table to search
+	*/
+	_genericTableSearch: function(input) {
+
+		// Result data
+		var data = {};
+		data.records = [];
+
+		if (input) {
+			if (input.maxresult == null)
+				input.maxresult = 10;
+
+			var u = new GlideRecordSecure(input.table_name);
+
+			// Filter on name (if any) a wildecard can be used
+			if (input.filter) {
+				encodedQuery = "";
+				input.fields.forEach(function(field) {
+					if (input.filter.startsWith('*')) {
+						encodedQuery = encodedQuery + "^OR" + field + "CONTAINS" + input.filter.substring(1);
+					} else {
+						encodedQuery = encodedQuery + "^OR" + field + "STARTSWITH" + input.filter;
+					}
+				});
+				u.addEncodedQuery(encodedQuery);
+			}
+
+			// Add custom filter options
+			if (input.encodedQueries) {
+				input.encodedQueries.forEach(function(eq) {
+					u.addEncodedQuery(eq);
+				});
+			}
+
+			// In statement
+			if (input.sys_ids) {
+				u.addQuery('sys_id', 'IN', input.sys_ids);
+			}
+
+			// Order result by name
+			if (input.order_by && input.order_by.length>0)
+				u.orderBy(input.order_by);
+
+			// Log where
+			if (this.trace) this._debug.push("WHERE for '" + input.table_name + "' " + u.getEncodedQuery());
+
+
+			// Query database
+			u.query();
+
+			// Read results
+			var i = 0;
+			while (u.next() && (i<input.maxresult || input.maxresult == 0)) {
+				data.records.push(input.record_function(u));
+				//data.records.push(this._report_record(u));
+				i = i + 1;
+			}
+			if (i === 0)
+				data.note = "No data matches your criteria";
+
+			data.success = true;
+		} else {
+			throw "No valid input parameters.";
+		}
+
+		return data;
+	},
+
+
+	/*
+	* Return a list of (sys) Reports ;
+	* Filter can be set by input.filter = '';
+	* Filter will do a LIKE at the number of the knowledge article when started with *
+	* By default 10 records are return
+	* The number of records returned can be changed with the property input.maxresult = 20;
+	* Setting the input.maxresult = 0; will return all records
+	*/
+	_selectReports: function(input) {
+		var data = {};
+		data.reports = [];
+		if (input) {
+			input.table_name = 'sys_report';
+			input.fields = [];
+			input.fields.push('description');
+			input.fields.push('sys_name');
+			input.fields.push('title');
+			input.order_by = 'sys_name';
+			input.record_function = this._report_record; // Don't put in this._report_record()  -> will result in report record object (and not the function)
+			data = this._genericTableSearch(input);
+			data.reports = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+	_selectReportDefinitions: function(input) {
+		var data = {};
+		data.report_definitions = [];
+		if (input) {
+			input.table_name = 'sn_kpi_composer_report_definition';
+			input.fields = [];
+			input.fields.push('description');
+			input.fields.push('name');
+			input.order_by = 'name';
+			input.record_function = this._report_definition_record; // Don't put in this._report_record()  -> will result in report record object (and not the function)
+			data = this._genericTableSearch(input);
+			data.report_definitions = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+
+	_selectTabTemplates: function(input) {
+		var data = {};
+		data.templates = [];
+
+		if (input) {
+			input.table_name = 'sn_kpi_composer_tab';
+			input.fields = [];
+			input.fields.push('caption');
+			input.fields.push('description');
+			input.order_by = 'caption';
+			input.encodedQueries = [];
+			input.encodedQueries.push("template=true^template_public=true^ORsys_created_by=" + gs.getUserName());
+			input.record_function = this._tab_record; // Don't put in this._report_record()  -> will result in report record object (and not the function)
+			data = this._genericTableSearch(input);
+			data.templates = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+
+	_selectLibraryProjects: function(input) {
+		var data = {};
+		data.projects = [];
+
+		if (input) {
+			input.table_name = 'sn_kpi_composer_project';
+			// Default all record
+			input.maxresult = 0;
+			input.fields = [];
+			input.fields.push('name');
+			input.fields.push('description');
+			input.order_by = 'name';
+			input.encodedQueries = [];
+			input.encodedQueries.push("library=true^library_public=true^ORsys_created_by=" + gs.getUserName());
+			input.record_function = this._project_record; // Don't put in this._report_record()  -> will result in report record object (and not the function)
+			data = this._genericTableSearch(input);
+			data.projects = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+
+
+	_selectContentBlocks: function(input) {
+		var data = {};
+		data.content_blocks = [];
+		if (input) {
+			input.table_name = 'content_block';
+			input.fields = [];
+			input.fields.push('name');
+			input.order_by = 'name';
+			input.record_function = this._content_block_record;
+			data = this._genericTableSearch(input);
+			data.content_blocks = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+	_selectInteractiveFilters: function(input) {
+		var data = {};
+		data.interactive_filters = [];
+		if (input) {
+			input.table_name = 'sys_ui_hp_publisher';
+			input.fields = [];
+			input.fields.push('name');
+			input.fields.push('look_up_name');
+			input.order_by = 'look_up_name';
+			input.record_function = this._interactive_filter_record;
+			data = this._genericTableSearch(input);
+			data.interactive_filters = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+
+	_selectSpotlightGroups: function(input) {
+		var data = {};
+		data.spotlight_groups = [];
+		if (this._getSpotlightInstalled().installed) {
+			if (input) {
+				input.table_name = 'spotlight_groups';
+				input.fields = [];
+				input.fields.push('name');
+				input.order_by = 'name';
+				input.record_function = this._spotlight_group_record;
+				data = this._genericTableSearch(input);
+				data.spotlight_groups = data.records;
+				delete data.records;
+			} else {
+				throw "No valid input parameters.";
+			}
+		}
+		return data;
+	},
+
+	/*
+	* Return a list of user;
+	* Filter can be set by input.filter = '';
+	* Filter will do a LIKE at the name of the user
+	* By default 10 records are return
+	* The number of records returned can be changed with the property input.maxresult = 20;
+	* Setting the input.maxresult = 0; will return all records
+	*/
+	_selectUsers: function(input) {
+
+		var data = {};
+		data.users = [];
+		if (input) {
+			input.table_name = 'sys_user';
+			input.fields = [];
+			input.fields.push('name');
+			input.order_by = 'name';
+			input.record_function = this._user_record; // Don't put in this._report_record()  -> will result in report record object (and not the function)
+			data = this._genericTableSearch(input);
+			data.users = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+	/*
+	* Return a list of Indicator Definitions;
+	* Filter can be set by input.filter = '';
+	* Filter will do a LIKE at the name of the indicator definition
+	* By default 10 records are return
+	* The number of records returned can be changed with the property input.maxresult = 20;
+	* Setting the input.maxresult = 0; will return all records
+	*/
+	_selectIndicatorDefinitions: function(input) {
+		var data = {};
+		data.indicator_definitions = [];
+		if (input) {
+			input.table_name = 'sn_kpi_composer_indicator_definition';
+			input.fields = [];
+			input.fields.push('name');
+			input.fields.push('description');
+			input.order_by = 'name';
+			input.record_function = this._indicatordefinition_record;
+			data = this._genericTableSearch(input);
+			data.indicator_definitions = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+
+	/*
+	* Return a list of Pa dashboards;
+	* Filter can be set by input.filter = '';
+	* Filter will do a LIKE at the name of the indicator definition
+	* By default 10 records are return
+	* The number of records returned can be changed with the property input.maxresult = 20;
+	* Setting the input.maxresult = 0; will return all records
+	*/
+	_selectPaDashboards: function(input) {
+		var data = {};
+		data.pa_dashboards = [];
+		if (input) {
+			input.table_name = 'pa_dashboards';
+			input.fields = [];
+			input.fields.push('name');
+			input.fields.push('sys_name');
+			input.order_by = 'name';
+			input.record_function = this._pa_dashboard_record;
+			data = this._genericTableSearch(input);
+			data.pa_dashboards = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+	/*
+	* Return a list of Groups ;
+	* Filter can be set by input.filter = '';
+	* Filter will do a LIKE at the name of the group name
+	* By default 10 records are return
+	* The number of records returned can be changed with the property input.maxresult = 20;
+	* Setting the input.maxresult = 0; will return all records
+	*/
+	_selectGroups: function(input) {
+		var data = {};
+		data.groups = [];
+		if (input) {
+			input.table_name = 'sys_user_group';
+			input.fields = [];
+			input.fields.push('name');
+			input.fields.push('description');
+			input.order_by = 'name';
+			input.record_function = this._group_record;
+			data = this._genericTableSearch(input);
+			data.groups = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+
+	/*
+	* Moves one record (with sys_id) on up in the row
+	* The order (number) of the record will be lowerd
+	* and the order (number) of the other record will be ++
+	*
+	* table_name = the main table name where the records are stored
+	* sys_id = record to move one place up or down
+	* category_field = when multiple sets of orderd by records are set this is the group field
+	* up_or_down = 'up' or 'down'
+	*/
+	_order_up_or_down: function(table_name, sys_id, category_field, up_or_down, order_field_name) {
+		var result = {};
+		result.success = false;
+		try {
+			if (!order_field_name)
+				order_field_name = 'order';
+			// First open the table and find the record
+			var gr_up_down1 = new GlideRecord(table_name);
+			gr_up_down1.addQuery('sys_id', sys_id);
+			gr_up_down1.query();
+			if (gr_up_down1.next()) {
+				// Take current order
+				var order = parseInt(gr_up_down1.getValue(order_field_name));
+
+				// Return current order value (for debug)
+				result.current_order_value = order;
+
+				// Find other record to switch with
+				var gr_up_down2 = new GlideRecord(table_name);
+
+				// All records but itself
+				gr_up_down2.addQuery('sys_id', "!=", sys_id);
+
+				// Calc new order value
+				var new_order = order;
+				if (up_or_down.toLowerCase() == 'up') {
+					new_order--;
+					gr_up_down2.addQuery(order_field_name, "<=", new_order);
+					gr_up_down2.orderByDesc(order_field_name);
+				}
+				if (up_or_down.toLowerCase() == 'down') {
+					new_order++;
+					gr_up_down2.addQuery(order_field_name, ">=", new_order);
+					gr_up_down2.orderBy(order_field_name);
+				}
+
+				// Is there a category to filter on
+				if (category_field) {
+					gr_up_down2.addQuery(category_field, gr_up_down1.getValue(category_field));
+					result.category_field = category_field;
+					result.category_value = gr_up_down1.getValue(category_field);
+				}
+
+				// Debug
+				result.query = gr_up_down2.getEncodedQuery();
+
+				gr_up_down2.query();
+				// If there is a record, change with the first one
+				if (gr_up_down2.next()) {
+					// Switch value of order records
+					result.new_order_value = parseInt(gr_up_down2.getValue(order_field_name));
+					result.other_sys_id = gr_up_down2.getValue('sys_id');
+					gr_up_down1.setValue(order_field_name, gr_up_down2.getValue(order_field_name));
+					gr_up_down2.setValue(order_field_name, order);
+					gr_up_down1.update();
+					gr_up_down2.update();
+					result.success = true;
+				} else {
+					// No second record found, don't change anything
+					result.success = true;
+					result.message = gs.getMessage("Nothing to move, could not find second record");
+
+				}
+			} else {
+				throw "Record with sys_id:" + sys_id + "not found.";
+			}
+		}
+		catch(e){
+			result.message = e.message;
+			result.exception = e;
+		}
+		return result;
+	},
+
+	/*
+	* Return a list of Knowledge base artikels;
+	* Filter can be set by input.filter = '';
+	* Filter will do a LIKE at the number of the knowledge article when started with *
+	* By default 10 records are return
+	* The number of records returned can be changed with the property input.maxresult = 20;
+	* Setting the input.maxresult = 0; will return all records
+	*/
+	_selectKnowledgeArticles: function(input) {
+		var data = {};
+		if (input) {
+			input.table_name = 'kb_knowledge';
+			input.fields = [];
+			input.fields.push('number');
+			input.fields.push('short_description');
+			//input.fields.push('title');
+			input.order_by = 'number';
+			input.record_function = this._knowledgearticle_record;
+			data = this._genericTableSearch(input);
+			data.knowledgearticles = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+
+	/*
+	* Return a list of breakdowns;
+	* Filter can be set by input.filter = '';
+	* By default 10 records are return
+	* The number of records returned can be changed with the property input.maxresult = 20;
+	* Setting the input.maxresult = 0; will return all records
+	*/
+	_selectBreakdowns: function(input) {
+		var data = {};
+		if (input) {
+			input.table_name = 'sn_kpi_composer_breakdown';
+			input.fields = [];
+			input.fields.push('name');
+			input.fields.push('color');
+			//input.fields.push('title');
+			input.order_by = 'name';
+			input.record_function = this._breakdown_record;
+			data = this._genericTableSearch(input);
+			data.breakdowns = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+
+	/*
+	* Return a list of PA Widgets ;
+	* Filter can be set by input.filter = '';
+	* Filter will do a LIKE at the number of the knowledge article when started with *
+	* By default 10 records are return
+	* The number of records returned can be changed with the property input.maxresult = 20;
+	* Setting the input.maxresult = 0; will return all records
+	*/
+	_selectPaWidgets: function(input) {
+		var data = {};
+		if (input) {
+			input.table_name = 'pa_widgets';
+			input.fields = [];
+			input.fields.push('compare_main_label');
+			input.fields.push('description');
+			input.fields.push('sys_name');
+			input.fields.push('name');
+			input.order_by = 'name';
+			input.record_function = this._pa_widget_record;
+			data = this._genericTableSearch(input);
+			data.pa_widgets = data.records;
+			delete data.records;
+		} else {
+			throw "No valid input parameters.";
+		}
+		return data;
+	},
+	/*
+	* Input should at least contain a list of entities complete with the linked IndicatorDefinitions
+	* for all the entities (in the list) the leading indicatorsdef and supportingindicatordefs are loaded
+	*
+	* Return 2 lists with
+	* - all indicator defs
+	* - indicatordef + indicatordef list (sys_id + sys_id)
+	*
+	* function only goes 1 deep, no recursion!
+	*/
+	_relatedIndicatorDefinitions: function(input) {
+
+		// Fetch all Entity_IndicatorDef related to the Entities
+		// Fetch all IndicatorDef_IndicatorDef based related to the IndicatorDef (list from the Entity_IndicatorDef)
+		// Group all IndicatorDef_SysId's and read all IndicatorDefs
+
+		// Prepare response
+		var response = {};
+		response.indicatordefinitions = [];
+		response.indicatordefinition_indicatordefinition = [];
+
+		// For now
+		var project = this._projectApi.project(input);
+
+		if (this.trace) this._debug.push("Reading indicator definition data from the project");
+
+		try {
+
+			if (input === null)
+				throw "Input must be set";
+			if (input.entities === null)
+				throw "Input should contain a entities property";
+
+			// if (this.trace) this._debug.push("Collect indicator definitions from the entities. " + JSON.stringify(input));
+
+			// All indicator definitions sys_id's
+			var inddefs = [];
+			for(var idx = 0; idx<input.entities.length; idx++) {
+				var entity = input.entities[idx];
+				if (entity.indicator_definition) {
+					if (this.trace) this._debug.push("Entity.indicator_definition:" + JSON.stringify(entity.indicator_definition));
+					if (inddefs.indexOf(entity.indicator_definition) === -1) {
+						inddefs.push(entity.indicator_definition);
+						if (this.trace) this._debug.push("inddefs.push:" + JSON.stringify(inddefs));
+					}
+				}
+			}
+
+			if (this.trace) this._debug.push("Get related indicator definitions from: " + JSON.stringify(inddefs));
+
+			var local = this;
+
+			var recGetIndicatorDefs = function(inddef_ids) {
+				//
+				var newIds = [];
+				// Get all sup indicator definitions
+				var indind = new GlideRecord('sn_kpi_composer_indicator_def_indicator_def_m2m');
+				indind.addQuery('main_indicator_definition', 'IN', inddef_ids.join(','));
+				indind.query();
+				while (indind.next()) {
+					// Create object
+					var indicatordefinition_indicatordefinition = local._indicatordefinition_indicatordefinition_record(indind);
+					// Add to result
+					response.indicatordefinition_indicatordefinition.push(indicatordefinition_indicatordefinition);
+					// Add sup indicator to the list of id's to fetch
+					if (inddefs.indexOf(indicatordefinition_indicatordefinition.sup_indicator_definition) < 0) {
+
+						inddefs.push(indicatordefinition_indicatordefinition.sup_indicator_definition);
+						newIds.push(indicatordefinition_indicatordefinition.sup_indicator_definition);
+
+						local._debug.push("IndDefs: " + JSON.stringify(inddefs));
+					}
+				}
+				// Recursive
+				if (newIds.length>0) {
+					recGetIndicatorDefs(newIds);
+				}
+
+			};
+
+			recGetIndicatorDefs(inddefs);
+
+			// Get all sup indicator definitions
+			/*
+			var indind = new GlideRecord('sn_kpi_composer_indicator_def_indicator_def_m2m');
+			indind.addQuery('main_indicator_definition', 'IN', inddefs.join(','));
+            indind.query();
+            while (indind.next()) {
+				// Create object
+				var indicatordefinition_indicatordefinition = this._indicatordefinition_indicatordefinition_record(indind);
+				// Add to result
+                response.indicatordefinition_indicatordefinition.push(indicatordefinition_indicatordefinition);
+				// Add sup indicator to the list of id's to fetch
+				if (inddefs.indexOf(indicatordefinition_indicatordefinition) < 0)
+					inddefs.push(indicatordefinition_indicatordefinition.sup_indicator_definition);
+            }
+			*/
+
+			if (this.trace) this._debug.push("Reading all indicator definitions");
+
+			// All relations done, now read IndicatorDefinitions
+			var ind = new GlideRecord('sn_kpi_composer_indicator_definition');
+			ind.addQuery('sys_id', 'IN', inddefs.join(','));
+			ind.query();
+			while(ind.next()) {
+				response.indicatordefinitions.push(this._indicatordefinition_record(ind));
+			}
+
+			response.success = true;
+			if (this.trace) this._debug.push("_relatedIndicatorDefinitions done: " + JSON.stringify(response));
+		}
+		catch(ex) {
+			this._debug.push("Exception: " + ex.Message);
+			response.exception = ex;
+			response.success = false;
+		}
+		return response;
+	},
+
+
+
+	/*********************************************************************/
+
+	/*
+	* Generic database update statement used to do (mostt) of database update calles
+	*
+	*/
+    _updateData: function(input) {
+
+        var result = {};
+        result.success = false;
+
+		var local = this;
+
+		// Project var
+		var project = this._projectApi.project(input);
+		if (project && project.sys_id) {
+			if (project.readonly &&
+				input.action &&
+				input.action != "insertProjectComments") {
+				result.exception = "Project is readonly";
+				result.success = false;
+				return result;
+			}
+		}
+
+        if (input) {
+            // Store action to result if any
+            if (input.action)
+                result.action = input.action;
+
+            // Default result = false
+            result.success = false;
+
+
+            // execute actions
+			try {
+
+				///////////////
+				// ENTITY //
+				///////////////
+
+				// Read a entity id from the database and stores in in object
+				// Accepts entity === "SYS_ID" || entity.sys_id === "SYS_ID"
+				var _getEntity = function(entity) {
+					var result = {};
+					var sys_id = "";
+					if (typeof entity === 'string') {
+						sys_id = entity;
+					} else {
+						sys_id = entity.sys_id;
+					}
+
+					//local._debug.push("_getEntity() '" + sys_id + "'");
+					var er = new GlideRecord('sn_kpi_composer_entity');
+					er.addQuery("sys_id", sys_id);
+					er.query();
+					if (er.next()) {
+						result = local._entity_record(er);
+					}
+					if (local.trace) local._debug.push("_getEntity() result: " + JSON.stringify(result));
+					return result;
+				};
+
+				// Read a entity record from the db (based on then "entity.sys_id") and updates all field (from "fieldsToUpdate") with values from then "entity"
+				var _updateEntity = function(entity, fieldsToUpdate) {
+					if (local.trace) local._debug.push("_updateEntity() " + JSON.stringify(entity) + "  " + JSON.stringify(fieldsToUpdate));
+					var entityUpdate = {};
+					entityUpdate.entity = {};
+					var er = new GlideRecord('sn_kpi_composer_entity');
+					er.addQuery("sys_id", entity.sys_id);
+					er.query();
+					local.updateRecords(er, entity, fieldsToUpdate, entityUpdate.entity, entityUpdate);
+					return entityUpdate;
+				};
+
+				if (input.action && input.action == "updateEntity") {
+					result = _updateEntity(input.entity, ['name', 'description', 'order', 'target']);
+					result.action = "updateEntity";
+				}
+
+				if (input.action && input.action == "updateEntityCollapsed") {
+					var ec_gr = new GlideRecord("sn_kpi_composer_entity_collapsed");
+					// Take parameters, relation.sys_id could by null
+					ec_gr.addQuery("project", input.project.sys_id);
+					ec_gr.addQuery("entity", input.entity.sys_id);
+					ec_gr.addQuery("relation", input.relation.sys_id);
+					ec_gr.query();
+
+					if (ec_gr.next()) {
+						// Record found, do update
+						if (input.collapsed === true || input.collapsed === false) {
+							ec_gr.setValue("analysis", input.collapsed);
+						}
+						if (input.collapseddd === true || input.collapseddd === false) {
+							ec_gr.setValue("data_definition", input.collapseddd);
+						}
+						if (ec_gr.getValue("analysis") == false && ec_gr.getValue("data_definition") == false) {
+							ec_gr.deleteRecord();
+							result.db = "delete";
+						} else  {
+							ec_gr.update();
+							result.db = "update";
+						}
+						result.success = true;
+
+					} else {
+						// No record found, do insert
+						ec_gr.initialize();
+						ec_gr.setValue("project", input.project.sys_id);
+						ec_gr.setValue("entity", input.entity.sys_id);
+						ec_gr.setValue("relation", input.relation.sys_id);
+						ec_gr.setValue("analysis", (input.collapsed != null ? input.collapsed : false));
+						ec_gr.setValue("data_definition", (input.collapseddd != null ? input.collapseddd : false));
+						ec_gr.insert();
+						result.success = true;
+						result.db = "insert";
+					}
+					result.action = "updateEntityCollapsed";
+				}
+
+
+
+
+				if (input.action && input.action == "insertEntityIndicatorDefinition") {
+					var entity = _getEntity(input.entity);
+
+					// Prepare input (with filter)
+					var qIndDef = {};
+					// Filter of sys_id
+					//voor Pepijn: hier heb ik een array van gemaakt, want de functie _selectIndicatorDefinitions verwacht een array
+					qIndDef.sys_ids = [input.indicator_definition];
+					// Take data
+					var ind_def = this._selectIndicatorDefinitions(qIndDef);
+					if (this.trace) this._debug.push("Reading IndicatorDefinition result: " + JSON.stringify(ind_def));
+					if (ind_def.indicator_definitions.length === 1) {
+						// Update the record
+						var temp1 = {};
+						temp1.sys_id = input.entity;
+						temp1.indicator_definition = input.indicator_definition;
+
+						// When a indicator definition is linked to a entity, the indicator definition project id should be set
+						var id_gr = new GlideRecord("sn_kpi_composer_indicator_definition");
+						id_gr.addQuery("sys_id", input.indicator_definition);
+						id_gr.query();
+						if (id_gr.next()) {
+							id_gr.setValue("project", project.sys_id);
+							id_gr.update();
+						}
+	
+
+						temp1.project = project.sys_id;
+						result = _updateEntity(temp1, ['indicator_definition']);
+						if (this.trace) this._debug.push("Update indicator_definition (for entity:'" + JSON.stringify(result) + "'): " + JSON.stringify(ind_def));
+					} else {
+						if (this.trace) this._debug.push("DON'T UPDATE indicator_definition (reference not found): " + JSON.stringify(ind_def));
+						result.warning = true;
+						result.success = true;
+					}
+
+					result.action = "insertEntityIndicatorDefinition";
+				}
+
+				if (input.action && input.action == "deleteEntityIndicatorDefinition") {
+					var entity = _getEntity(input.entity);
+					// Make sure it's empty
+					input.indicator_definition = null;
+					var temp2 = {};
+					temp2.sys_id = input.entity;
+					temp2.indicator_definition = null;
+					result = _updateEntity(temp2, ['indicator_definition']);
+					result.action = "deleteEntityIndicatorDefinition";
+				}
+
+				if (input.action && input.action == "insertEntityReportDefinition") {
+					var entity = _getEntity(input.entity);
+
+					// Prepare input (with filter)
+					var qRptDef = {};
+					// Filter of sys_id
+					//voor Pepijn: hier heb ik een array van gemaakt, want de functie _selectReportDefinitions verwacht een array
+					qRptDef.sys_ids = [input.report_definition];
+					// Take data
+					var rpt_def = this._selectReportDefinitions(qRptDef);
+					if (this.trace) this._debug.push("Reading ReportDefinition result: " + JSON.stringify(rpt_def));
+					if (rpt_def.report_definitions.length === 1) {
+						// Update the record
+						var temp3 = {};
+						temp3.sys_id = input.entity;
+						temp3.report_definition = input.report_definition;
+						result = _updateEntity(temp3, ['report_definition']);
+						if (this.trace) this._debug.push("Update report_definition (for entity:'" + JSON.stringify(result) + "'): " + JSON.stringify(rpt_def));
+					} else {
+						if (this.trace) this._debug.push("DON'T UPDATE report_definition (reference not found): " + JSON.stringify(rpt_def));
+						result.warning = true;
+						result.success = true;
+					}
+					result.action = "insertEntityReportDefinition";
+				}
+
+				if (input.action && input.action == "deleteEntityReportDefinition") {
+					var entity = _getEntity(input.entity);
+					// Make sure it's empty
+					input.report_definition = null;
+					var temp4 = {};
+					temp4.sys_id = input.entity;
+					temp4.report_definition = null;
+					result = _updateEntity(temp4, ['report_definition']);
+					result.action = "deleteEntityReportDefinition";
+				}
+
+
+				if (input.action && input.action == "insertEntityOwner") {
+					var entity = _getEntity(input.entity);
+					entity.owners = this._addToListField(entity.owners, input.owner);
+					result = _updateEntity(entity, ['owners']);
+					result.action = "insertEntityOwner";
+				}
+
+				if (input.action && input.action == "deleteEntityOwner") {
+					var entity = _getEntity(input.entity);
+					entity.owners = this._removeFromListField(entity.owners, input.owner);
+					result = _updateEntity(entity, ['owners']);
+					result.action = "deleteEntityOwner";
+				}
+
+				if (input.action && input.action == "insertEntityContact") {
+					var entity = _getEntity(input.entity);
+					entity.contacts = this._addToListField(entity.contacts, input.contact);
+					result = _updateEntity(entity, ['contacts']);
+					result.action = "insertEntityContact";
+				}
+
+				if (input.action && input.action == "deleteEntityContact") {
+					var entity = _getEntity(input.entity);
+					entity.contacts = this._removeFromListField(entity.contacts, input.contact);
+					result = _updateEntity(entity, ['contacts']);
+					result.action = "deleteEntityContact";
+				}
+
+				if (input.action && input.action == "insertEntityKnowledgeArticle") {
+					var entity = _getEntity(input.entity);
+					entity.knowledgearticles = this._addToListField(entity.knowledgearticles, input.knowledgearticle);
+					result = _updateEntity(entity, ['knowledgearticles']);
+					result.action = "insertEntityKnowlegde";
+				}
+
+				if (input.action && input.action == "deleteEntityKnowledgeArticle") {
+					var entity = _getEntity(input.entity);
+					entity.knowledgearticles = this._removeFromListField(entity.knowledgearticles, input.knowledgearticle);
+					result = _updateEntity(entity, ['knowledgearticles']);
+					result.action = "deleteEntityKnowlegde";
+				}
+
+
+				if (input.action && input.action == "insertEntity") {
+					// Validate input values
+					if (input.entity) {
+						if (!input.entity.name)
+							throw "Supply a name for the new entity.";
+						if (!input.entity.entitytype)
+							throw "Supply a type for the new entity.";
+					} else {
+						throw "No entity supplied for the insert.";
+					}
+
+					// Insert values
+					var nr = new GlideRecord('sn_kpi_composer_entity');
+					nr.initialize();
+					nr.name = input.entity.name;
+					nr.project = this._projectApi.project(input).sys_id;
+					nr.entity_type = input.entity.entitytype;
+
+					// If owners are provided add the owners list
+					if (input.entity.owners)
+						nr.owners = input.entity.owners;
+
+					// If knowledgearticles are provided add the knowledgearticles list
+					if (input.entity.knowledgearticles)
+						nr.knowledgearticles = input.entity.knowledgearticles;
+
+					// If contacts are provided add the contacts list
+					if (input.entity.contacts)
+						nr.contacts = input.entity.contacts;
+
+					if (input.entity.order) {
+						nr.order = input.entity.order;
+					}
+					if (input.entity.sys_id) {
+						// Write own sys_id (because it is generated by drawing)
+						nr.setNewGuidValue(input.entity.sys_id);
+					}
+
+					// If description is provided
+					if (input.entity.description)
+						nr.description = input.entity.description;
+
+					// If target is provided
+					if (input.entity.target)
+						nr.target = input.entity.target;
+
+					// If indicator_definition is provided
+					if (input.entity.indicator_definition)
+						nr.indicator_definition = input.entity.indicator_definition;
+
+					// If report_definition is provided
+					if (input.entity.report_definition)
+						nr.report_definition = input.entity.report_definition;
+
+					nr.insert();
+					result.entity = {};
+					result.entity = this._entity_record(nr);
+					result.success = true;
+				}
+
+				if (input.action && input.action == "deleteEntity") {
+					// Delete links to this entity (from)
+					var er1 = new GlideRecord('sn_kpi_composer_entities_entities_m2m');
+					er1.addQuery("fromentity", input.entity.sys_id);
+					er1.query();
+					while (er1.next()) {
+						er1.deleteRecord();
+					}
+
+					// Deleye links to this entity (to)
+					var er2 = new GlideRecord('sn_kpi_composer_entities_entities_m2m');
+					er2.addQuery("toentity", input.entity.sys_id);
+					er2.query();
+					while (er2.next()) {
+						er2.deleteRecord();
+					}
+
+					// Delete entity
+					var dr = new GlideRecord('sn_kpi_composer_entity');
+					var queryString = "sys_id=" + input.entity.sys_id;
+					dr.addEncodedQuery(queryString);
+					dr.query();
+					if (dr.next()) {
+						dr.deleteRecord();
+					}
+					result.success = true;
+				}
+
+				///////////////////////////
+				// LINK (EntityRelation) //
+				///////////////////////////
+				if (input.action && input.action == "insertEntityEntity") {
+					var ir = new GlideRecord('sn_kpi_composer_entities_entities_m2m');
+
+					ir.initialize();
+					ir.from_entity = input.entities.from;
+					ir.to_entity = input.entities.to;
+					if (input.entities.relationtype) {
+						ir.relation_type = input.entities.relationtype;
+					} else {
+						gs.info("Insert entity relation, no relation type found, using project default: " + this._projectApi.project(input).defaultentityrelationtype);
+						ir.relation_type = this._projectApi.project(input).defaultentityrelationtype;
+					}
+
+					ir.project = this._projectApi.project(input).sys_id;
+					result.relation = {};
+					result.relation.sys_id = ir.insert();
+					result.relation = this._relation_record(ir);
+
+					// If a relation record is provided (as a relation_sys_id)
+					// The new relaiton record is replacing an existing relation
+					if (input.entities.relation_sys_id) {
+						// Check if we can delete the old relation record
+						if (ir.get(input.entities.relation_sys_id)) {
+							ir.deleteRecord();
+							result.deleted_relation = input.entities.relation_sys_id;
+						}
+						// We should give the GUID instruction to change the sys_id
+						result.update_entity = { "old": input.entities.relation_sys_id + "_" + input.entities.to, "new": result.relation.sys_id + "_" + input.entities.to };
+
+						// Should we add the relation_sys_id to the to?
+						if (result.relation.inc_depth>0) {
+							result.relation.to = result.relation.sys_id + "_" + input.entities.to;
+						}
+					}
+
+					result.success = true;
+				}
+				if (input.action && input.action == "deleteEntityEntity") {
+					var dl = new GlideRecord('sn_kpi_composer_entities_entities_m2m');
+					result.delete_persona = false;
+					result.delete_breakdowns = false;
+					if (dl.get(input.relation.sys_id)) {
+						// Remove the relation, but first store the realtion TO Entity (sys_id)
+						var to_entity = dl.getValue("to_entity").toString();
+						var project = dl.getValue("project").toString();
+						dl.deleteRecord();
+						// Now check, is there are no relations (in this project) to this entity left, we should delete the
+						// relations to the persona's and breakdowns
+						var dl_check = new GlideRecord('sn_kpi_composer_entities_entities_m2m');
+						dl_check.addQuery("to_entity", to_entity);
+						dl_check.addQuery("project", project);
+						dl_check.query();
+						if (!dl_check.hasNext()) {
+							// No record, so we could can delete all related data
+
+							// Delete entity_persona
+							var gr_entity_persona = new GlideRecord("sn_kpi_composer_entity_persona_m2m");
+							gr_entity_persona.addQuery("entity", to_entity);
+							gr_entity_persona.addQuery("project", project);
+							gr_entity_persona.query();
+							gr_entity_persona.deleteMultiple();
+							result.delete_persona = true;
+
+							// Delete entity_breakdown
+							var gr_entity_breakdowns = new GlideRecord("sn_kpi_composer_entity_breakdown_m2m");
+							gr_entity_breakdowns.addQuery("entity", to_entity);
+							gr_entity_breakdowns.addQuery("project", project);
+							gr_entity_breakdowns.query();
+							gr_entity_breakdowns.deleteMultiple();
+							result.delete_breakdowns = true;
+
+						}
+						result.success = true;
+					}
+					/*
+					dl.addQuery("from_entity", input.entities.from);
+					dl.addQuery("to_entity", input.entities.to);
+					dl.addQuery("relation_type", input.entities.relationtype);
+					dl.query();
+					while (dl.next()) {
+						dl.deleteRecord();
+						result.success = true;
+					}
+					*/
+				}
+				if (input.action && input.action == "updateEntityToEntity") {
+					var dl = new GlideRecord('sn_kpi_composer_entities_entities_m2m');
+					if (dl.get(input.relation.sys_id)) {
+						dl.to_entity = input.entities.newto;
+						dl.update();
+						result.success = true;
+					}
+					/*
+					dl.addQuery("from_entity", input.entities.from);
+					dl.addQuery("to_entity", input.entities.oldto);
+					dl.addQuery("relation_type", input.entities.relationtype);
+					dl.addQuery("")
+					dl.query();
+					while (dl.next()) {
+						dl.to_entity = input.entities.newto;
+						dl.update();
+						result.success = true;
+					}
+					*/
+				}
+				if (input.action && input.action == "updateEntityFromEntity") {
+					var dl = new GlideRecord('sn_kpi_composer_entities_entities_m2m');
+					if (dl.get(input.relation.sys_id)) {
+						dl.from_entity = input.entities.newfrom;
+						dl.update();
+						result.success = true;
+					}
+					/*
+					dl.addQuery("from_entity", input.entities.oldfrom);
+					dl.addQuery("to_entity", input.entities.to);
+					dl.addQuery("relation_type", input.entities.relationtype);
+					dl.query();
+					while (dl.next()) {
+						dl.from_entity = input.entities.newfrom;
+						dl.update();
+						result.success = true;
+					}
+					*/
+				}
+
+				// Update definiton values for a entity, if the entity is linked to a "indicatator defenition"
+				updateDefintionWhenIndicatorDef = function(entity_sys_id) {
+					// If the entity is a indicator definition, de indicator def task should be updated, thats why we update the last_updated value in de indicator_def
+					var gr_entity = new GlideRecord("sn_kpi_composer_entity");
+					if (gr_entity.get(entity_sys_id)) {
+						var ind_def = gr_entity.getValue("indicator_definition");
+						gr_ind_def = new GlideRecord("sn_kpi_composer_indicator_definition");
+						if (gr_ind_def.get(ind_def)) {
+							gr_ind_def.definition_updated = new GlideDateTime();
+							gr_ind_def.definition_updated_by = gs.getUserName();
+							gr_ind_def.update();
+						}
+					}
+				};
+
+				///////////////
+				// BREAKDOWN //
+				///////////////
+				if (input.action && input.action == "insertBreakdownEntity") {
+					var bd = new GlideRecord('sn_kpi_composer_entity_breakdown_m2m');
+					bd.addQuery("entity", input.entity);
+					bd.addQuery("breakdown", input.breakdown);
+					bd.addQuery("project", input.project.sys_id);
+					//dl.addQuery("relation_type", input.link.relationtype);
+					bd.query();
+					if (bd.next()) {
+						// Record already here, do nothing
+						result.exception = "No breakdown added, already exists.";
+						result.success = false;
+					} else {
+						// Record not here, create
+						var nbd = new GlideRecord('sn_kpi_composer_entity_breakdown_m2m');
+						nbd.initialize();
+						nbd.entity = input.entity;
+						nbd.breakdown = input.breakdown;
+						nbd.project = project.sys_id;
+						nbd.insert();
+						
+						// When its a indicatordef do update of indicatordef record
+						updateDefintionWhenIndicatorDef(input.entity);
+
+						result.success = true;
+					}
+				}
+				if (input.action && input.action == "deleteBreakdownEntity") {
+					var bd = new GlideRecord('sn_kpi_composer_entity_breakdown_m2m');
+					bd.addQuery("entity", input.entity);
+					bd.addQuery("breakdown", input.breakdown);
+					bd.addQuery("project", input.project.sys_id);
+					//dl.addQuery("relation_type", input.link.relationtype);
+					bd.query();
+					if (bd.next()) {
+						bd.deleteRecord();
+						// There is any record
+						while (bd.next()) {
+							bd.deleteRecord();
+						}
+
+						// When its a indicatordef do update of indicatordef record
+						updateDefintionWhenIndicatorDef(input.entity);
+
+						result.success = true;
+					} else {
+						// Record not here, can't delete
+						result.exception = "No breakdown found, could not delete.";
+						result.success = false;
+					}
+				}
+
+
+				var that = this;
+				showHideBreakdown = function (show, input) {
+					var project = that._projectApi.project(input);
+					var sbd = new GlideRecord('sn_kpi_composer_breakdowns_projects_m2m');
+					sbd.addQuery("breakdown", input.breakdown.sys_id);
+					sbd.addQuery("project", project.sys_id);
+					sbd.query();
+					if (sbd.next()) {
+						if (!show) {
+							sbd.deleteRecord();
+						} else {
+							result.note = gs.getMessage("Already visible.");
+						}
+					} else {
+						if (show) {
+							sbd.initialize();
+							sbd.project = project.sys_id;
+							sbd.breakdown = input.breakdown.sys_id;
+							sbd.insert();
+						} else {
+							result.note = gs.getMessage("Already hidden");
+						}
+					}
+					result.success = true;
+				};
+
+
+				if (input.action && input.action == "insertBreakdown") {
+					if (input.breakdown) {
+						var nper = new GlideRecord('sn_kpi_composer_breakdown');
+
+						if (!input.breakdown.color) {
+							// Read all used colors
+							nper.query();
+							var usedColor = [];
+							while(nper.next())
+							{
+								usedColor.push(nper.getDisplayValue('color'));
+							}
+
+							// this._debug.push("Usedcolors:" + JSON.stringify(usedColor));
+
+							// Find first free color
+							var i = 0;
+							var free = false;
+							var c = this._defaultDimensionsColors[0];
+							while(i < this._defaultDimensionsColors.length && !free) {
+								c = this._defaultDimensionsColors[i];
+								free = (usedColor.indexOf(c) < 0);
+								i++;
+							}
+							if (free) {
+								var sysc = this._getColor(c);
+								if (sysc !== null) {
+									input.breakdown.color = sysc.sys_id;
+								}
+							else
+								// Take the selected (or last) color
+								var sysc = this._getColor('Breakdown' + i);
+								if (sysc !== null) {
+									input.breakdown.color = sysc.sys_id;
+								}
+							}
+						}
+
+						// this._debug.push("InsertBreakdown (after color):" + JSON.stringify(input));
+
+						// Init new record
+						nper.initialize();
+						this.updateRecordValues(nper, input.breakdown, ['name', 'abbreviation', 'color']);
+						nper.abbreviation = this.abbreviation(input.breakdown.name);
+						var nper_sys_id = nper.insert();
+						result.breakdown = {};
+						result.breakdown.sys_id = nper_sys_id;
+						result.breakdown.abbreviation = nper.getValue('abbreviation');
+						result.breakdown.name = nper.getValue('name');
+						result.breakdown.show = true;
+						result.breakdown.color = nper.getDisplayValue('color.color');
+						result.success = true;
+						// Show breakdown
+						showHideBreakdown(true, result);
+
+					} else {
+						throw "No breakdown provided";
+					}
+				}
+
+				if (input.action && input.action == "updateBreakdown") {
+					var ubd = new GlideRecord('sn_kpi_composer_breakdown');
+					ubd.addQuery("sys_id", input.breakdown.sys_id);
+					ubd.query();
+					while (ubd.next()) {
+						this.updateRecordValues(ubd, input.breakdown, ['name', 'abbreviation', 'color']);
+						ubd.update();
+						result.success = true;
+					}
+				}
+
+				if (input.action && input.action == "showBreakdown") {
+					showHideBreakdown(true, input);
+				}
+
+				if (input.action && input.action == "hideBreakdown") {
+					showHideBreakdown(false, input);
+				}
+
+
+				if (input.action && input.action == "deleteBreakdown") {
+					var dper = new GlideRecord('sn_kpi_composer_breakdown');
+					dper.addQuery("sys_id", input.breakdown.sys_id);
+					dper.query();
+					if (dper.next()) {
+						// There is any record
+						dper.deleteRecord();
+						while (dper.next()) {
+							dper.deleteRecord();
+						}
+						result.success = true;
+					} else {
+						// Record not here, can't delete
+						result.exception = "No breakdown found, could not delete.";
+						result.success = false;
+					}
+				}
+
+				/////////////
+				// PERSONA //
+				/////////////
+				if (input.action && input.action == "insertPersona") {
+					if (input.persona) {
+						var nper = new GlideRecord('sn_kpi_composer_persona');
+						nper.initialize();
+						this.updateRecordValues(nper, input.persona, ['name', 'description', 'abbreviation', 'color']);
+						nper.project = this._projectApi.project(input).sys_id;
+						nper.abbreviation = this.abbreviation(input.persona.name);
+						var nper_sys_id = nper.insert();
+						result.persona = {};
+						result.persona.sys_id = nper_sys_id;
+						result.persona.abbreviation = nper.getValue('abbreviation');
+						result.persona.name = nper.getValue('name');
+						result.success = true;
+					} else {
+						throw "No persona provided";
+					}
+				}
+
+				if (input.action && input.action == "deletePersona") {
+					var dper = new GlideRecord('sn_kpi_composer_persona');
+					dper.addQuery("sys_id", input.persona.sys_id);
+					dper.query();
+					if (dper.next()) {
+						// There is any record
+						dper.deleteRecord();
+						while (dper.next()) {
+							dper.deleteRecord();
+						}
+						result.success = true;
+					} else {
+						// Record not here, can't delete
+						result.exception = "No persona found, could not delete.";
+						result.success = false;
+					}
+				}
+				if (input.action && input.action == "updatePersona") {
+					var uper = new GlideRecord('sn_kpi_composer_persona');
+					uper.addQuery("sys_id", input.persona.sys_id);
+					uper.query();
+					if (uper.next()) {
+						this.updateRecordValues(uper, input.persona, ['name', 'description', 'abbreviation', 'color']);
+						uper.setValue('abbreviation', this.abbreviation(uper.getValue('name')));
+						uper.update();
+						result.persona = {};
+						result.persona.name = uper.getValue('name');
+						result.persona.abbreviation = uper.getValue('abbreviation');
+						result.success = true;
+					}
+				}
+				if (input.action && input.action == "insertPersonaEntity") {
+					var ps = new GlideRecord('sn_kpi_composer_entity_persona_m2m');
+					ps.addQuery("entity", input.entity);
+					ps.addQuery("persona", input.persona);
+					//dl.addQuery("relation_type", input.link.relationtype);
+					ps.query();
+					if (ps.next()) {
+						// Record already here, do nothing
+						result.exception = "No persona added, already exists.";
+						result.success = false;
+					} else {
+						// Record not here, create
+						var nps = new GlideRecord('sn_kpi_composer_entity_persona_m2m');
+						nps.initialize();
+						nps.entity = input.entity;
+						nps.persona = input.persona;
+						nps.project = project.sys_id;
+						nps.insert();
+						result.success = true;
+					}
+				}
+				if (input.action && input.action == "deletePersonaEntity") {
+					var ps = new GlideRecord('sn_kpi_composer_entity_persona_m2m');
+					ps.addQuery("entity", input.entity);
+					ps.addQuery("persona", input.persona);
+					//dl.addQuery("relation_type", input.link.relationtype);
+					ps.query();
+					if (ps.next()) {
+						// There is any record
+						ps.deleteRecord();
+
+						while (ps.next()) {
+							ps.deleteRecord();
+						}
+						result.success = true;
+					} else {
+						// Record not here
+						result.exception = "No persona found, could not delete from entity.";
+						result.success = false;
+					}
+				}
+
+				/////////////
+				// PROJECT //
+				/////////////
+				var _updateProject = function(project, fieldsToUpdate) {
+					var projectUpdate = {};
+					projectUpdate.project = {};
+
+					var pr = new GlideRecord('sn_kpi_composer_project');
+					pr.addQuery("sys_id", project.sys_id);
+					pr.query();
+					local.updateRecords(pr, project, fieldsToUpdate, projectUpdate.project, projectUpdate);
+
+
+					// Comments is a special journal field
+					// See:
+					// https://docs.servicenow.com/bundle/paris-platform-administration/page/administer/field-administration/concept/c_JournalFields.html
+					if (project.comments && fieldsToUpdate.indexOf("comments")>-1) {
+						pr.comments = project.comments;
+						pr.update();
+					}
+
+					// Read the new values
+					projectUpdate.project = that._project_record(pr);
+
+					// If the update is the cached project object, release/clear it
+					if (this._project && this._project.sys_id === project.sys_id)
+						this._project = null;
+					return projectUpdate;
+				};
+
+				if (input.action && input.action == "updateProject") {
+					if (input.project) {
+						result = _updateProject(input.project, ['name', 'description', 'knowledgearticles', 'objective', 'owners', 'default_entity_relation_type', 'contacts', 'library_public']);
+						result.action = "updateProject";
+
+					} else {
+						throw "Project parameter not set.";
+					}
+				}
+
+				if (input.action && input.action == "insertProjectComments") {
+					if (input.project) {
+						result = _updateProject(input.project, ["comments"]);
+						result.action = "insertProjectComments";
+
+					} else {
+						throw "Project parameter not set.";
+					}
+				}
+
+
+				if (input.action && input.action == "insertProject") {
+					if (input.project) {
+						var nproject = new GlideRecord('sn_kpi_composer_project');
+
+						// Check if the 'default_entity_relation_type' is set
+						if (!input.project.default_entity_relation_type) {
+							// When no relation is set, take the first relation
+							var defEntityRel = this.defaultEntityRelationType();
+							input.project.default_entity_relation_type = defEntityRel;
+						}
+
+						nproject.initialize();
+						this.updateRecordValues(nproject, input.project, ['name', 'description', 'knowledgearticles', 'objective', 'owners', 'default_entity_relation_type', 'contacts']);
+						// New record id
+						var nproject_sys_id = nproject.insert();
+						// Debug
+						if (this.trace) this._debug.push("New project created with sys_id:" + nproject_sys_id);
+						// Store id for debug
+						result.new_sys_id = nproject_sys_id;
+						// Now loadback the project
+						result.project = this._projectApi.project(input);
+						result.success = true;
+					} else {
+						throw "No project provided";
+					}
+				}
+
+				if (input.action && input.action == "deleteProject" && input.project) {
+					var delProject = new GlideRecord('sn_kpi_composer_project');
+					delProject.addQuery("sys_id", input.project.sys_id);
+					//dl.addQuery("relation_type", input.link.relationtype);
+					delProject.query();
+					if (delProject.next()) {
+						// There is any record
+						delProject.deleteRecord();
+
+						while (delProject.next()) {
+							delProject.deleteRecord();
+						}
+						result.success = true;
+					} else {
+						// Record not here
+						result.exception = "No project found, no record(s) deleted.";
+						result.success = false;
+					}
+				}
+
+				if (input.action && input.action == "insertProjectContact") {
+					if (input.contact) {
+						var activeProject = this._projectApi.project(input);
+						activeProject.contacts = this._addToListField(activeProject.contacts, input.contact);
+						result = _updateProject(activeProject, ['contacts']);
+						result.action = "insertProjectContact";
+						result.success = true;
+					} else {
+						throw "Contact object not set.";
+					}
+				}
+
+				if (input.action && input.action == "deleteProjectContact") {
+					if (input.contact) {
+						var activeProject = this._projectApi.project(input);
+						activeProject.contacts = this._removeFromListField(activeProject.contacts, input.contact);
+						result = _updateProject(activeProject, ['contacts']);
+						result.action = "deleteProjectContact";
+						result.success = true;
+					} else {
+						throw "Contact object not set.";
+					}
+				}
+
+				if (input.action && input.action == "insertProjectOwner") {
+					if (input.owner) {
+						var activeProject = this._projectApi.project(input);
+						activeProject.owners = this._addToListField(activeProject.owners, input.owner);
+						result = _updateProject(activeProject, ['owners']);
+						result.action = "insertProjectOwner";
+						result.success = true;
+					} else {
+						throw "Owner object not set.";
+					}
+				}
+
+				if (input.action && input.action == "deleteProjectOwner") {
+					if (input.owner) {
+						var activeProject = this._projectApi.project(input);
+						activeProject.owners = this._removeFromListField(activeProject.owners, input.owner);
+						result = _updateProject(activeProject, ['owners']);
+						result.action = "deleteProjectOwner";
+						result.success = true;
+					} else {
+						throw "Owner object not set.";
+					}
+				}
+
+
+				if (input.action && input.action == "insertProjectKnowledgeArticle") {
+					if (input.knowledgearticle) {
+						var activeProject = this._projectApi.project(input);
+						activeProject.knowledgearticles = this._addToListField(activeProject.knowledgearticles, input.knowledgearticle);
+						result = _updateProject(activeProject, ['knowledgearticles']);
+						result.action = "insertProjectKnowledge";
+						result.success = true;
+					} else {
+						throw "Knowledge object not set.";
+					}
+				}
+
+				if (input.action && input.action == "deleteProjectKnowledgeArticle") {
+					if (input.knowledgearticle) {
+						var activeProject = this._projectApi.project(input);
+						activeProject.knowledgearticles = this._removeFromListField(activeProject.knowledgearticles, input.knowledgearticle);
+						result = _updateProject(activeProject, ['knowledgearticles']);
+						result.action = "deleteProjectKnowledge";
+						result.success = true;
+					} else {
+						throw "Knowledge object not set.";
+					}
+				}
+
+
+				//////////////////////////
+				// INDICATORDEFINITION  //
+				//////////////////////////
+				if (input.action && input.action == "insertIndicatorDefinition") {
+					if (input.indicator_definition) {
+
+						var id = new GlideRecord('sn_kpi_composer_indicator_definition');
+						// New record
+						id.initialize();
+						this.updateRecordValues(id, input.indicator_definition, ['aggregation', 'condition', 'description', 'direction', 'facts_table', 'formula', 'frequency', 'indicator_type', 'name', 'pa_indicator', 'project', 'target']);
+						id.insert();
+						result.indicator_definition = this._indicatordefinition_record(id);
+						result.success = true;
+
+					} else {
+						throw "indicator_definition object not set.";
+					}
+				}
+
+
+				if (input.action && input.action == "deleteIndicatorDefinition") {
+					if (input.indicator_definition) {
+						var delid = new GlideRecord('sn_kpi_composer_indicator_definition');
+						delid.addQuery("sys_id", input.indicator_definition.sys_id);
+						delid.query();
+						if (delid.next()) {
+							// There is any record
+							delid.deleteRecord();
+							while (delid.next()) {
+								delid.deleteRecord();
+							}
+							result.success = true;
+						} else {
+							// Record not here
+							result.exception = "No IndicatorDefinition found, no record(s) deleted.";
+							result.success = false;
+						}
+					} else {
+						throw "indicator_definition object not set.";
+					}
+				}
+
+
+				if (input.action && input.action == "insertIndicatorDefinitionIndicatorDefinition") {
+					if (input.main_indicator_definition && input.sup_indicator_definition) {
+						var idid = new GlideRecord('sn_kpi_composer_indicator_def_indicator_def_m2m');
+						idid.addQuery('main_indicator_definition', input.main_indicator_definition);
+						idid.addQuery('sup_indicator_definition', input.sup_indicator_definition);
+						idid.query();
+						if (!idid.hasNext()) {
+							idid.initialize();
+							idid.setValue('main_indicator_definition', input.main_indicator_definition);
+							idid.setValue('sup_indicator_definition', input.sup_indicator_definition);
+							// Insert record
+							idid.insert();
+							// Take values
+							result.indicatordefinition_indicatordefinition = this._indicatordefinition_indicatordefinition_record(idid);
+							result.success = true;
+						} else {
+							result.note = gs.getMessage('Relation already exists.');
+							result.success = true;
+						}
+					} else {
+						throw "main_indicator_definition OR sup_indicator_definition object not set.";
+					}
+				}
+
+				if (input.action && input.action == "deleteIndicatorDefinitionIndicatorDefinition") {
+					if (input.main_indicator_definition && input.sup_indicator_definition) {
+						var idid = new GlideRecord('sn_kpi_composer_indicator_def_indicator_def_m2m');
+						idid.addQuery('main_indicator_definition', input.main_indicator_definition);
+						idid.addQuery('sup_indicator_definition', input.sup_indicator_definition);
+						idid.query();
+						if (idid.next()) {
+							// There is any record
+							idid.deleteRecord();
+							while (idid.next()) {
+								idid.deleteRecord();
+							}
+							result.success = true;
+						} else {
+							// Record not here
+							result.exception = "No IndicatorDefinition_IndicatorDefinition found, no record(s) deleted.";
+							result.success = false;
+						}
+
+					} else {
+						throw "main_indicator_definition OR sup_indicator_definition object not set.";
+					}
+				}
+
+				/////////////////
+				// ENTITY TYPE //
+				/////////////////
+				if (input.action && input.action == "updateEntityType") {
+					// Filter
+					var qs2 = "sys_id=" + input.entityType.entitytype;
+					var er = new GlideRecord('sn_kpi_composer_entity_type');
+					er.addEncodedQuery(qs2);
+					// Query
+					er.query();
+					// Prepare result
+					result.entityType = {};
+					// Update record
+					this.updateRecords(er, input.entityType, ['name', 'description', 'allow_breakdown', 'allow_persona', 'color', 'order', 'tooltip'], result.entityType, result);
+				}
+
+
+				///////////////
+				// DASHBOARD //
+				///////////////
+
+
+				var getDashboard = function(dashboard_sys_id) {
+					var gr_dashboard = new GlideRecord('sn_kpi_composer_dashboard');
+					gr_dashboard.get(dashboard_sys_id);
+					return that._dashboard_record(gr_dashboard);
+				};
+
+
+				var updateDashboard = function(dashboard, fields) {
+					var gr_dashboard = new GlideRecord('sn_kpi_composer_dashboard');
+					gr_dashboard.get(dashboard.sys_id);
+					that.updateRecordValues(gr_dashboard, dashboard, fields);
+					gr_dashboard.update();
+					return dashboard;
+				};
+
+				var getTab = function(tab_sys_id) {
+					var gr_tab = new GlideRecord('sn_kpi_composer_tab');
+					gr_tab.get(tab_sys_id);
+					return that._tab_record(gr_tab);
+				};
+
+				var getRow = function(row_sys_id) {
+					var gr_row = new GlideRecord('sn_kpi_composer_row');
+					gr_row.get(row_sys_id);
+					return that._row_record(gr_row);
+				};
+
+				var getCanvas = function(canvas_sys_id) {
+					var gr_canvas = new GlideRecord('sn_kpi_composer_canvas');
+					gr_canvas.get(canvas_sys_id);
+					return that._canvas_record(gr_canvas);
+				};
+
+
+				var updateCanvas = function(canvas, fields) {
+					var gr_canvas = new GlideRecord('sn_kpi_composer_canvas');
+					// Read record from db
+					gr_canvas.get(canvas.sys_id);
+					// Update db record from paramaters
+					that.updateRecordValues(gr_canvas, canvas, fields);
+
+					gr_canvas.update();
+					return that._canvas_record(gr_canvas);
+				};
+
+
+				var dashboard = {};
+				if (input.action && input.action == "insertDashboard") {
+					if (input.dashboard) {
+
+						var activeProject = this._projectApi.project(input);
+
+						// Calc order nr
+						if (!input.dashboard.order) {
+							var gr_dashboard = new GlideAggregate('sn_kpi_composer_dashboard');
+							gr_dashboard.addAggregate('COUNT');
+							gr_dashboard.addQuery('project', activeProject.sys_id);
+							gr_dashboard.query();
+							var dashboard_count = 0;
+							if (gr_dashboard.next())
+								dashboard_count = gr_dashboard.getAggregate('COUNT');
+							input.dashboard.order = dashboard_count + 1;
+						}
+
+						// Prepare new record
+						var gr_new_dashboard = new GlideRecord('sn_kpi_composer_dashboard');
+						input.dashboard.project = activeProject.sys_id;
+
+
+
+						// New record
+						gr_new_dashboard.initialize();
+						this.updateRecordValues(gr_new_dashboard, input.dashboard, ['name', 'description', 'breakdowns', 'persona', 'project', 'order']);
+						gr_new_dashboard.insert();
+						result.dashboard = this._dashboard_record(gr_new_dashboard);
+						result.action = "insertDashboard";
+						result.success = true;
+
+					} else {
+						throw "Dashboard should be parameter of input";
+					}
+				}
+
+
+				if (input.action && input.action == "updateDashboard") {
+					if (input.dashboard && input.dashboard.sys_id) {
+						var gr_upd_dashboard = new GlideRecord('sn_kpi_composer_dashboard');
+						if (gr_upd_dashboard.get(input.dashboard.sys_id)) {
+							this.updateRecordValues(gr_upd_dashboard, input.dashboard, ['name', 'description', 'breakdowns', 'persona', 'order', 'pa_dashboard']);
+							gr_upd_dashboard.update();
+							result.success = true;
+						}
+						result.action = "updateDashboard";
+
+					} else {
+						throw "Dashboard parameter not provided (.dashboard.sys_id)";
+					}
+				}
+
+				if (input.action && input.action == "deleteDashboard") {
+					if (input.dashboard && input.dashboard.sys_id) {
+						var gr_del_dashboard = new GlideRecord('sn_kpi_composer_dashboard');
+						if (gr_del_dashboard.get(input.dashboard.sys_id)) {
+							result.success = true;
+							gr_del_dashboard.deleteRecord();
+						}
+						result.action = "deleteDashboard";
+
+					} else {
+						throw "Dashboard parameter not provided (.dashboard.sys_id)";
+					}
+				}
+
+				if (input.action && input.action == "dashboardUp") {
+					if (input.dashboard && input.dashboard.sys_id) {
+						var gr_dashboard_up = new GlideRecord('sn_kpi_composer_dashboard');
+						if (gr_dashboard_up.get(input.dashboard.sys_id)) {
+
+						}
+						result.action = "dashboardUp";
+
+					} else {
+						throw "Dashboard parameter not provided (.dashboard.sys_id)";
+					}
+				}
+
+
+				if (input.action && input.action == "insertDashboardBreakdown") {
+					var dashboard = getDashboard(input.dashboard.sys_id);
+					dashboard.breakdowns = this._addToListField(dashboard.breakdowns, input.breakdown);
+					updateDashboard(dashboard, ['breakdowns']);
+					result.action = "insertDashboardBreakdown";
+					result.success = true;
+				}
+
+				if (input.action && input.action == "deleteDashboardBreakdown") {
+					var dashboard = getDashboard(input.dashboard.sys_id);
+					dashboard.breakdowns = this._removeFromListField(dashboard.breakdowns, input.breakdown);
+					updateDashboard(dashboard, ['breakdowns']);
+					result.action = "deleteDashboardBreakdown";
+					result.success = true;
+				}
+
+				if (input.action && input.action == "insertDashboardPersona") {
+					var dashboard = getDashboard(input.dashboard.sys_id);
+					dashboard.persona = this._addToListField(dashboard.persona, input.persona);
+					updateDashboard(dashboard, ['persona']);
+					result.action = "insertDashboardPersona";
+					result.success = true;
+				}
+
+				if (input.action && input.action == "deleteDashboardPersona") {
+					var dashboard = getDashboard(input.dashboard.sys_id);
+					dashboard.persona = this._removeFromListField(dashboard.persona, input.persona);
+					updateDashboard(dashboard, ['persona']);
+					result.action = "deleteDashboardPersona";
+					result.success = true;
+				}
+
+				if (input.action && input.action == "insertTab") {
+					result.action = "insertTab";
+
+					if (input.tab.dashboard == null)
+						throw "Tab should have dashboard (sys_id) property or should be a template.";
+
+					var dashboard = getDashboard(input.tab.dashboard);
+					if (dashboard && dashboard.sys_id != null) {
+						// Count nr of tab's
+						if (!input.tab.order) {
+							var gr_count_tab = new GlideAggregate('sn_kpi_composer_tab');
+							gr_count_tab.addAggregate('COUNT');
+							gr_count_tab.addQuery('dashboard', input.tab.dashboard);
+							gr_count_tab.query();
+							var tabCount = 0;
+							if (gr_count_tab.next())
+								tabCount = parseInt(gr_count_tab.getAggregate('COUNT'));
+							input.tab.order = tabCount + 1;
+						}
+
+						// Create new tab
+						var gr_new_tab = new GlideRecord("sn_kpi_composer_tab");
+						gr_new_tab.initialize();
+
+						// Update values
+						this.updateRecordValues(gr_new_tab, input.tab, ['caption', 'order', 'dashboard']);
+
+						// Insert tab
+						gr_new_tab.insert();
+						result.tab = this._tab_record(gr_new_tab);
+						result.success = true;
+					} else {
+						throw "Dashboard not found to add tab. " + JSON.stringify(input);
+					}
+				}
+
+				if (input.action && input.action == "deleteTab") {
+					if (input.tab && input.tab.sys_id) {
+						var gr_del_tab = new GlideRecord('sn_kpi_composer_tab');
+						if (gr_del_tab.get(input.tab.sys_id)) {
+							gr_del_tab.deleteRecord();
+							result.success = true;
+						}
+						result.action = "deleteTab";
+
+					} else {
+						throw "Tab parameter not provided (.tab.sys_id)";
+					}
+				}
+
+				if (input.action && input.action == "updateTab") {
+					if (input.tab && input.tab.sys_id) {
+						var gr_upd_tab = new GlideRecord('sn_kpi_composer_tab');
+						if (gr_upd_tab.get(input.tab.sys_id)) {
+							this.updateRecordValues(gr_upd_tab, input.tab, ['caption', 'order', 'dashboard']);
+							gr_upd_tab.update();
+							result.success = true;
+						}
+						result.action = "updateTab";
+
+					} else {
+						throw "Tab parameter not provided (.tab.sys_id)";
+					}
+				}
+
+
+				////////////
+				// CANVAS //
+				////////////
+
+				// (re)counts the number of Canvasses with a row for all off your dashboads (in the active project)
+				var updateNrOfCanvasses = function() {
+					var getDashboard = that._getDashboards(input);
+					for(var di = 0, dm = getDashboard.dashboards.length; di<dm; di++) {
+						var d = getDashboard.dashboards[di];
+						for(var ti = 0, tm = d.tabs.length; ti<tm; ti++) {
+							var t = d.tabs[ti];
+							for(var ri = 0, rm = t.rows.length; ri<rm; ri++) {
+								var r = t.rows[ri];
+								var gr_canvas_cnt = new GlideAggregate('sn_kpi_composer_canvas');
+								gr_canvas_cnt.addAggregate('COUNT');
+								gr_canvas_cnt.addQuery('row', r.sys_id);
+								gr_canvas_cnt.query();
+								gr_canvas_cnt.next();
+								var c = gr_canvas_cnt.getAggregate('COUNT');
+								if (c != r.nrofcanvasses) {
+									var gr_row = new GlideRecord('sn_kpi_composer_row');
+									if (gr_row.get(r.sys_id)) {
+										gr_row.setValue('nrofcanvasses', c);
+										gr_row.update();
+									}
+								}
+							}
+						}
+					}
+				};
+
+				var deleteCanvas = function(input) {
+					if (input.canvas && input.canvas.sys_id) {
+						var gr_del_canvas = new GlideRecord('sn_kpi_composer_canvas');
+						if (gr_del_canvas.get(input.canvas.sys_id)) {
+							gr_del_canvas.deleteRecord();
+							result.success = true;
+						}
+						updateNrOfCanvasses();
+					} else {
+						throw "Canvas parameter not provided (.canvas.sys_id)";
+					}
+				};
+
+				var insertCanvas = function(input) {
+
+					var result = {};
+
+					if (input.canvas.row == null)
+						throw "Canvas should have row (sys_id) property.";
+
+					var row = getRow(input.canvas.row);
+					if (row && row.sys_id != null) {
+
+						// Count nr of row's
+						if (!input.canvas.order) {
+							var gr_count_canvasses = new GlideAggregate('sn_kpi_composer_canvas');
+							gr_count_canvasses.addAggregate('COUNT');
+							gr_count_canvasses.addQuery('row', input.canvas.row);
+							gr_count_canvasses.query();
+							gr_count_canvasses.next();
+							var canvasCount = gr_count_canvasses.getAggregate('COUNT');
+							input.canvas.order = canvasCount + 1;
+						}
+
+						// Create canvas
+						var gr_new_canvas = new GlideRecord("sn_kpi_composer_canvas");
+						gr_new_canvas.initialize();
+
+						// Update values
+						that.updateRecordValues(gr_new_canvas, input.canvas, ['row', 'order', 'breakdowns', 'description', 'entities', 'content', 'title']);
+
+						// Insert canvas
+						gr_new_canvas.insert();
+						result.canvas = that._canvas_record(gr_new_canvas);
+						updateNrOfCanvasses();
+
+					} else {
+						throw "Count not find row!";
+					}
+					return result;
+				};
+
+				if (input.action && input.action == "insertCanvas") {
+					result.action = "insertCanvas";
+					var new_canvas = insertCanvas(input);
+					result.canvas = new_canvas.canvas;
+					result.success = true;
+				}
+
+
+				if (input.action && input.action == "updateCanvas") {
+					if (input.canvas && input.canvas.sys_id) {
+						this.trace = true;
+						var gr_upd_canvas = new GlideRecord('sn_kpi_composer_canvas');
+						if (gr_upd_canvas.get(input.canvas.sys_id)) {
+							this.updateRecordValues(gr_upd_canvas, input.canvas, ['row', 'order', 'breakdowns', 'description', 'entities', 'content', 'title', 'widgetvisualisation', 'follow_element', 'pa_widget', 'time_serie', 'report', 'interactive_filter', 'content_block', 'spotlight_group']);
+
+
+					// Function to clear set of fields
+					var clearFields = function(record, fields) {
+						fields.forEach(function(field) {
+							var type = record.getElement(field).getED().getInternalType();
+							switch(type) {
+								case 'boolean':
+									record.setValue(field, false);
+									break;
+								case 'choice':
+								case 'reference':
+									record.setValue(field, "");
+									break;
+								default:
+									record.setValue(field, 'null');
+							}
+
+						});
+					};
+
+					// Clear fields based of widget_type
+					var widget_type = gr_upd_canvas.getDisplayValue('widgetvisualisation.widget_type');
+
+					if (widget_type == "Performance Analytics")  clearFields(gr_upd_canvas, ["content_block", "follow_interactive_filter", "interactive_filter", "report", "spotlight_group"]);
+
+					if (widget_type == "Reports") clearFields(gr_upd_canvas, ["content_block", "follow_element", "interactive_filter", "pa_widget", "spotlight_group", "time_serie"]);
+
+					if (widget_type == "Content Blocks") clearFields(gr_upd_canvas, ["entities", "follow_element", "follow_interactive_filter", "interactive_filter", "pa_widget", "report", "spotlight_group", "time_serie"]);
+
+					if (widget_type == "Interactive Filters") clearFields(gr_upd_canvas, ["content_block", "entities", "follow_element", "follow_interactive_filter", "pa_widget", "report", "spotlight_group", "time_serie"]);
+
+					if (widget_type == "Spotlights") clearFields(gr_upd_canvas, ["content_block", "follow_element", "follow_interactive_filter", "interactive_filter", "pa_widget", "report", "time_serie"]);
+
+
+							gr_upd_canvas.update();
+							result.canvas = this._canvas_record(gr_upd_canvas);
+							result.success = true;
+						}
+						result.action = "updateCanvas";
+						updateNrOfCanvasses();
+					} else {
+						throw "Canvas parameter not provided (.canvas.sys_id)";
+					}
+				}
+
+				if (input.action && input.action == "deleteCanvas") {
+					deleteCanvas(input);
+				}
+
+				/* Don't use
+				if (input.action && input.action == "insertCanvasBreakdown") {
+					var canvas = getCanvas(input.canvas.sys_id);
+					canvas.breakdowns = this._addToListField(canvas.breakdowns, input.breakdown);
+					result.canvas = updateCanvas(canvas, ['breakdowns']);
+					result.action = "insertCanvasBreakdown";
+					result.success = true;
+				}
+
+				if (input.action && input.action == "deleteCanvasBreakdown") {
+					var canvas = getCanvas(input.canvas.sys_id);
+					canvas.breakdowns = this._removeFromListField(canvas.breakdowns, input.breakdown);
+					result.canvas = updateCanvas(canvas, ['breakdowns']);
+					result.action = "deleteCanvasBreakdown";
+					result.success = true;
+				}
+			    */
+
+				if (input.action && input.action == "insertCanvasEntity") {
+					var canvas = getCanvas(input.canvas.sys_id);
+					canvas.entities = this._addToListField(canvas.entities, input.entity);
+					result.canvas = updateCanvas(canvas, ['entities']);
+					result.action = "insertCanvasEntity";
+					result.success = true;
+				}
+
+				if (input.action && input.action == "deleteCanvasEntity") {
+					var canvas = getCanvas(input.canvas.sys_id);
+					canvas.entities = this._removeFromListField(canvas.entities, input.entity);
+					result.canvas = updateCanvas(canvas, ['entities']);
+					result.action = "deleteCanvasEntity";
+					result.success = true;
+				}
+
+				// Create a new in memorie canvas object
+				var new_canvas_object = function(row) {
+					var gr_canvasses_count = new GlideRecord('sn_kpi_composer_canvas');
+					gr_canvasses_count.addQuery('row', row.sys_id);
+					gr_canvasses_count.query();
+					var max_canvas_order = 0;
+					while(gr_canvasses_count.next()) {
+						var order = parseInt(gr_canvasses_count.getValue('order'));
+						if (order>max_canvas_order)
+							max_canvas_order = order;
+					}
+
+					var canvas = {};
+					canvas.row = row.sys_id;
+					canvas.title = "";//gs.getMessage('Title Row:{0} Col:{1}', [row.order, max_canvas_order + 1]);
+					canvas.order = max_canvas_order + 1;
+					canvas.description = ""; //gs.getMessage("automatically created canvas");
+					return canvas;
+				};
+
+				/////////
+				// ROW //
+				/////////
+				if (input.action && input.action == "insertRow") {
+					result.action = "insertRow";
+
+					if (input.row.tab == null)
+						throw "Row should have tab (sys_id) property.";
+
+					var tab = getTab(input.row.tab);
+					if (tab && tab.sys_id != null) {
+
+						// Count nr of tab's
+						if (!input.row.order) {
+							var gr_count_row = new GlideAggregate('sn_kpi_composer_row');
+							gr_count_row.addAggregate('COUNT')
+							gr_count_row.addQuery('tab', input.row.tab);
+							gr_count_row.query();
+							var rowCount = 0;
+							if (gr_count_row.next())
+								rowCount = parseInt(gr_count_row.getAggregate('COUNT'));
+							input.row.order = rowCount + 1;
+						}
+
+						// Create new row
+						var gr_new_row = new GlideRecord("sn_kpi_composer_row");
+						gr_new_row.initialize();
+						if (!input.row.nrofcanvasses)
+							input.row.nrofcanvasses = 1;
+
+						// Update values
+						this.updateRecordValues(gr_new_row, input.row, ['nrofcanvasses', 'order', 'tab']);
+
+						// Insert row
+						gr_new_row.insert();
+						var new_row = this._row_record(gr_new_row);
+						result.row = new_row;
+						new_row.canvasses = [];
+
+						// Insert canvassess
+						for(var ridx = 0; ridx<new_row.nrofcanvasses; ridx++) {
+							var canvas_insert = new_canvas_object(new_row);
+							var command = {};
+							command.canvas = canvas_insert;
+							var newCanvas = insertCanvas(command);
+							new_row.canvasses.push(newCanvas.canvas);
+						}
+
+						result.success = true;
+					} else {
+						throw "Dashboard not found to add tab. " + JSON.stringify(input);
+					}
+				}
+
+				if (input.action && input.action == "deleteRow") {
+					if (input.row && input.row.sys_id) {
+						var gr_del_row = new GlideRecord('sn_kpi_composer_row');
+						if (gr_del_row.get(input.row.sys_id)) {
+							gr_del_row.deleteRecord();
+							result.success = true;
+						}
+						result.action = "deleteRow";
+
+					} else {
+						throw "Row parameter not provided (.row.sys_id)";
+					}
+				}
+
+				if (input.action && input.action == "updateRow") {
+					if (input.row && input.row.sys_id) {
+						var gr_upd_row = new GlideRecord('sn_kpi_composer_row');
+						if (gr_upd_row.get(input.row.sys_id)) {
+
+							// If the number of canvasses is set, maybe we should add or delete cansesses
+							if (input.row.nrofcanvasses) {
+								// Current nr of canvasses
+								var current_nrofcanvasses = gr_upd_row.getValue('nrofcanvasses');
+
+								// New
+								var new_nrofcanvasses = input.row.nrofcanvasses;
+
+								if (new_nrofcanvasses != current_nrofcanvasses) {
+									// Add new cancasses
+									while (new_nrofcanvasses>current_nrofcanvasses)  {
+										// Create canvas object
+										var new_canvas = new_canvas_object(gr_upd_row);
+										// Insert canvas
+										var command = {};
+										command.canvas = new_canvas;
+										// Insert canvas
+										insertCanvas(command);
+										current_nrofcanvasses++;
+									}
+									// Delete new canvasses
+									if (new_nrofcanvasses<current_nrofcanvasses) {
+										var gr_canvasses = new GlideRecord('sn_kpi_composer_canvas');
+										gr_canvasses.addQuery('row', gr_upd_row.sys_id);
+										gr_canvasses.orderByDesc('order');
+										gr_canvasses.query();
+										result.deletedcanvasses = [];
+										while(new_nrofcanvasses<current_nrofcanvasses) {
+											if (gr_canvasses.next()) {
+												var canvas = this._canvas_record(gr_canvasses);
+												var command = {};
+												command.canvas = canvas;
+												result.deletedcanvasses.push(canvas);
+												deleteCanvas(command);
+											}
+											current_nrofcanvasses--;
+										}
+									}
+								} else {
+									// Don't change any number of canvasses
+								}
+							}
+
+							// Update value
+							// But first reload, because the nrofcanvasses could be updated
+							gr_upd_row.get(input.row.sys_id);
+							this.updateRecordValues(gr_upd_row, input.row, ['order', 'tab']);
+							gr_upd_row.update();
+							result.row = this._row_record(gr_upd_row);
+
+							// Load the canvasses
+							var gr_canvasses = new GlideRecord('sn_kpi_composer_canvas')
+							gr_canvasses.addQuery('row', result.row.sys_id);
+							gr_canvasses.orderBy('order');
+							gr_canvasses.query();
+							result.row.canvasses = [];
+							while(gr_canvasses.next()) {
+								var canvas = this._canvas_record(gr_canvasses);
+								result.row.canvasses.push(canvas);
+							}
+
+							result.success = true;
+						}
+						result.action = "updateRow";
+
+					} else {
+						throw "Row parameter not provided (.row.sys_id)";
+					}
+				}
+
+
+				//////////////
+				// ORDER BY //
+				//////////////
+				if (input.action && input.action == "rowUp") {
+					result = this._order_up_or_down('sn_kpi_composer_row', input.row.sys_id, 'tab', 'up', 'order');
+					result.action = 'rowUp';
+				}
+
+				if (input.action && input.action == "rowDown") {
+					result = this._order_up_or_down('sn_kpi_composer_row', input.row.sys_id, 'tab', 'down', 'order');
+					result.action = 'rowDown';
+				}
+
+				if (input.action && input.action == "tabUp") {
+					result = this._order_up_or_down('sn_kpi_composer_tab', input.tab.sys_id, 'dashboard', 'up', 'order');
+					result.action = 'tabUp';
+				}
+
+				if (input.action && input.action == "tabDown") {
+					result = this._order_up_or_down('sn_kpi_composer_tab', input.tab.sys_id, 'dashboard', 'down', 'order');
+					result.action = 'tabDown';
+				}
+
+				if (input.action && input.action == "dashboardUp") {
+					result = this._order_up_or_down('sn_kpi_composer_dashboard', input.dashboard.sys_id, 'project', 'up', 'order');
+					result.action = 'dashboardUp';
+				}
+
+				if (input.action && input.action == "dashboardDown") {
+					result = this._order_up_or_down('sn_kpi_composer_dashboard', input.dashboard.sys_id, 'project', 'down', 'order');
+					result.action = 'dashboardDown';
+				}
+
+				if (input.action && input.action == "canvasUp") {
+					result = this._order_up_or_down('sn_kpi_composer_canvas', input.canvas.sys_id, 'row', 'up', 'order');
+					result.action = 'canvasUp';
+				}
+
+				if (input.action && input.action == "canvasDown") {
+					result = this._order_up_or_down('sn_kpi_composer_canvas', input.canvas.sys_id, 'row', 'down', 'order');
+					result.action = 'canvasDown';
+				}
+
+				if (input.action && input.action == "updateTaskDefinitionAssignmentGroup") {
+					gs.setProperty("sn_kpi_composer.task_assignment_group", input.assignmentgroup_sys_id);
+					result.success = true;
+					result.assignmentgroup_sys_id = input.assignmentgroup_sys_id;
+				}				
+
+			}
+			// General exception handling
+			catch(err) {
+				if (!result) result = {};
+				result.debug = this._debug;
+				result.exception = err;
+				result.success = false;
+				result.stack = err.stack;
+			}
+        }
+        return result;
+    },
+
+
+
+	/*
+	* Update one glide record [record] with values stored in the input object with properties named in fields (array of string)
+	* recordResult (when not null and has 'updated' property) will hold all fields that where updated
+	*/
+	updateRecordValues: function(record, input, fields, recordResult) {
+
+		//fields.forEach(function (field) {
+		for(var idx = 0; idx<fields.length; idx++) {
+			var field = fields[idx];
+			if (recordResult && recordResult.handeld)
+				recordResult.handeld.push(field);
+			if (typeof(input[field]) !== 'undefined') {
+				// Update field
+				if (record.isValidField(field)) {
+					
+					if (this.trace) this._debug.push("Set field '" + field + "' to value '" + input[field] + "'");
+					if (input[field] !== 'null' && input[field] !== null) {
+						record.setValue(field, input[field]);
+					} else {					
+						// Clear the field based on his type!
+						var type = record.getElement(field).getED().getInternalType();
+
+						if (this.trace) this._debug.push("Set field: '" + field + "' to NULL  (" + type + ")");
+
+						switch(type) {
+							case 'boolean':
+								record.setValue(field, false);
+								break;
+							case 'choice':
+							case 'reference':
+								record.setValue(field, "");
+								break;
+							default:
+								record.setValue(field, 'null');
+						}
+
+					}
+					if (recordResult && recordResult.updated) {
+						recordResult.updated.push(field);
+					}
+				} else {
+					var e = "Field '" + field + "' not found in record";
+					if (recordResult.error) {
+						recordResult.push(e);
+					} else {
+						throw e;
+					}
+				}
+			} else {
+				// Field not found
+				if (recordResult && recordResult.unchanged)
+					recordResult.unchanged.push(field);
+			}
+		}
+	},
+
+	/*
+	* Update a set of glide.records [records] with the values of [input]
+	* Update all fields (array of string)
+	* recordResult holds all changes done to a record, is not used when the input value is set to NULL
+	* When recordResult is a object there will be a property added .updated; this will hold a array of the fields that where updated
+	*/
+	updateRecords: function(records, input, fields, recordResult, result) {
+		if (recordResult) {
+			recordResult.updated = [];
+			//recordResult.unchanged = [];
+			//recordResult.fields = fields;
+			//recordResult.input = input;
+			//recordResult.records = records;
+			//recordResult.handeld = [];
+			//recordResult.error = [];
+		}
+		if (records.next() && input) {
+			this.updateRecordValues(records, input, fields, recordResult);
+			records.update();
+			if (recordResult)
+				recordResult.success = true;
+		}
+		if (result)
+			result.success = true;
+		return result;
+	},
+
+
+	validateObjectValues: function(obj, values, fields) {
+		for(var i = 0; i++ ;i<fields.length) {
+			if (obj[fields[i]] && values.length>i) {
+				if (obj[fields[i]] !== values[i])
+					throw "Value '" + fields[i] + "' for object not equal. Value should be:'" + values[i] + "' the value is:'" + obj[fields[i]] + "'";
+			} else {
+				if (values.length<=i) {
+					// console.warn("No value found for field: '" + fields[i] + "'");
+				} else {
+					// console.warn("Field '" + fields[i] + "' not found in object");
+				}
+			}
+		}
+	},
+
+
+    type: 'BaseApi'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-31 11:03:42</sys_created_on>
+        <sys_id>a1ccacdadb1feb006dd37914b9961933</sys_id>
+        <sys_mod_count>664</sys_mod_count>
+        <sys_name>BaseApi</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_a1ccacdadb1feb006dd37914b9961933</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-04 08:50:37</sys_updated_on>
+    </sys_script_include>
+</record_update>

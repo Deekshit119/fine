@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="artifact_action" table="sn_kpi_composer_task" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>artifact_action</element>
+            <name>sn_kpi_composer_task</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:02</sys_created_on>
+            <sys_id>edebb6e4875bc910115042ad0ebb3594</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>artifact_action</sys_name>
+            <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+            <sys_update_name>sys_choice_sn_kpi_composer_task_artifact_action</sys_update_name>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:02</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>artifact_action</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Create</label>
+            <language>en</language>
+            <name>sn_kpi_composer_task</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:02</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>21ebb6e4875bc910115042ad0ebb3594</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:02</sys_updated_on>
+            <value>10</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>artifact_action</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Update</label>
+            <language>en</language>
+            <name>sn_kpi_composer_task</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:02</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>61ebb6e4875bc910115042ad0ebb3594</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:02</sys_updated_on>
+            <value>20</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>artifact_action</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Delete</label>
+            <language>en</language>
+            <name>sn_kpi_composer_task</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:05:02</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a1ebb6e4875bc910115042ad0ebb3594</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:05:02</sys_updated_on>
+            <value>30</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

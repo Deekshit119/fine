@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskCreateTaskDefDependencies_IndicatorBreakdowns</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskCreateTaskDefDependencies_IndicatorBreakdowns</name>
+        <script><![CDATA[var ProjectTaskCreateTaskDefDependencies_IndicatorBreakdowns = Class.create();
+ProjectTaskCreateTaskDefDependencies_IndicatorBreakdowns.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	createdependencies: function(data) {
+		
+		if (this.trace) this._debug.push("ProjectTaskCreateTaskDefDependencies_IndicatorBreakdowns");	
+
+		// Check Indicator with no pa_indicator link
+		for(var idx = 0; idx<data.indicatordefinitions.length; idx++) {
+			var indicator = data.indicatordefinitions[idx];
+
+			if (this.trace) this._debug.push("Find dependencies for related indicator definitions: " + indicator.name);
+
+			var defRecId = indicator.sys_id;
+			var defTableNm = 'sn_kpi_composer_indicator_definition';
+
+			if (this.trace) this._debug.push("DefRecId: " + defRecId + "  DefRecTableNm: " + defTableNm);
+			var taskDefRec = this._getTaskDefinitionRecord(defTableNm, defRecId);
+            if (this.trace) this._debug.push("taskDefRec: " + JSON.stringify(taskDefRec));
+
+            var dependencies = (taskDefRec.dependencies && taskDefRec.dependencies.split(",")) || [];
+				
+
+            // Get all (distinct) other indicator defs
+            var other_entities = this._projectApi.entityByIndicatorDefinition(indicator, data);
+            if (this.trace) this._debug.push("Other entities (1): " + JSON.stringify(other_entities));
+
+            // Get all (distinct) breakdowns from entities
+            var dist_breakdown_ids = [];
+
+            for(var eid = 0; eid<other_entities.length; eid++) {
+                var entity = other_entities[eid];
+                if (entity.breakdowns) {
+                    for(var bid = 0; bid<entity.breakdowns.length; bid++) {
+                        if (dist_breakdown_ids.indexOf(entity.breakdowns[bid])) {
+                            dist_breakdown_ids.push(entity.breakdowns[bid]);
+                        }
+                    }
+                }
+            }								
+
+            if (dist_breakdown_ids.length > 0) {
+                for(var bid = 0; bid<data.breakdowns.length; bid++) {
+                    if (dist_breakdown_ids.indexOf(data.breakdowns[bid].sys_id)>-1) {
+                        // Take the breakdown, look for the task 
+                        var breakdown = data.breakdowns[bid];
+                        
+                        var relBreakdownRecId = breakdown.sys_id;
+                        var relBreakdownTableNm = 'sn_kpi_composer_breakdown';
+                        if (this.trace) this._debug.push("RelBreakdownRecId: " + relBreakdownRecId + "  RelBreakdownTableNm: " + relBreakdownTableNm);
+                        var relBreakdownRec = this._getTaskDefinitionRecord(relBreakdownTableNm, relBreakdownRecId);
+                        if (this.trace) this._debug.push("relBreakdownRec: " + JSON.stringify(relBreakdownRec));
+
+                        if (dependencies.indexOf(relBreakdownRec.sys_id)<0)
+                            dependencies.push(relBreakdownRec.sys_id);
+        
+                    }
+                }
+            }
+
+            taskDefRec.dependencies = dependencies.join();
+
+            var result = this._updateTaskDefinitionRecord(taskDefRec);
+        
+		}						
+		
+		
+	},
+
+	
+    type: 'ProjectTaskCreateTaskDefDependencies_IndicatorBreakdowns'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-08-26 08:32:22</sys_created_on>
+        <sys_id>945d22081bd634507e0d52c8624bcb5c</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>ProjectTaskCreateTaskDefDependencies_IndicatorBreakdowns</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_945d22081bd634507e0d52c8624bcb5c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-14 07:58:23</sys_updated_on>
+    </sys_script_include>
+</record_update>

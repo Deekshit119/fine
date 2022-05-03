@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationMeasureUsedInBothTypes</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationMeasureUsedInBothTypes</name>
+        <script><![CDATA[var ProjectValidationMeasureUsedInBothTypes = Class.create();
+ProjectValidationMeasureUsedInBothTypes.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationMeasureUsedInBothTypes");
+        
+        // Loop all entities
+        data.entities.forEach(function(e) {
+            // Loop all canvassess
+            var usedInReport = false;
+            var usedInPaIndicator = false;
+            if (e.used_in_canvas) {
+                e.used_in_canvas.forEach(function(c) {
+                    if (c.widget_type == "Performance Analytics")
+                        usedInPaIndicator = true;
+                    if (c.widget_type == "Reports")
+                        usedInReport = true;
+                });
+                if (usedInPaIndicator && usedInReport) {
+                    that._addProjectValidationInfo(
+                        { 
+                            description: gs.getMessage("Artifact '{0}' ({1}) is used in a report and performance analytics widgets.", [e.name, e.entitytype_dv]),
+                            table: "sn_kpi_composer_entity",
+                            record: e.sys_id,
+                        }, { project: { sys_id: data.project.sys_id } });	
+                }            
+            }
+        });
+	},
+    type: 'ProjectValidationMeasureUsedInBothTypes'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-10-08 10:55:43</sys_created_on>
+        <sys_id>d5aeb068dbfb9010fd0f577e6896197c</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>ProjectValidationMeasureUsedInBothTypes</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_d5aeb068dbfb9010fd0f577e6896197c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 15:05:34</sys_updated_on>
+    </sys_script_include>
+</record_update>

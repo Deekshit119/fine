@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DraggableContainer</name>
+        <script><![CDATA[var DraggableContainer = createReactClass({
+	render: function() {
+		var that = this;
+		
+		return this.props.datalist.map(
+			function (item) {
+				return e(
+					DraggableItem,
+					{
+						key: item.sys_id,
+						item: item,
+						category: that.props.category,
+						displaytype: that.props.displaytype,
+						type: that.props.type,
+						selected: that.props.selectedids != null ? that.props.selectedids.indexOf(item.sys_id) > -1: false,
+						onClick: that.props.onSelectedChange,
+						disableDragging: that.props.disableDragging
+					}
+				);
+			}
+		);
+	}
+});]]></script>
+        <script_name>DraggableContainer</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-21 15:33:29</sys_created_on>
+        <sys_id>e314b5091b77a740bcb985507e4bcb31</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>sn_kpi_composer.DraggableContainer</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_e314b5091b77a740bcb985507e4bcb31</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-03 13:30:50</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

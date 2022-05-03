@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Permisos del proyecto" max_length="40" name="sn_kpi_composer_project_permissions" type="collection">
+        <element attributes="encode_utf8=false" label="Group" max_length="32" name="group" reference="sys_user_group" type="reference"/>
+        <element choice="1" label="PermissionType" max_length="40" name="permissiontype" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="User" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Usuario" language="es" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Group" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Grupo" language="es" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element attributes="encode_utf8=false" label="Project" max_length="32" name="project" reference="sn_kpi_composer_project" type="reference"/>
+        <element attributes="encode_utf8=false" label="User" max_length="32" name="user" reference="sys_user" type="reference"/>
+        <element label="Write" max_length="40" name="write" type="boolean"/>
+        <index name="index">
+            <element name="project"/>
+        </index>
+        <index name="index2">
+            <element name="user"/>
+        </index>
+        <index name="index3">
+            <element name="group"/>
+        </index>
+    </element>
+</database>

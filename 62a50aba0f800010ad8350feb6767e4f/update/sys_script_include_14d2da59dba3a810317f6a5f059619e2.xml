@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.projectEntities</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>projectEntities</name>
+        <script><![CDATA[function projectEntities(input) {
+	
+
+	var sysids = [];
+
+	if (!input || !input.project || !input.project.sys_id) {
+		input = {};
+		input.project = {};
+		input.project.sys_id = "NO_PROJECT_SYS_ID";
+	} 
+
+	try {
+
+		// Api to entity
+		var entityApi = new sn_kpi_composer.EntityApi();	 
+
+		// Get distinct data
+		var data = entityApi.getDistinctData(input);
+
+		// Take all entities and take there sys_id
+		data.entities.forEach(function(e) {
+			sysids.push(e.sys_id);
+		});
+	}
+	catch(ex) {
+		sysids.push(ex.message);
+	}
+	
+	return sysids;
+}
+
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-04-15 10:55:56</sys_created_on>
+        <sys_id>14d2da59dba3a810317f6a5f059619e2</sys_id>
+        <sys_mod_count>24</sys_mod_count>
+        <sys_name>projectEntities</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_14d2da59dba3a810317f6a5f059619e2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-15 11:37:21</sys_updated_on>
+    </sys_script_include>
+</record_update>

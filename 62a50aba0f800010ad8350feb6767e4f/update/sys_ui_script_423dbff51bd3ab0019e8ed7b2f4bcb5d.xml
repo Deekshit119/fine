@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.ConfirmRemoval</name>
+        <script><![CDATA[var ConfirmRemoval = createReactClass({
+	getDefaultProps: function() {
+		return {
+			title: getMessage('Confirm removal'),
+			content: getMessage('Are you sure you wish to delete this?'),
+			yesLabel: getMessage('Yes'),
+			noLabel: getMessage('No')
+		};
+	},
+	
+	getInitialState: function() {
+		return { disabled: false };
+	},
+	
+	no: function() {
+		this.setState({ disabled: true });
+		this.props.onNo();
+	},
+	
+	yes: function() {
+		this.setState({ disabled: true });
+		this.props.onYes();
+	},
+	
+	onOpened: function() {
+		if (this.refs.yesbutton) {
+			this.refs.yesbutton.focus();
+		}
+	},
+	
+	render: function() {
+		var closeButton = e(
+			'button',
+			{type: 'button', title: getMessage('Close'), className: 'btn btn-icon close icon-cross  sn-tooltip-basic', disabled: this.state.disabled, onClick: this.no },
+			e(
+				'span',
+				{ className: 'sr-only' },
+				'Close'
+			)
+		);
+		
+		
+		var loadingOverlay = null;
+		if (this.state.disabled === true) {
+			loadingOverlay = e(
+				'div',
+				{className: 'modal-overlay'},
+				e(
+					'div',
+					{ className: 'icon-loading' }
+				)
+			);
+		}
+		
+		return e(
+			Reactstrap.Modal, 
+			{'isOpen': true, onOpened: this.onOpened, toggle: this.no },
+			e(
+				Reactstrap.ModalHeader,
+				{'toggle': this.no, close: closeButton},
+				this.props.title
+			),
+			e(
+				Reactstrap.ModalBody,
+				{},
+				this.props.content
+			),
+			e(
+				Reactstrap.ModalFooter,
+				{},
+				e(
+					'button',
+					{ type: 'button', className: 'btn btn-default', disabled: this.state.disabled, onClick: this.no },
+					this.props.noLabel
+				),
+				e(
+					'button',
+					{ type: 'button',  ref: 'yesbutton', className: 'btn btn-destructive', disabled: this.state.disabled, onClick: this.yes },
+					this.props.yesLabel
+				)
+			),
+			loadingOverlay
+		);
+	}
+});]]></script>
+        <script_name>ConfirmRemoval</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-30 12:56:11</sys_created_on>
+        <sys_id>423dbff51bd3ab0019e8ed7b2f4bcb5d</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_name>sn_kpi_composer.ConfirmRemoval</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_423dbff51bd3ab0019e8ed7b2f4bcb5d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2022-01-10 10:36:51</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

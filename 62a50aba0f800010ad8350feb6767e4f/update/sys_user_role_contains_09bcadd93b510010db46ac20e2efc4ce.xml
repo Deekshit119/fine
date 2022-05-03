@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role_contains">
+    <sys_user_role_contains action="INSERT_OR_UPDATE">
+        <contains display_value="pa_viewer" name="pa_viewer">a90d30b3bf101100b96dac808c073950</contains>
+        <role display_value="sn_kpi_composer.admin" name="sn_kpi_composer.admin">6f42718b1b6fa34019e8ed7b2f4bcbb4</role>
+        <sys_class_name>sys_user_role_contains</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-11-22 19:24:17</sys_created_on>
+        <sys_id>09bcadd93b510010db46ac20e2efc4ce</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>pa_viewer.sn_kpi_composer.admin</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_user_role_contains_09bcadd93b510010db46ac20e2efc4ce</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-11-22 19:24:17</sys_updated_on>
+    </sys_user_role_contains>
+</record_update>

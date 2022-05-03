@@ -1,0 +1,1136 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.IndDesignTree</name>
+        <script><![CDATA[var iconInfo = "M7 4.75c0-0.412 0.338-0.75 0.75-0.75h0.5c0.412 0 0.75 0.338 0.75 0.75v0.5c0 0.412-0.338 0.75-0.75 0.75h-0.5c-0.412 0-0.75-0.338-0.75-0.75v-0.5zM10 12h-4v-1h1v-3h-1v-1h3v4h1zM8 0c-4.418 0-8 3.582-8 8s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8zM8 14.5c-3.59 0-6.5-2.91-6.5-6.5s2.91-6.5 6.5-6.5 6.5 2.91 6.5 6.5-2.91 6.5-6.5 6.5z";
+var iconPlus = "M15.5 6h-5.5v-5.5c0-0.276-0.224-0.5-0.5-0.5h-3c-0.276 0-0.5 0.224-0.5 0.5v5.5h-5.5c-0.276 0-0.5 0.224-0.5 0.5v3c0 0.276 0.224 0.5 0.5 0.5h5.5v5.5c0 0.276 0.224 0.5 0.5 0.5h3c0.276 0 0.5-0.224 0.5-0.5v-5.5h5.5c0.276 0 0.5-0.224 0.5-0.5v-3c0-0.276-0.224-0.5-0.5-0.5z";
+var iconLink = "M6.879 9.934c-0.208 0-0.416-0.079-0.575-0.238-1.486-1.486-1.486-3.905 0-5.392l3-3c0.72-0.72 1.678-1.117 2.696-1.117s1.976 0.397 2.696 1.117c1.486 1.487 1.486 3.905 0 5.392l-1.371 1.371c-0.317 0.317-0.832 0.317-1.149 0s-0.317-0.832 0-1.149l1.371-1.371c0.853-0.853 0.853-2.241 0-3.094-0.413-0.413-0.963-0.641-1.547-0.641s-1.134 0.228-1.547 0.641l-3 3c-0.853 0.853-0.853 2.241 0 3.094 0.317 0.317 0.317 0.832 0 1.149-0.159 0.159-0.367 0.238-0.575 0.238zM4 15.813c-1.018 0-1.976-0.397-2.696-1.117-1.486-1.486-1.486-3.905 0-5.392l1.371-1.371c0.317-0.317 0.832-0.317 1.149 0s0.317 0.832 0 1.149l-1.371 1.371c-0.853 0.853-0.853 2.241 0 3.094 0.413 0.413 0.962 0.641 1.547 0.641s1.134-0.228 1.547-0.641l3-3c0.853-0.853 0.853-2.241 0-3.094-0.317-0.317-0.317-0.832 0-1.149s0.832-0.317 1.149 0c1.486 1.486 1.486 3.905 0 5.392l-3 3c-0.72 0.72-1.678 1.117-2.696 1.117z";
+var iconExpand = "M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 13h-5v5h-2v-5h-5v-2h5v-5h2v5h5v2z";
+var iconCollapse = "M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 13h-12v-2h12v2z";
+var iconBook = "M416.667,0H95.334c-8.284,0-15,6.716-15,15v482c0,6.067,3.655,11.536,9.26,13.858c1.856,0.769,3.805,1.142,5.737,1.142 c3.903,0,7.74-1.523,10.609-4.394l150.063-150.062L406.06,507.606c4.29,4.291,10.741,5.573,16.347,3.252 c5.605-2.322,9.26-7.791,9.26-13.858V15C431.667,6.716,424.952,0,416.667,0z";
+
+var IndicatorDesignTreeOnMouseDownDocument = function(evt) {
+	IndicatorDesignTreeDocumentRemovePopoverAndEventListeners(evt.target);
+};
+
+var IndicatorDesignTreeOnKeyUpDocument = function(evt) {
+	IndicatorDesignTreeDocumentRemovePopoverAndEventListeners(evt.target);
+};
+
+var IndicatorDesignTreeOnWheelWindow = function(evt) {
+	IndicatorDesignTreeDocumentRemovePopoverAndEventListeners(evt.target);
+};
+
+var IndicatorDesignTreeOnResizeWindow = function(evt) {
+	IndicatorDesignTreeDocumentRemovePopoverAndEventListeners(null);
+};
+
+var IndicatorDesignTreeDocumentRemovePopoverAndEventListeners = function(target) {
+	if (target == null || IndicatorDesignTreePopOverElement.find(target).length == 0) {
+		IndicatorDesignTreePopOverElement.remove();
+		document.removeEventListener('mousedown', IndicatorDesignTreeOnMouseDownDocument);
+		document.removeEventListener('keyup', IndicatorDesignTreeOnKeyUpDocument);
+		window.removeEventListener('wheel', IndicatorDesignTreeOnWheelWindow);
+		window.removeEventListener('resize', IndicatorDesignTreeOnResizeWindow);
+	}
+};
+
+var IndicatorDesignTreeDocumentAddEventListeners = function() {
+	document.addEventListener('mousedown', IndicatorDesignTreeOnMouseDownDocument);
+	document.addEventListener('keyup', IndicatorDesignTreeOnKeyUpDocument);
+	window.addEventListener('wheel', IndicatorDesignTreeOnWheelWindow);
+	window.addEventListener('resize', IndicatorDesignTreeOnResizeWindow);
+};
+
+var IndicatorDesignTreePopOverElement = null;
+
+var IndicatorDesignTree = createReactClass({
+	theModel: null,
+	theDiagram: null,
+	
+	getInitialState: function() {
+		return { entitydetail: null, addentityindicator: null, editindicatordefinition: null, addentityreport: null, editreportdefinition: null, popovercontent: null };
+	},
+
+	getNodeFilterOk: function(node) {
+		var that = this;
+		var toreturn = true;
+		if (toreturn && this.props.filter_status === "createdefinition") {
+			toreturn = node.definitions.filter(function (def) { return def.sys_id !== null; }).length === 0;
+		}
+		if (toreturn && this.props.filter_status === "linkpaindicator") {
+			toreturn = node.definitions.filter(function (def) { return def.type === "mainindicator" && def.pa_indicator == null; }).length > 0;
+		}
+		if (toreturn && this.props.filter_text !== "") {
+			var regex = new RegExp(sn_kpi_composer.ClientHelper.escapeRegex(this.props.filter_text), "i");
+			toreturn = node.name.search(regex) > -1;
+		}
+		return toreturn;
+	},
+	
+	filteringIsOn: function() {
+		return this.props.filter_status !== "" || this.props.filter_text !== "";
+	},
+	
+	fillListWithAllChildren: function(sys_id, list) {
+		if (list.indexOf(sys_id) < 0) {
+			list.push(sys_id);
+			var directchildren = this.props.relations.filter(function (r) { return r.from === sys_id; });
+			for (var i = 0; i < directchildren.length; i++) {
+				this.fillListWithAllChildren(directchildren[i].to, list);
+			}
+		}
+	},
+
+	childrenHaveFilterOk: function(nodes, sys_id) {
+		var directchildren = this.props.relations.filter(function (r) { return r.from === sys_id; });
+		for (var i = 0; i < directchildren.length; i++) {
+			var childnode = nodes.filter(function (n) { return n.key === directchildren[i].to;});
+			if (childnode.length === 1 && childnode[0].filterok === true) {
+				return true;
+			}
+			if (this.childrenHaveFilterOk(nodes, directchildren[i].to)) {
+				return true;
+			}
+		}
+		return false;
+	},
+
+	hasChildren: function(sys_id) {
+		return this.props.relations.filter(function (r) { return r.from === sys_id; }).length > 0;
+	},
+
+	nodeIsVisible: function(sys_id, solutionDiagram) {
+		var parent = this.props.relations.filter(function (r) { return r.to === sys_id; });
+		for (var i = 0; i < parent.length; i++) {
+			if (parent[i].from) {
+				if (this.nodeIsVisible(parent[i].from, solutionDiagram)) {
+					var parentnode = solutionDiagram.model.findNodeDataForKey(parent[i].from);
+					if (parentnode && parentnode.expanded === false) {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+		return true;
+	},
+
+	expandOrCollapseNode: function(solutionDiagram, node, all) {
+		//escape double click on nodes without children
+		if (node.data.hasChildren === false) return;
+
+		var newexpanded = !node.data.expanded;
+
+		var entitiestoupdate = [];
+		solutionDiagram.startTransaction("Toggle");
+		solutionDiagram.model.setDataProperty(node.data, "expanded", newexpanded);
+		if (all) {
+			var children = [];
+			this.fillListWithAllChildren(node.data.key, children);
+			children = children.filter(function (sys_id) { return sys_id !== node.data.key; });
+			for (var c=0;c < children.length;c++) {
+				var childsys_id = children[c];
+				//only the ones with children
+				if (this.props.relations.filter(function (rel) { return rel.from === childsys_id; }).length > 0) {
+					solutionDiagram.model.setDataProperty(solutionDiagram.model.findNodeDataForKey(childsys_id), "expanded", newexpanded);
+					var updatedchildentity = this.props.entities.filter(function(ent) { return ent.sys_id === childsys_id;});
+					if (updatedchildentity.length === 1) {
+						updatedchildentity[0].collapseddd = !newexpanded;
+						entitiestoupdate.push(updatedchildentity[0]);
+					}
+				}
+				//start bugfix, because we set the visible property in the beginning to match the parents expanded state, we need to reset it to visible once the parent gets expanded
+				if (newexpanded) {
+					solutionDiagram.findNodeForKey(childsys_id).visible = true;
+				}
+				//end bugfix
+			}
+		} else {
+			//start bugfix, because we set the visible property in the beginning to match the parents expanded state, we need to reset it to visible once the parent gets expanded
+			if (newexpanded) {
+				var directchildren = this.props.relations.filter(function (r) { return r.from === node.data.key; }).map(function (rel) { return rel.to; });
+				for (var dc=0;dc < directchildren.length;dc++) {
+					solutionDiagram.findNodeForKey(directchildren[dc]).visible = true;
+				}
+			}
+			//end bugfix
+		}
+
+		if (!newexpanded) {
+			if (all) {
+				node.collapseTree(10000);
+			} else {
+				node.collapseTree();
+			}
+		} else {
+			if (all) {
+				node.expandTree(10000);
+			} else {
+				node.expandTree();
+			}
+		}
+
+		//mouseLeave is triggerd, so set opacity back
+		var btns = node.findObject('TheButtons');
+		setTimeout(function() {
+			btns.opacity = 1;
+		}, 100);
+
+		//this makes the "visible" binding to update, so children of children are rendered when needed
+		solutionDiagram.updateAllTargetBindings();
+
+		solutionDiagram.commitTransaction("Toggle");
+
+		var updatedentity = this.props.entities.filter(function(ent) { return ent.sys_id === node.data.key;});
+		if (updatedentity.length === 1) {
+			updatedentity[0].collapseddd = !newexpanded;
+			entitiestoupdate.push(updatedentity[0]);
+		}
+		if (this.props.readonly !== true) {
+			this.props.onSaveEntitiesCollapsedDataDefinition(entitiestoupdate);
+		}
+	},
+
+	compareNodes: function(va, vb) {
+		var da = va.node.data;
+		var db = vb.node.data;
+
+		return da.order - db.order;
+	},
+
+	showIndicatorDetail: function(sys_id) {
+		var indicatordetail = this.props.indicatordefinitions.filter(function (ind) { return ind.sys_id === sys_id; });
+		if (indicatordetail.length == 1) {
+			this.setState({ editindicatordefinition: indicatordetail[0] });
+		}
+	},
+
+	showReportDetail: function(sys_id) {
+		var reportdetail = this.props.report_definitions.filter(function (rep) { return rep.sys_id === sys_id; });
+		if (reportdetail.length == 1) {
+			this.setState({ editreportdefinition: reportdetail[0] });
+		}
+	},
+	
+	renderCanvas: function (nodes, relations) {
+		var that = this;
+		var $ = go.GraphObject.make;
+		
+		var isRTL = document.dir === 'rtl';
+		
+		var solutionDiagram = $(go.Diagram, this.refs.goJsDiv, // create a Diagram for the DIV HTML element
+		  {
+			isReadOnly: true,
+			initialContentAlignment: go.Spot.TopCenter, // center the content
+			maxSelectionCount: 1,
+			"undoManager.isEnabled": false, // enable undo & redo -> als dit disabled staat dan werken die transactions niet meer..
+			"animationManager.isEnabled": true,
+			"toolManager.hoverDelay": 500,
+			"toolManager.positionToolTip": function(tooltip, obj) {
+				go.ToolManager.prototype.positionToolTip.call(solutionDiagram.toolManager, tooltip, obj);
+				tooltip.position = new go.Point(tooltip.position.x - tooltip.measuredBounds.centerX, tooltip.position.y);
+ 			},
+			layout: $(
+				go.TreeLayout, // specify a Diagram.layout that arranges trees
+				{
+					treeStyle: go.TreeLayout.StyleLastParents,
+					arrangement: go.TreeLayout.ArrangementHorizontal,
+					arrangementSpacing: new go.Size(15,15),
+					sorting: go.TreeLayout.SortingAscending,
+					comparer: that.compareNodes,
+					angle: 90,
+					layerSpacing: 35,
+					// properties for the "last parents":
+					alternateAngle: 0,
+					alternateAlignment: go.TreeLayout.AlignmentStart,
+					alternateNodeIndent: 20,
+					alternateNodeIndentPastParent: 1,
+					alternateNodeSpacing: 20,
+					alternateLayerSpacing: 40,
+					alternateLayerSpacingParentOverlap: 1,
+					alternatePortSpot: new go.Spot(0.001, 1, 20, 0),
+					alternateChildPortSpot: go.Spot.Left,
+					alternateSorting: go.TreeLayout.SortingAscending,
+					alternateComparer: that.compareNodes
+				}
+			)
+		});
+		
+		var infoGeo = go.Geometry.parse(iconInfo, true);
+		var plusGeo = go.Geometry.parse(iconPlus, true);
+		var linkGeo = go.Geometry.parse(iconLink, true);
+		var expandGeo = go.Geometry.parse(iconExpand, true);
+		var collapseGeo = go.Geometry.parse(iconCollapse, true);
+		var bookGeo = go.Geometry.parse(iconBook, true);
+		
+		var backgroundColorByType = function(type, targetObj) { return type === 'supportingindicator' ? (targetObj.part.data.filterok ? '#dddddd' : '#b5b5b8') : (targetObj.part.data.filterok ? '#eeeeee' : '#bdbdc0'); };
+		var getDataFromPanel = function(panel) {
+			var data = null;
+			do {
+				data = panel.data;
+				panel = panel.panel;
+			} while (data == null && panel != null);
+			return data;
+		};
+		var definitionClicked = function(definition, node) {
+			if (definition.type === 'emptyindicator' || definition.type === 'emptyreport') {
+				var entitydetail = that.props.entities.filter(function (ent) { return ent.sys_id === node.key; });
+				if (entitydetail.length == 1) {
+					if (definition.type === 'emptyindicator') {
+						that.setState({ addentityindicator: entitydetail[0] });
+					} else {
+						that.setState({ addentityreport: entitydetail[0] });
+					}
+				}	
+			} else if (definition.type === 'report') {
+				that.showReportDetail(definition.sys_id);
+			} else {
+				that.showIndicatorDetail(definition.sys_id);
+			}
+		};
+		
+		var definitionTemplate = 
+			$(
+				go.Panel,
+				"Horizontal",
+				$(
+					go.Shape,
+					"Rectangle",
+					{
+						strokeWidth: 0,
+						width: 5,
+						height: 40
+					},
+					new go.Binding("fill", "color"),
+					new go.Binding("opacity", "", function(data, targetObject) { return targetObject.part.data.filterok ? 1 : 0.5; })
+				),
+				$(
+					go.Panel,
+					{
+						width: 200,
+						height: 40,
+						cursor: 'pointer',
+						mouseEnter: function(e, obj) {
+							obj.findObject('TheDefinitionName').isUnderline = true;
+						},
+						mouseLeave: function(e, obj) {
+							obj.findObject('TheDefinitionName').isUnderline = false;
+						}
+					},
+					$(
+						go.TextBlock,
+						{
+							name: 'TheDefinitionName',
+							overflow: go.TextBlock.OverflowEllipsis,
+							maxLines: 1,
+							margin: go.Margin.parse('13 5 5 10'),
+							spacingAbove: 2,
+							width: 180,
+							textAlign: isRTL ? 'right' : 'left',
+							stroke: "#343d47",
+							toolTip:
+							$(
+								go.Adornment,
+								"Vertical",
+								$(
+									go.Shape,
+									"TriangleUp",
+									{
+										width: 28,
+										height: 14,
+										fill: "#000000"
+									}
+								),
+								$(
+									go.Panel,
+									"Auto",
+									$(
+										go.Shape,
+										"RoundedRectangle",
+										{
+											fill: "#000000"
+										}
+									),
+									$(
+										go.TextBlock,
+										{
+											margin: 8,
+											stroke: "#ffffff"
+										},
+										new go.Binding("text", "name")
+									)
+								)
+							)
+						},
+						new go.Binding("text", "name"),
+						new go.Binding("font", "type", function (type) { return type === 'emptyindicator' || type === 'emptyreport' ? 'italic 11px "SourceSansPro", "Helvetica Neue", "Helvetica", Arial, sans-serif' : '12px "SourceSansPro", "Helvetica Neue", "Helvetica", Arial, sans-serif' })
+					),
+					$(
+						go.Panel,
+						{
+							name: 'TheDefinitionButtons',
+							position: new go.Point(isRTL ? 12 : 175, 13)
+						},
+						$(
+							go.Panel,
+							{
+								name: 'TheDefinitionButton',
+								isActionable: true,
+								cursor: 'pointer',
+								click: function (e, obj) {
+									e.handled = true;
+									var btn = obj.findObject('TheButtonShape'); 
+									var data = getDataFromPanel(obj);
+									
+									jQuery.post("popup.do?sysparm_sys_id=" + data.pa_indicator + "&sysparm_table_name=pa_indicators&sysparm_field_name=sys_id&sys_popup_direct=true&sysparm_show_open_button=true&sysparm_glide_popup=true").done(
+										function (data) {
+											//var btnLocation = btn.getDocumentPoint(go.Spot.BottomCenter);
+											//var btnPosition = that.theDiagram.transformDocToView(btnLocation);
+											var popOverContent = jQuery(data);
+											//move h2.small_caption content to h4.popover-title
+											var h2title = popOverContent.find('h2.small_caption');
+											var h4title = popOverContent.find('h4.popover-title');
+											var arrow = popOverContent.find('div.arrow');
+											var divcontent = popOverContent.find('div.popover-content');
+											arrow.remove();
+											divcontent[0].style.width = '650px';
+											divcontent[0].style.maxHeight = '400px';
+											h4title.html(h2title.html());
+											h2title.remove();
+											popOverContent[0].style.top = '0px';
+											popOverContent[0].style.left = 'calc(50% - 326px)';
+											popOverContent[0].style.width = '652px';
+											popOverContent[0].style.maxWidth = 'none';
+											popOverContent[0].style.display = 'block';
+											popOverContent[0].className = "popover glide-popup fade bottom in";
+											popOverContent.find("a.pop-over-button").each(function(index) {
+												var jThis = jQuery(this);
+												jThis.attr("target", "_blank");
+												jThis.attr("href", "nav_to.do?uri=" + encodeURIComponent(jThis.attr("href")));
+											});
+											var popOverContainer = jQuery('.wb-pa-lanes');
+											popOverContainer.append(popOverContent);
+											popOverContent.find("textarea").each(function(index) {
+ 												jQuery(this).height(jQuery(this)[0].scrollHeight);
+ 											});
+											IndicatorDesignTreePopOverElement = popOverContent;
+											IndicatorDesignTreeDocumentAddEventListeners();
+											//to set height we need to bind it to the DOM
+// 											popOverContainer[0].style.marginLeft = "-1500px";
+// 											jQuery("body").append(popOverContainer);
+
+// 											jQuery("body").remove(popOverContainer);
+// 											popOverContainer[0].style.marginLeft = null;
+											//that.setState({ popovercontent: popOverContainer.html() });
+										}
+									);
+								},
+								mouseEnter: function(e, obj) {
+									var btn = obj.findObject('TheButtonShape');
+									btn.fill = '#343d47';
+								},
+								mouseLeave: function(e, obj) {
+									var btn = obj.findObject('TheButtonShape');
+									btn.fill = '#777777';
+								}
+							},
+							$(
+								go.Shape,
+								{
+									//position: new go.Point(isRTL ? 19 : 0, 0),
+									name: 'TheButtonShape',
+									fill: '#777777',
+									strokeWidth: 0.3,
+									geometry: linkGeo,
+									width: 14,
+									height: 14
+								},
+								new go.Binding("stroke", "type", backgroundColorByType)
+							),
+							new go.Binding("background", "type", backgroundColorByType),
+							new go.Binding("visible", "pa_indicator", function (pa_indicator) { return pa_indicator != null; })
+						),
+						$(
+							go.Panel,
+							{
+								name: 'TheAddIndicatorDefinitionButton',
+								isActionable: true,
+								cursor: 'pointer',
+								click: function (e, obj) {
+									var data = getDataFromPanel(obj);
+									definitionClicked(data, obj.part.data);
+								},
+								mouseEnter: function(e, obj) {
+									var btn = obj.findObject('TheButtonShape');
+									btn.fill = '#343d47';
+								},
+								mouseLeave: function(e, obj) {
+									var btn = obj.findObject('TheButtonShape');
+									btn.fill = '#777777';
+								}
+							},
+							$(
+								go.Shape,
+								{
+									name: 'TheButtonShape',
+									fill: '#777777',
+									strokeWidth: 0.3,
+									width: 14,
+									height: 14,
+									geometry: plusGeo
+								},
+								new go.Binding("stroke", "type", backgroundColorByType),
+								new go.Binding("visible", "type", function (type) { return type === 'emptyreport' || type === 'emptyindicator'; })
+							),
+							new go.Binding("background", "type", backgroundColorByType)
+						)
+					),
+					new go.Binding("background", "type", backgroundColorByType)
+				),
+				{
+					click: function(e, panel) {
+						if (e.targetObject.name === 'TheDefinitionButton') {
+							return false;
+						}
+
+						e.handled = true;
+						var data = getDataFromPanel(panel);
+						definitionClicked(data, panel.part.data);
+					}
+				}
+			);
+		
+		solutionDiagram.nodeTemplate = 
+			$(
+			go.Node,
+			"Vertical",
+			{
+				layerName: "Background",
+				isShadowed: true,
+				shadowColor: "#ddd",
+				shadowBlur: 0,
+				shadowOffset: new go.Point(10, 10),
+				wasTreeExpanded: false,
+				cursor: "pointer"
+				/*, selectionAdorned: false*/
+			},
+			$(
+				go.Panel,
+				"Horizontal",
+				{
+					mouseEnter: function(e, obj) {
+						var infobtn = obj.findObject('TheButtons');
+						infobtn.opacity = 1;
+				   },
+				   mouseLeave: function(e, obj) {
+						var infobtn = obj.findObject('TheButtons');
+						infobtn.opacity = 0;
+				   },
+				   //padding: new go.Margin(1,1,0,1), //hier komen de indicator blokjes nog onder, dus de bottom border zou 0 moeten zijn en de laatste indicator zou dan de laatste bottom rand moeten krijgen
+				   padding: 0,
+				   background: "#8c8d92"
+				},
+				$(
+					go.Shape,
+					"Rectangle",
+					{
+						strokeWidth: 0,
+						width: 5,
+						height: 55
+					},
+					new go.Binding("fill", "color"),
+					new go.Binding("opacity", "filterok", function(filterok) { return filterok ? 1 : 0.5; })
+				),
+				$(
+					go.Panel,
+					{
+						name: "entity",
+						
+						width: 200,
+						height: 55
+					},
+					$(
+						go.TextBlock,
+						{
+							name: 'TheEntityName',
+							cursor: 'pointer',
+							spacingAbove: -1,
+							spacingBelow: -1,
+							overflow: go.TextBlock.OverflowEllipsis,
+							maxLines: 2,
+							margin: 10,
+							width: 165,
+							textAlign: isRTL ? 'right' : 'left',
+							stroke: "#343d47",
+							//background: '#bbbbbb',
+							font: 'bold 15px "SourceSansProSemibold", "SourceSansPro", "Helvetica Neue", "Helvetica", Arial, sans-serif',
+							toolTip:
+							$(
+								go.Adornment,
+								"Vertical",
+								$(
+									go.Shape,
+									"TriangleUp",
+									{
+										width: 28,
+										height: 14,
+										fill: "#000000"
+									}
+								),
+								$(
+									go.Panel,
+									"Auto",
+									$(
+										go.Shape,
+										"RoundedRectangle",
+										{
+											fill: "#000000"
+										}
+									),
+									$(
+										go.TextBlock,
+										{
+											margin: 8,
+											stroke: "#ffffff"
+										},
+										new go.Binding("text", "name")
+									)
+								)
+							)
+						},
+						new go.Binding("text", "name"),
+						new go.Binding("stroke", "filterok", function(filterok) { return filterok ? '#343d47' : '#8F9298'; })
+					),
+					$(
+						go.Panel,
+						{
+							name: 'LibraryIcon',
+							position: new go.Point(178, 10),
+							opacity: 1
+						},
+						$(
+							go.Panel,
+							{
+								background: '#ffffff',
+								position: new go.Point(0, 0),
+							},
+							$(
+								go.Shape,
+								{
+									name: 'TheLibraryIcon',
+									fill: '#777777',
+									strokeWidth: 0.3,
+									stroke: '#ffffff',
+									geometry: bookGeo,
+									width: 12,
+									height: 12
+								},
+								new go.Binding("fill", "filterok", function(filterok) { return filterok ? '#777777' : '#ddd'; }),
+								new go.Binding("strokeWidth", "filterok", function(filterok) { return filterok ? 0.3 : 0.05; })
+							),
+							new go.Binding("background", "filterok", function(filterok) { return filterok ? '#ffffff' : '#A9AAAD'; })
+						),
+						new go.Binding("visible", "library")
+					),
+					$(
+						go.Panel,
+						{
+							name: 'TheButtons',
+							position: new go.Point(178, 10),
+							opacity: 0
+						},
+						$(
+							go.Panel,
+							{
+								background: '#ffffff',
+								isActionable: true,
+								cursor: 'pointer',
+								click: function (e, obj) {
+									e.handled = true;
+									
+									that.expandOrCollapseNode(solutionDiagram, obj.part, e.control);
+								},
+								mouseEnter: function(e, obj) {
+									var btn = obj.findObject('TheExpander');
+									btn.fill = obj.part.data.filterok ? '#343d47' : '#fff';
+								},
+								mouseLeave: function(e, obj) {
+									var btn = obj.findObject('TheExpander');
+									btn.fill = obj.part.data.filterok ? '#777777' : '#ddd';
+								}
+							},
+							$(
+								go.Shape,
+								{
+									name: 'TheExpander',
+									fill: '#777777',
+									strokeWidth: 0.3,
+									stroke: '#ffffff',
+									width: 12,
+									height: 12
+								},
+								new go.Binding("geometry", "expanded", function(expanded) { return expanded ? collapseGeo : expandGeo; }),
+								new go.Binding("visible", "hasChildren"),
+								new go.Binding("fill", "filterok", function(filterok) { return filterok ? '#777777' : '#ddd'; }),
+								new go.Binding("strokeWidth", "filterok", function(filterok) { return filterok ? 0.3 : 0.05; })
+							),
+							//$('TreeExpanderButton'),
+							new go.Binding("background", "filterok", function(filterok) { return filterok ? '#ffffff' : '#A9AAAD'; })
+						)
+					),
+					new go.Binding("background", "filterok", function(filterok) { return filterok ? '#ffffff' : '#A9AAAD'; })
+				)
+			),
+			$(
+				go.Panel,
+				"Vertical",
+				{
+					name: 'TheDefinitions',
+					itemTemplate: definitionTemplate,
+					//padding: new go.Margin(0,1,1,1),
+					padding: 0,
+				   	background: "#8c8d92"
+				},
+				new go.Binding("itemArray", "definitions")
+			),
+			{
+				click: function(e, node) {
+					var entitydetail = that.props.entities.filter(function (ent) { return ent.sys_id === node.data.key; });
+					if (entitydetail.length == 1) {
+						that.setState({ entitydetail: entitydetail[0] });
+					}
+				}
+			},
+			new go.Binding("shadowColor", "", function(nodedata) { return that.filteringIsOn() ? (that.childrenHaveFilterOk(nodes, nodedata.key) ? '#eee' : '#999') : '#ddd'; }),
+			new go.Binding("isTreeExpanded", "expanded"),
+			new go.Binding("wasTreeExpanded", "", function(data) { return false; }),
+			new go.Binding("visible", "", function(nodedata) { return that.nodeIsVisible(nodedata.key, solutionDiagram); }), //bugfix, we set the visible property in the beginning to match the parents expanded state, otherwise the children of the children are shown as orphans
+			new go.Binding("isShadowed", "expanded", function(expanded) { return !expanded; })
+		);
+
+		
+		solutionDiagram.linkTemplate = $(
+			go.Link,
+			{
+				toShortLength: 2,
+				relinkableFrom: false,
+				relinkableTo: false,
+				routing: go.Link.Orthogonal,
+				corner: 8
+			},
+			$(
+				go.Shape,
+				{
+					strokeWidth: 3,
+					stroke: "#555"
+				}
+			)
+		);
+
+		var therelations = relations.filter(function (r) { return r.from; });
+		
+		var model = $(go.GraphLinksModel, {
+			nodeDataArray: nodes,
+			linkDataArray: therelations
+		});
+		
+		
+		solutionDiagram.model = model;
+			
+		this.theModel = model;
+		this.theDiagram = solutionDiagram;
+	},
+
+	entityIsUsedInReportCanvas: function(entity) {
+		return this.props.dashboardtabrowcanvasses.filter(function (canvas) { return canvas.widgetvisualisation && canvas.widgetvisualisation.widgettype_sys_id === WIDGETTYPE_REPORTS_SYS_ID && canvas.entities && canvas.entities.indexOf(entity.sys_id) >= 0;}).length > 0;
+	},
+	
+	getNodes: function() {
+		var i;
+		var p;
+		var entitytypesDic = {};
+		for (i = 0; i < this.props.entitytypes.length; i++) {
+			entitytypesDic[this.props.entitytypes[i].sys_id] = this.props.entitytypes[i];
+		}
+
+		var filteringIsOn = this.filteringIsOn();
+	
+		var nodes = [];
+		for (i = 0; i < this.props.entities.length; i++) {
+			var entity = this.props.entities[i];
+			var node = { category: entity.category, entitytype: entity.entitytype, key: entity.sys_id, name: entity.name, description: entity.description, order: entity.order, expanded: !entity.collapseddd, hasChildren: this.hasChildren(entity.sys_id), library: entity.library };
+			if (entitytypesDic[entity.entitytype]) {
+				node.color = entitytypesDic[entity.entitytype].color;
+			}
+
+			node.definitions = [];
+			if (this.props.project_library === true || this.entityIsUsedInReportCanvas(entity)) {
+				if (entity.report_definition != null) {
+					var reportdefs = this.props.report_definitions.filter(function (rep) { return rep.sys_id === entity.report_definition; });
+					if (reportdefs.length == 1) {
+						var reportdef = reportdefs[0];
+						var color = reportdef.color;
+						if (color == null) {
+							color = node.color;
+						}
+						node.definitions.push(
+							{
+								type: 'report',
+								sys_id: reportdef.sys_id,
+								name: reportdef.name,
+								color: color,
+								pa_indicator: null
+							}
+						);
+					}
+				}
+				if (this.props.readonly !== true && !entity.library && node.definitions.length == 0) {
+					//add placeholder
+					node.definitions.push(
+						{
+							type: 'emptyreport',
+							sys_id: null,
+							name: getMessage("create report definition"),
+							color: node.color,
+							pa_indicator: null
+						}
+					);
+				}
+			}
+
+			var addEmptyIndicatorDef = true;
+			if (entity.indicator_definition != null) {
+				var indicatordefs = this.props.indicatordefinitions.filter(function (ind) { return ind.sys_id === entity.indicator_definition; });
+				if (indicatordefs.length == 1) {
+					var indicatordef = indicatordefs[0];
+					var color = indicatordef.color;
+					if (color == null) {
+						color = node.color;
+					}
+					
+					node.definitions.push(
+						{
+							type: 'mainindicator',
+							sys_id: indicatordef.sys_id,
+							name: indicatordef.name,
+							color: color,
+							pa_indicator: indicatordef.pa_indicator
+						}
+					);
+					addEmptyIndicatorDef = false;
+					var supportingindicatorsysids = this.props.indicatordefinition_indicatordefinition.filter(function (rel) { return rel.main_indicator_definition === indicatordef.sys_id; }).map(function (rel) { return rel.sup_indicator_definition; });
+					var supportingindicators = this.props.indicatordefinitions.filter(function (ind) { return supportingindicatorsysids.indexOf(ind.sys_id) > -1; });
+					supportingindicators.sort(function (a,b) { return a.name.localeCompare(b.name); });
+					for (var s = 0; s < supportingindicators.length; s++) {
+						var supindicatordef = supportingindicators[s];
+						color = supindicatordef.color;
+						if (color == null) {
+							color = node.color;
+						}
+						node.definitions.push(
+							{
+								type: 'supportingindicator',
+								sys_id: supindicatordef.sys_id,
+								name: supindicatordef.name,
+								color: color,
+								pa_indicator: supindicatordef.pa_indicator
+							}
+						);
+					}
+					
+				}
+			}
+			if (this.props.readonly !== true && !entity.library && addEmptyIndicatorDef) {
+				//add placeholder
+				node.definitions.push(
+					{
+						type: 'emptyindicator',
+						sys_id: null,
+						name: getMessage("create indicator definition"),
+						color: node.color,
+						pa_indicator: null
+					}
+				);
+			}
+
+			node.filterok = filteringIsOn ? this.getNodeFilterOk(node) : true;
+			
+			nodes.push(node);
+		}
+		return nodes;
+	},
+	
+	renderDiagramIfNeeded: function() {
+		if (this.theDiagram == null && this.props.entities != null) {
+			this.renderCanvas(this.getNodes(), this.props.relations);
+			return true;
+		}
+		return false;
+	},
+	
+	componentDidMount: function() {
+		this.renderDiagramIfNeeded();
+	},
+	
+	componentDidUpdate: function (prevProps) {
+		var rendered = this.renderDiagramIfNeeded();
+		if (!rendered) {
+			//console.log(this.props.relations);
+			var definitionschanged = false;
+			var filterchanged = false;
+
+			if (this.props.indicatordefinitions !== prevProps.indicatordefinitions) {
+				definitionschanged = true;
+			}
+			if (this.props.indicatordefinition_indicatordefinition !== prevProps.indicatordefinition_indicatordefinition) {
+				definitionschanged = true;
+			}
+			if (this.props.report_definitions !== prevProps.report_definitions) {
+				definitionschanged = true;
+			}
+			if (this.props.filter_status !== prevProps.filter_status || this.props.filter_text !== prevProps.filter_text) {
+				filterchanged = true;
+			}
+			
+			if (definitionschanged || filterchanged) {
+				this.theDiagram.startTransaction();
+				
+				var nodes = this.getNodes();
+				for (var i = 0; i < nodes.length; i++) {
+					var node = nodes[i];
+					var nodeDataArr = this.theModel.nodeDataArray.filter(function (n) { return n.key === node.key; });
+					if (nodeDataArr.length == 1) {
+						var nodeData = nodeDataArr[0];
+						if (definitionschanged) {
+							nodeData.definitions = node.definitions;
+						}
+						if (filterchanged || definitionschanged) {
+							nodeData.filterok = node.filterok;
+						}
+					}
+				}
+				
+				if (definitionschanged)	this.theDiagram.updateAllTargetBindings("definitions");
+				if (filterchanged || definitionschanged) this.theDiagram.updateAllTargetBindings("filterok");
+				
+				this.theDiagram.commitTransaction("ReactPropertiesChanged");
+			}
+		}
+	},
+	
+	//wordt vanuit de MainApp opgeroepen
+	requestUpdateForDiagram: function() {
+		if (this.theDiagram != null) {
+			this.theDiagram.requestUpdate();
+		}
+	},
+	
+	entityDetailClose: function() {
+		this.setState({ entitydetail: null });
+	},
+	
+	addEntityIndicatorClose: function(result) {
+		//altijd refreshen, je kunt ook supporting indicators hebben aangepast enzo
+		var that = this;
+		if (result != null && result.sys_id != null) {
+			this.props.insertEntityIndicatorDefinition(this.state.addentityindicator.sys_id, result.sys_id, function (error) {
+				that.props.refreshEntityDefinitionData(function() {
+					that.setState({ addentityindicator: null });
+				});
+			});
+		} else {
+			that.props.refreshEntityDefinitionData(function() {
+				that.setState({ addentityindicator: null });
+			});
+		}
+	},
+	
+	editIndicatorDefinitionClose: function(result) {
+		//altijd refreshen, je kunt ook supporting indicators hebben aangepast enzo
+		var that = this;
+		this.props.refreshEntityDefinitionData(function () {
+			that.setState({ editindicatordefinition: null });
+		});
+	},
+	
+	entityDetailIndicatorDefinitionSave: function(indicatordefinition, callback) {
+		var that = this;
+		if (indicatordefinition != null) {
+			this.props.insertEntityIndicatorDefinition(this.state.entitydetail.sys_id, indicatordefinition.sys_id, function (error) {
+				that.props.refreshEntityDefinitionData(function() { callback(error); });
+			});
+		} else {
+			this.props.deleteEntityIndicatorDefinition(this.state.entitydetail.sys_id, function (error) {
+				that.props.refreshEntityDefinitionData(function() { callback(error); });
+			});
+		}
+	},
+
+	addEntityReportClose: function(result) {
+		var that = this;
+		if (result != null && result.sys_id != null) {
+			this.props.insertEntityReportDefinition(this.state.addentityreport.sys_id, result.sys_id, function (error) {
+				that.props.refreshEntityDefinitionData(function() {
+					that.setState({ addentityreport: null });
+				});
+			});
+		} else {
+			that.props.refreshEntityDefinitionData(function() {
+				that.setState({ addentityreport: null });
+			});
+		}
+	},
+	
+	editReportDefinitionClose: function(result) {
+		//altijd refreshen, je kunt ook supporting reports hebben aangepast enzo
+		var that = this;
+		this.props.refreshEntityDefinitionData(function () {
+			that.setState({ editreportdefinition: null });
+		});
+	},
+
+	entityDetailReportDefinitionSave: function(report_definition, callback) {
+		var that = this;
+		if (report_definition != null) {
+			this.props.insertEntityReportDefinition(this.state.entitydetail.sys_id, report_definition.sys_id, function (error) {
+				that.props.refreshEntityDefinitionData(function() { callback(error); });
+			});
+		} else {
+			this.props.deleteEntityReportDefinition(this.state.entitydetail.sys_id, function (error) {
+				that.props.refreshEntityDefinitionData(function() { callback(error); });
+			});
+		}
+	},
+
+	//nodig?
+	// nodeSetFilterOk: function(node) {
+	// 	var newfilterok = this.getNodeFilterOk(node);
+	// 	if (node.filterok !== newfilterok) {
+	// 		this.theDiagram.model.setDataProperty(node, "filterok", newfilterok);
+	// 	}
+	// },
+	
+	render: function() {
+		var entitydetailmodal = null;
+		if (this.state.entitydetail != null) {
+			var entitydetailmodalprops = {
+				key: 'detail',
+				entity: this.state.entitydetail,
+				personas: this.props.personas,
+				breakdowns: this.props.breakdowns,
+				entitytypes: this.props.entitytypes,
+				indicatordefinitions: this.props.indicatordefinitions,
+				report_definitions: this.props.report_definitions,
+				showreport_definitions: this.entityIsUsedInReportCanvas(this.state.entitydetail),
+				onClose: this.entityDetailClose,
+				onIndicatorShowDetail: this.showIndicatorDetail,
+				onReportShowDetail: this.showReportDetail
+			};
+
+			if (this.props.readonly !== true && !this.state.entitydetail.library) {
+				entitydetailmodalprops.onIndicatorDefinitionSave = this.entityDetailIndicatorDefinitionSave;
+				entitydetailmodalprops.onReportDefinitionSave = this.entityDetailReportDefinitionSave;
+			}
+
+			entitydetailmodal = e(
+				EntityDetailModal,
+				entitydetailmodalprops
+			);
+		}
+
+		var addentityindicatormodal = null;
+		if (this.state.addentityindicator != null) {
+			addentityindicatormodal = e(
+				IndicatorDefinitionModal,
+				{
+					key: 'indicatordefinition',
+					entity: this.state.addentityindicator,
+					onClose: this.addEntityIndicatorClose
+				}
+			);
+		}
+		var editindicatordefinitionmodal = null;
+		if (this.state.editindicatordefinition != null) {
+			editindicatordefinitionmodal = e(
+				IndicatorDefinitionModal,
+				{
+					key: 'editindicatordefinition',
+					indicatordefinition: this.state.editindicatordefinition,
+					onClose: this.editIndicatorDefinitionClose
+				}
+			);
+		}
+
+		var addentityreportmodal = null;
+		if (this.state.addentityreport != null) {
+			addentityreportmodal = e(
+				ReportDefinitionModal,
+				{
+					key: 'reportdefinition',
+					entity: this.state.addentityreport,
+					onClose: this.addEntityReportClose
+				}
+			);
+		}
+		var editreportdefinitionmodal = null;
+		if (this.state.editreportdefinition != null) {
+			editreportdefinitionmodal = e(
+				ReportDefinitionModal,
+				{
+					key: 'editreportdefinition',
+					report_definition: this.state.editreportdefinition,
+					onClose: this.editReportDefinitionClose
+				}
+			);
+		}
+		
+		var popovercontentelement = null;
+// 		if (this.state.popovercontent != null) {
+// 			popovercontentelement = e(
+// 				'div',
+// 				{
+// 					key: 'popovercontentelement',
+// 					dangerouslySetInnerHTML: { __html:this.state.popovercontent }
+// 				}
+// 			);
+// 		}
+		
+		return [
+			e(
+				'div',
+				{
+					key: 'tree',
+					ref: 'goJsDiv',
+					style: { 'width': '100%', 'height': '100%', 'overflow': 'hidden' }
+				}
+			),
+			entitydetailmodal,
+			addentityindicatormodal,
+			editindicatordefinitionmodal,
+			addentityreportmodal,
+			editreportdefinitionmodal,
+			popovercontentelement
+		];
+	}
+});]]></script>
+        <script_name>IndDesignTree</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-07 15:36:17</sys_created_on>
+        <sys_id>cd1b31251b447700bcb985507e4bcb41</sys_id>
+        <sys_mod_count>296</sys_mod_count>
+        <sys_name>sn_kpi_composer.IndDesignTree</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_cd1b31251b447700bcb985507e4bcb41</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-26 13:17:46</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

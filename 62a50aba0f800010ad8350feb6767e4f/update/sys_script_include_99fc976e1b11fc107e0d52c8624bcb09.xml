@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskCreateTaskDefDependencies</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskCreateTaskDefDependencies</name>
+        <script><![CDATA[var ProjectTaskCreateTaskDefDependencies = Class.create();
+ProjectTaskCreateTaskDefDependencies.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	createdependencies: function(data) {
+
+		if (this.trace) this._debug.push("ProjectTaskCreateTaskDefDependencies");	
+
+		var projectTaskCreateTaskDefDependencies_IndicatorBreakdowns = new ProjectTaskCreateTaskDefDependencies_IndicatorBreakdowns();
+		projectTaskCreateTaskDefDependencies_IndicatorBreakdowns.trace = this.trace;
+		projectTaskCreateTaskDefDependencies_IndicatorBreakdowns.createdependencies(data);
+
+		var projectTaskCreateTaskDefDependencies_WidgetIndicators = new ProjectTaskCreateTaskDefDependencies_CanvasIndicators();
+		projectTaskCreateTaskDefDependencies_WidgetIndicators.trace = this.trace;
+		projectTaskCreateTaskDefDependencies_WidgetIndicators.createdependencies(data);
+
+		var projectTaskCreateTaskDefDependencies_DashboardWidgets = new ProjectTaskCreateTaskDefDependencies_DashboardWidgets();
+		projectTaskCreateTaskDefDependencies_DashboardWidgets.trace = this.trace;
+		projectTaskCreateTaskDefDependencies_DashboardWidgets.createdependencies(data);
+		
+		var projectTaskCreateTaskDefDependencies_DashboardBreakdowns = new ProjectTaskCreateTaskDefDependencies_DashboardBreakdowns();
+		projectTaskCreateTaskDefDependencies_DashboardBreakdowns.trace = this.trace;
+		projectTaskCreateTaskDefDependencies_DashboardBreakdowns.createdependencies(data);
+
+	},
+
+    type: 'ProjectTaskCreateTaskDefDependencies'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-15 13:21:09</sys_created_on>
+        <sys_id>99fc976e1b11fc107e0d52c8624bcb09</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>ProjectTaskCreateTaskDefDependencies</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_99fc976e1b11fc107e0d52c8624bcb09</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-14 10:07:40</sys_updated_on>
+    </sys_script_include>
+</record_update>

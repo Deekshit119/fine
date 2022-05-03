@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationPersonaNotLinkedInMeasurement</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationPersonaNotLinkedInMeasurement</name>
+        <script><![CDATA[var ProjectValidationPersonaNotLinkedInMeasurement = Class.create();
+ProjectValidationPersonaNotLinkedInMeasurement.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationPersonaNotLinkedInMeasurement");
+		
+		// Load this code
+		var personas_x = sn_kpi_composer.projectPersonas();
+		var globals_x = sn_kpi_composer.globalFunctions();
+		
+		// Reading the persona's needs (by design) and applied entities (by dashboard)
+		var requiredEntities = sn_kpi_composer.entitiesPerPersonaRequired(data);
+		//this._debug.push("Required entities per persona  << HIER");
+		//this._debug.push(JSON.stringify(requiredEntities));
+		
+		var appliedEntities = sn_kpi_composer.entitiesPerPersonaImplemented(data);
+		//this._debug.push("Applied entities per persona << HIER");
+		//this._debug.push(JSON.stringify(appliedEntities));
+		
+	
+		// ----------------------------------------------
+		// Persona "#P_NAME#" is not linked to measurement "#M_NAME#" in analysis
+		// ----------------------------------------------
+
+		// Check applied -> to mutch will result in warning
+		for(var ai = 0, am = appliedEntities.personas.length; ai<am; ai++) {
+
+			// For a persona the applied entities
+			var persona_app = appliedEntities.personas[ai];							
+			//this._debug.push("persona_app:" + JSON.stringify(persona_app));
+
+			// Find the persona and its required entities
+			var persona_req = sn_kpi_composer.findBySysId(requiredEntities.personas, persona_app.sys_id);
+			//this._debug.push("persona_req:" + JSON.stringify(persona_req));
+
+
+			// for each entity try to find matching requered entity with the same person
+			for(var eei = 0, eem = persona_app.entities.length; eei<eem; eei++) {
+				var entity_dv = persona_app.entities[eei];
+
+				//this._debug.push("EntityDv:" + JSON.stringify(entity_dv));
+
+				// Are there any applied entities for the persona, and has this persona the entity in the list
+				if (!persona_req || sn_kpi_composer.findBySysId(persona_req.entities, entity_dv.sys_id) == null) {
+					// not ok -> but no error, a waring, we are showing to mutch data (by definition)
+					that._addProjectValidationWarning(gs.getMessage("Persona '{0}' is not linked to entity '{1}' in analysis", [persona_app.name, entity_dv.name]), { project: { sys_id: data.project.sys_id } });
+				}							
+			}							
+		}
+		
+	},
+
+    type: 'ProjectValidationPersonaNotLinkedInMeasurement'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-02 09:58:35</sys_created_on>
+        <sys_id>0cf1c57cdbd88850d5b45bd2ca96196e</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>ProjectValidationPersonaNotLinkedInMeasurement</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_0cf1c57cdbd88850d5b45bd2ca96196e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-11-06 15:53:39</sys_updated_on>
+    </sys_script_include>
+</record_update>

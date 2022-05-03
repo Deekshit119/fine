@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>This property will hold all the hardcoded sys_ids that are used in the script include: RecordApi.&#13;
+All those sys_ids are delivered as part of the files under the apply_once folder in KPI composer.</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>sn_kpi_composer.record_api.constants</name>
+        <read_roles>sn_kpi_composer.admin</read_roles>
+        <suffix>record_api.constants</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-01-13 15:29:39</sys_created_on>
+        <sys_id>4259a44a3b920010db46ac20e2efc490</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>sn_kpi_composer.record_api.constants</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_properties_4259a44a3b920010db46ac20e2efc490</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-01-13 15:31:44</sys_updated_on>
+        <type>string</type>
+        <value>{&#13;
+"_indicatorDefinitionAutomatedColorSysId" : "e6b721bf1b847b004e6921be6e4bcb6c",&#13;
+"_indicatorDefinitionFormulaColorSysId" : "2467257f1b847b004e6921be6e4bcbbf",&#13;
+"_indicatorDefinitionManualColorSysId" : "fcf721bf1b847b004e6921be6e4bcb6e",&#13;
+"_entityTypeBusinessGoal" : "0af9eb5d1b03e3004e6921be6e4bcbf3",&#13;
+"_entityTypeCriticalSuccessFactor" : "a68aa75d1b03e3004e6921be6e4bcbc6",&#13;
+"_entityTypeMeasurement" : "48ba239d1b03e3004e6921be6e4bcb52"&#13;
+}</value>
+        <write_roles>sn_kpi_composer.admin</write_roles>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=4259a44a3b920010db46ac20e2efc490"/>
+    <sys_translated_text action="INSERT_OR_UPDATE">
+        <documentkey name="sn_kpi_composer.record_api.constants" tablename="sys_properties">4259a44a3b920010db46ac20e2efc490</documentkey>
+        <fieldname>description</fieldname>
+        <language>es</language>
+        <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+        <sys_created_on>2022-02-09 15:43:18</sys_created_on>
+        <sys_id>61e154ca87e10910115042ad0ebb351e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+        <sys_updated_on>2022-02-09 15:43:18</sys_updated_on>
+        <tablename>sys_properties</tablename>
+        <value>Esta propiedad contendrá todos los sys_ids codificados que se utilizan en el Script Includes: RecordApi. 
+ Todos los sys_ids se entregan como parte de los archivos en la carpeta apply_once de compositor de KPI.</value>
+    </sys_translated_text>
+</record_update>

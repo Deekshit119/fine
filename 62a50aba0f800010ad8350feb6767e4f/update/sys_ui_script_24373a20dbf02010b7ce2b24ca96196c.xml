@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubShareItem</name>
+        <script><![CDATA[var NavHubShareItem = createReactClass({
+	getInitialState: function() {
+		return { edit: false, hover: false, delete: false };
+	},
+	
+	onMouseEnter: function() {
+		this.setState({ hover: true });
+	},
+	
+	onMouseLeave: function() {
+		this.setState({ hover: false });
+	},
+	
+	onEditClick: function (evt) {
+        evt.stopPropagation();
+        this.props.onPermissionEdit(this.props.permission.sys_id);
+	},
+	
+	onDeleteClick: function(evt) {
+        evt.stopPropagation();
+		this.setState({ delete: true });
+	},
+	
+	onDeleteNo: function() {
+		this.setState({ delete: false });
+	},
+	
+	onDeleteYes: function() {
+		this.props.onPermissionDelete(this.props.permission, function(error){
+			//todo: show error
+		});
+	},
+	
+	render: function() {
+		var confirmremoval = null;
+		if (this.state.delete === true) {
+			confirmremoval = e(
+				ConfirmRemoval,
+				{ onYes: this.onDeleteYes, onNo: this.onDeleteNo }
+			);
+		}
+		
+		var buttons = null;
+		if (this.state.hover === true && this.props.onPermissionDelete && this.props.onPermissionEdit) {
+			buttons = e(
+				'div',
+				{ className: 'icon-contain' },
+				e(
+					'span',
+					{ className: 'icon icon-delete sn-tooltip-basic', 'title': getMessage("Delete item"), onClick: this.onDeleteClick }
+                ),
+                e(
+					'span',
+					{ className: 'icon icon-edit sn-tooltip-basic', 'title': getMessage("Edit item"), onClick: this.onEditClick }
+				)
+			);
+		}
+
+		var liprops = {};
+		if (this.props.onPermissionDelete && this.props.onPermissionEdit) {
+			liprops.onMouseEnter = this.onMouseEnter;
+			liprops.onMouseLeave = this.onMouseLeave;
+			liprops.onClick = this.onEditClick;
+			liprops.className = "wb-pa-liclickable";
+		}
+
+		var iconspanprops = { className: 'icon sn-tooltip-basic ' };
+		if (this.props.permission.permissiontype === "User") {
+			iconspanprops.className += 'icon-user';
+			iconspanprops.title = getMessage("User");
+		} else {
+			iconspanprops.className += 'icon-user-group';
+			iconspanprops.title = getMessage("Group");
+		}
+		
+		return e(
+			'li',
+			liprops,
+			e(
+				'div',
+				{ className: 'icon-type' },
+				e(
+					'span',
+					iconspanprops
+                )
+			),
+			e(
+				'div',
+				{ className: 'wb-pa-permission-container'},
+				e(
+					'div',
+					{ className: 'wb-pa-permission-item name', onClick: (this.props.onPermissionEdit ? this.onEditClick : null) },
+					this.props.permission.permissiontype === "User" ? this.props.permission.user : this.props.permission.group
+				),
+				e(
+					'div',
+					{ className: 'wb-pa-permission-item right', onClick: (this.props.onPermissionEdit ? this.onEditClick : null) },
+					this.props.permission.write === true ? "Can edit" : "Can view"
+				)
+			),
+			buttons,
+			confirmremoval
+		);
+	}
+});]]></script>
+        <script_name>NavHubShareItem</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-11-27 12:45:38</sys_created_on>
+        <sys_id>24373a20dbf02010b7ce2b24ca96196c</sys_id>
+        <sys_mod_count>18</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubShareItem</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_24373a20dbf02010b7ce2b24ca96196c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-17 15:22:43</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

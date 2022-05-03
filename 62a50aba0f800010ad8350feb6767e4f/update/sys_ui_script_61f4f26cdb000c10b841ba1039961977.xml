@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.ModalPersonaList</name>
+        <script><![CDATA[var ModalPersonaList = createReactClass({
+	getInitialState: function() {
+		return { checked: this.props.checked };
+	},
+	
+	saveChecked: function(event) {
+		this.setState({ saving_checked: true, checked: event.target.checked });
+		var that = this;
+		this.props.onCheckedChange(this.props.persona.sys_id, event.target.checked, function(error) {
+			that.setState({ saving_checked: false });
+		});
+	},
+	
+	render: function() {
+		var inputswitch = null;
+		if (this.props.onCheckedChange != null) {
+			inputswitch = e(
+				'span',
+				{ className: 'input-switch' },
+				e(
+					'input',
+					{ 'aria-label': getMessage('Toggle persona'),id: 'edit_checked_' + this.props.persona.sys_id, type: 'checkbox', name: 'edit_checked_' + this.props.persona.sys_id, disabled: this.state.saving_checked, checked: this.state.checked, onChange: this.saveChecked }
+				),
+				e(
+					'label',
+					{ className: 'switch', 'aria-hidden': true, htmlFor: 'edit_checked_' + this.props.persona.sys_id }
+				)
+			);
+		}
+		
+		return e(
+			'li',
+			{ },
+			e(
+				'div',
+				{ className: 'wb-pa-filter-pill-decoration letter'},
+				this.props.persona.abbreviation
+			),
+			e(
+				'div',
+				{ className: 'item-name' },
+				this.props.persona.name
+			),
+			inputswitch
+		);
+	}
+});]]></script>
+        <script_name>ModalPersonaList</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-09-19 13:26:12</sys_created_on>
+        <sys_id>61f4f26cdb000c10b841ba1039961977</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>sn_kpi_composer.ModalPersonaList</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_61f4f26cdb000c10b841ba1039961977</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-11-01 15:20:30</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

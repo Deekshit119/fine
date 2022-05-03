@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.BreakdownDefinitionModal</name>
+        <script><![CDATA[var BreakdownDefinitionModal = createReactClass({	
+	getInitialState: function() {
+		return {
+			loading: true,
+			processing: false
+		};
+	},
+	
+	close: function() {
+		this.props.onClose(null);
+	},
+	
+	onOpened: function() {
+	
+	},
+	
+	onLocationChanged: function() {
+		if (this.refs.iframe != null && this.refs.iframe.contentWindow != null) {
+			var iframelocationpath = this.refs.iframe.contentWindow.location.pathname;
+			if (iframelocationpath.indexOf("/$wb_pa_close_dialog") == 0) {
+				this.setState({ processing: true });
+				this.props.onClose({ refresh: true });
+			}
+		}
+	},
+	
+	onUnload: function () {
+		var that = this;
+		setTimeout(function () {
+			that.onLocationChanged();
+		}, 0);
+	},
+	
+	onLoad: function () {
+		if (this.state.processing) return;
+		
+		if (this.refs.iframe != null && this.refs.iframe.contentWindow != null && this.refs.iframe.contentWindow.document != null) {
+			this.refs.iframe.contentWindow.removeEventListener("unload", this.onUnload);
+			this.refs.iframe.contentWindow.addEventListener("unload", this.onUnload);
+			var header = this.refs.iframe.contentWindow.document.getElementById('sn_kpi_composer_breakdown.form_header');
+			if (header != null) {
+				var navbarrights = header.getElementsByClassName('navbar-right');
+				if (navbarrights.length > 0) {
+					navbarrights[0].style.paddingRight = '25px';
+				}
+			}
+			var newState = { loading: false }; 
+			this.setState(newState);
+		}
+	},
+	
+	componentDidMount: function() {
+		if (this.refs.iframe != null) this.refs.iframe.addEventListener('load', this.onLoad);
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var closeButton = null;
+		var overlaycontrol = null;
+		if (this.state.loading == true) {
+			overlaycontrol =  e(
+				'h3',
+				{},
+				getMessage("Loading...")
+			);
+		} else if (this.state.processing == true) {
+			overlaycontrol =  e(
+				'h3',
+				{},
+				getMessage("Processing...")
+			);
+		} else {
+			closeButton = e(
+				'button',
+				{type: 'button', className: 'btn-icon close icon-cross iframe-close', onClick: this.close },
+				e(
+					'span',
+					{ className: 'sr-only' },
+					getMessage("Close")
+				)
+			);
+		}
+		//sn_kpi_composer_breakdown.do?sys_id=8851ecd31b3f2300055f96002d4bcbcc&sysparm_record_target=sn_kpi_composer_breakdown
+		var src = "sn_kpi_composer_breakdown.do?sys_id=" + this.props.breakdown.sys_id;
+		src = src + "&sysparm_goto_url=$wb_pa_close_dialog.do";
+		
+		var iframe = e(
+			'iframe',
+			{
+				ref: "iframe",
+				src: src,
+				style: { display: this.state.loading || this.state.processing ? 'none' : 'block' }
+			}
+		);
+		
+		return [
+			e(
+				Reactstrap.Modal, 
+				{ key:'breakdowndefinition', 'isOpen': true, size: 'lg', className: 'breakdowndefinition iframecontent', onOpened: this.onOpened, toggle: this.close },
+				e(
+					Reactstrap.ModalBody,
+					{},
+					overlaycontrol,
+					closeButton,
+					iframe
+				)
+			)
+		];
+	}
+});]]></script>
+        <script_name>BreakdownDefinitionModal</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-12-17 09:39:01</sys_created_on>
+        <sys_id>fe4c0583db8d605095fe870968961966</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>sn_kpi_composer.BreakdownDefinitionModal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_fe4c0583db8d605095fe870968961966</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-17 09:49:27</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

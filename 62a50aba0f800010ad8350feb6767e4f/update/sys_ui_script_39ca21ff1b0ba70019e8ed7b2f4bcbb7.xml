@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.ReactBootstrap</name>
+        <script><![CDATA[var e = React.createElement;
+var log = sn_kpi_composer.ClientHelper.log;
+
+jQuery(function(){
+	jQuery('body').tooltip({
+		selector: '[title]',
+		container: 'body'
+	}).on('hide.bs.tooltip', function(e) {
+		e.preventDefault();
+		jQuery('div.tooltip').hide();
+	});
+
+	// jQuery('body').on('click', 'a.openinnewsnwindow', function() {
+	// 	var that = jQuery(this);
+	// 	var link = that.attr("href");
+	// 	g_navigation.openPopup(link);
+	// 	return false;
+	// });
+});
+
+var WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID = "285a7035dbd35410b7ce2b24ca961982";
+var WIDGETTYPE_REPORTS_SYS_ID = "b27af035dbd35410b7ce2b24ca961906";
+var WIDGETTYPE_INTERACTIVEFILTERS_SYS_ID = "317b7075dbd35410b7ce2b24ca961926";
+var WIDGETTYPE_SPOTLIGHTS_SYS_ID = "5f9bb075dbd35410b7ce2b24ca96195d";
+var WIDGETTYPE_CONTENTBLOCK_SYS_ID = "9dbbb075dbd35410b7ce2b24ca961952";
+
+function widgetTypeDisallowsLinkedEntities(widgettype_sys_id) {
+	return widgettype_sys_id === WIDGETTYPE_CONTENTBLOCK_SYS_ID || widgettype_sys_id === WIDGETTYPE_INTERACTIVEFILTERS_SYS_ID;
+}
+
+function clearCanvasDataBasedOnWidgetType(getApiInputObj, canvas, serveractionstodo) {
+	if (canvas.widgetvisualisation) {
+		if (widgetTypeDisallowsLinkedEntities(canvas.widgetvisualisation.widgettype_sys_id)) {
+			for (var enti = 0; enti < canvas.entities.length; enti++) {
+				var ent = canvas.entities[enti];
+				var serveraction = getApiInputObj();
+				serveraction.action = "deleteCanvasEntity";
+				serveraction.canvas = {
+					sys_id: canvas.sys_id
+				};
+				serveraction.entity = ent.sys_id;
+				serveractionstodo.push(serveraction);
+			}
+			canvas.entities = [];
+		}
+
+		if (canvas.widgetvisualisation.widgettype_sys_id !== WIDGETTYPE_CONTENTBLOCK_SYS_ID) {
+			canvas.content_block = null;
+		}
+
+		if (canvas.widgetvisualisation.widgettype_sys_id !== WIDGETTYPE_INTERACTIVEFILTERS_SYS_ID) {
+			canvas.interactive_filter = null;
+		}
+
+		if (canvas.widgetvisualisation.widgettype_sys_id !== WIDGETTYPE_PEFORMANCEANALYTICS_SYS_ID) {
+			canvas.pa_widget = null;
+			canvas.time_serie = "";
+			canvas.follow_element = true;
+		}
+
+		if (canvas.widgetvisualisation.widgettype_sys_id !== WIDGETTYPE_REPORTS_SYS_ID) {
+			canvas.report = null;
+			canvas.follow_interactive_filter = true;
+		}
+
+		if (canvas.widgetvisualisation.widgettype_sys_id !== WIDGETTYPE_SPOTLIGHTS_SYS_ID) {
+			canvas.spotlight_group = null;
+		}
+	}
+}
+
+function ProjectPermissionSorter(a, b) {
+	return (a.permissiontype === "User" ? a.user : a.group).localeCompare(b.permissiontype === "User" ? b.user : b.group);
+}
+
+function NoDuplicateValues(value, index, self) {
+	return self.indexOf(value) === index;
+}]]></script>
+        <script_name>ReactBootstrap</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-23 21:09:03</sys_created_on>
+        <sys_id>39ca21ff1b0ba70019e8ed7b2f4bcbb7</sys_id>
+        <sys_mod_count>31</sys_mod_count>
+        <sys_name>sn_kpi_composer.ReactBootstrap</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_39ca21ff1b0ba70019e8ed7b2f4bcbb7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-02-05 19:33:10</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

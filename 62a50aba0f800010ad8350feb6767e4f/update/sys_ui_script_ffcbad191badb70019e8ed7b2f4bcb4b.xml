@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.OverviewHeader</name>
+        <script><![CDATA[var OverviewHeader = createReactClass({
+	getInitialState: function() {
+		return {
+			addnew: false
+		};
+	},
+	
+	createNew: function() {
+		this.setState({ addnew: true });
+	},
+	
+	onProjectAddSave: function(name) {
+		this.props.onProjectAdd(name);
+	},
+	
+	onProjectAddCancel: function() {
+		this.setState({ addnew: false });
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var addnew = null;
+		if (this.state.addnew == true) {
+			addnew = e(
+				OverviewAddProject,
+				{ key: 'addmodal', onSave: this.onProjectAddSave, onCancel: this.onProjectAddCancel }
+			);
+		}
+
+		var createbutton = null;
+		if (!this.props.library && this.props.onProjectAdd) {
+			createbutton = e(
+				"button",
+				{ className: "btn btn-primary align-vertical sn-tooltip-basic", "aria-label": getMessage("Create New Project"), title: getMessage("Create New Project"), role: 'button', onClick: that.createNew },
+				getMessage("New")
+			);
+		}
+
+		var pageTitle;
+		if(this.props.library)
+			pageTitle = getMessage("Library Element");
+		else
+			pageTitle = getMessage("Project");
+
+		return [
+			e(
+				'div',
+				{ className: "pa-overview-header", tabIndex: 0, "aria-label": getMessage("Projects overview header"), key: 'header' },
+				e(
+					'div',
+					{ role: 'heading', 'aria-level': '1', className: 'title', tabIndex: 0 },
+					pageTitle
+				),
+				createbutton
+			),
+			addnew
+		];
+	}
+});]]></script>
+        <script_name>OverviewHeader</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-05-20 09:25:12</sys_created_on>
+        <sys_id>ffcbad191badb70019e8ed7b2f4bcb4b</sys_id>
+        <sys_mod_count>15</sys_mod_count>
+        <sys_name>sn_kpi_composer.OverviewHeader</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_ffcbad191badb70019e8ed7b2f4bcb4b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-02-12 17:23:10</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

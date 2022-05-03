@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.TemplateApi</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>TemplateApi</name>
+        <script><![CDATA[var TemplateApi = Class.create();
+TemplateApi.prototype = Object.extendsObject(sn_kpi_composer.BaseApi, {
+
+
+    /// Create a new template tab based on an existing tab
+    // Parameters:
+    // input.tab
+    // input.tab.sys_id => the existing tab to use as source of the template
+    // input.tab.caption => the caption/name of the template
+    // input.tab.description => the description of the template
+    // input.tab.public (optional, default false) => can this template be used by everyone (else only for the creator)
+    _createNewTemplate:function(input) {
+
+        var result = {};
+        result.success = false;
+        try {
+
+            if (!input.tab)  throw "Tab parameter not found in request";
+            if (!input.tab.sys_id) throw "Tab should have a sys_id parameter";
+            if (!input.tab.caption) throw "Tab should have a caption parameter";
+            if (!input.tab.description) throw "Tab should have a description parameter";
+            if (!input.tab.public) input.tab.public = false;
+        
+            // Read the source tab
+            var tab = this._getTab(input.tab.sys_id);
+            if (tab) {
+
+                // Use the tab object to create a new (template) tab object
+                tab.caption = input.tab.caption;
+                tab.template_description = input.tab.description;
+                tab.template_public = input.tab.public;
+
+                // Make it a template
+                tab.template = true;
+                
+                // Detatch from dashboard
+                delete tab.dashboard;
+
+                // Create new tab
+                var gr_new_tab = new GlideRecord("sn_kpi_composer_tab");
+                gr_new_tab.initialize();
+                                        
+                // Update values
+                this.updateRecordValues(gr_new_tab, tab, ['caption', 'order', 'template', 'template_description', 'template_public']);
+                
+                // Insert tab and get new id
+                var template_sys_id = gr_new_tab.insert();
+                if (template_sys_id) {
+
+                    // Store the sys_id in the result
+                    result.template_sys_id = template_sys_id;
+
+                    // Scope
+                    var that = this;
+
+                    // Now copy all row's and widgets                    
+                    if (tab.rows) {
+                        tab.rows.forEach(function(r) {
+
+                            // Create new row
+                            var gr_new_row = new GlideRecord("sn_kpi_composer_row");
+                            gr_new_row.initialize();
+                            
+                            // Set Tab of row to template
+                            r.tab = template_sys_id;
+
+                            // Update values
+                            that.updateRecordValues(gr_new_row, r, ['nrofcanvasses', 'order', 'tab']);                            
+
+                            // Insert row
+                            var new_row_sys_id = gr_new_row.insert();
+                            
+                            // Take the canvasses of r and insert copy's
+                            r.canvasses.forEach(function(c) {
+                                			
+                                // Create canvas
+                                var gr_new_canvas = new GlideRecord("sn_kpi_composer_canvas");
+                                gr_new_canvas.initialize();
+                                                        
+                                // Change canvas owner to the new row
+                                c.row = new_row_sys_id;
+                                
+                                // Update values
+                                that.updateRecordValues(gr_new_canvas, c, ['row', 'order', 'widgetvisualisation']);
+                                
+                                // Insert canvas
+                                var new_canvas_sys_id = gr_new_canvas.insert();                                                            
+
+                            });
+
+                        });
+                    }
+                    
+                    // Read all tab info into the result
+                    result.tab = this._getTab(template_sys_id);
+
+                    result.success = true;
+                // Now copy row's
+                } else {
+                    throw "Insert of template tab record faild.";
+                }
+            } else {
+                throw "Tab with sys_id '" + input.tab.sys_id + "' not found in database.";
+            }            
+        } catch (err) {
+            gs.error(err);
+            gs.error(err.stack);
+            result.debug = this._debug;
+            result.exception = err;
+        }
+
+        return result;
+
+    },
+
+
+    // Create a new tab in a dashboard based on a existing template
+    // Parameters:
+    // input.dashboard.sys_id => the target dashboard to create the new tab on
+    // input.tab.sys_id => the source tab the create the new tab from
+    // the source tab should be a template
+    _createNewTabFromTemplate: function(input) {
+
+        var result = {};
+        result.success = false;
+        
+        // Default result
+        result.tab = {};
+
+        try {
+
+            if (!input.dashboard) throw "dashboard input parameter should be set";
+            if (!input.tab) throw "tab input parameter should be set";
+            if (!input.dashboard.sys_id) throw "dashboard.sys_id input parameter should be set";
+            if (!input.tab.sys_id) throw "tab.sys_id input parameter should be set";
+            if (!input.tab.caption) throw "caption input parameter should be set";
+
+            // Read dashboard
+            var gr_dashboard = new GlideRecord('sn_kpi_composer_dashboard');
+            // If the dashboad does not exists, exit
+            if (!gr_dashboard.get(input.dashboard.sys_id)) throw "Dashboard with sys_id: '" + input.dashboard.sys_id + "' not found in database.";
+
+            // Read the tab from db
+            var template_tab = this._getTab(input.tab.sys_id);
+            if (template_tab) {
+
+                // Tab should markt as template (remove this for generic copy function)
+                if (template_tab.template) { 
+
+                    // Remove template property from template
+                    delete template_tab.template;
+                    // Remove public property from template
+                    delete template_tab.public;
+                    // Set to dashboard
+                    template_tab.dashboard = input.dashboard.sys_id;  
+                    template_tab.caption = input.tab.caption;                
+    
+                    // Create new tab
+                    var gr_new_tab = new GlideRecord("sn_kpi_composer_tab");
+                    gr_new_tab.initialize();
+
+                    // Count the number of tabs of the dashboard
+                    var gr_tabs_on_dashboard = new GlideRecord('sn_kpi_composer_tab')
+                    gr_tabs_on_dashboard.addQuery("dashboard", input.dashboard.sys_id);
+                    gr_tabs_on_dashboard.query();
+
+                    // Calculate the order of the new tab based on the number of existing tabs
+                    var max = 0;
+                    while(gr_tabs_on_dashboard.next()) {
+                        if (max< gr_tabs_on_dashboard.getValue("order")) 
+                            max = gr_tabs_on_dashboard.getValue("order");
+                    }
+                    template_tab.order = max + 1;
+                                            
+                    // Update values
+                    this.updateRecordValues(gr_new_tab, template_tab, ['caption', 'order', 'dashboard']);
+                    
+                    // Insert tab and get new id
+                    var tab_sys_id = gr_new_tab.insert();
+                    if (tab_sys_id) {
+
+                        // Scope
+                        var that = this;
+
+                        // Now copy the row's and canvasses
+                        template_tab.rows.forEach(function(r) {
+
+                            // Create new row
+                            var gr_new_row = new GlideRecord("sn_kpi_composer_row");
+                            gr_new_row.initialize();
+                            
+                            // Set Tab of row to template
+                            r.tab = tab_sys_id;
+
+                            // Update values
+                            that.updateRecordValues(gr_new_row, r, ['nrofcanvasses', 'order', 'tab']);                            
+
+                            // Insert row
+                            var new_row_sys_id = gr_new_row.insert();
+
+                            // Copy all canvasses
+                            r.canvasses.forEach(function(c) {
+                                
+                                // Create canvas
+                                var gr_new_canvas = new GlideRecord("sn_kpi_composer_canvas");
+                                gr_new_canvas.initialize();
+                                                        
+                                // Change canvas owner to the new row
+                                c.row = new_row_sys_id;
+                                
+                                // Update values
+                                that.updateRecordValues(gr_new_canvas, c, ['row', 'order', 'widgetvisualisation']);
+                                
+                                // Insert canvas
+                                var new_canvas_sys_id = gr_new_canvas.insert();            
+
+                            });
+
+                        });
+         
+                        // Read all tab info into the result
+                        result.tab = this._getTab(tab_sys_id);
+                        result.success = true;
+                    }
+
+                } else {
+                    throw "Selected source tab is not a template tab!";
+                }
+
+            } else {
+                throw "Template tab with sys_id: '" + input.tab.sys_id + "' not found in database.";
+            }
+            
+        } catch (err) {
+            gs.error(err);
+            gs.error(err.stack);
+            result.debug = this._debug;
+            result.exception = err;
+        }
+
+        return result;        
+    },
+
+	// Create a new template tab from a existing one	
+	createNewTemplateJson: function(input) {
+
+		var result = {};
+		result.success = true;
+
+		// Read input param
+		input = this._getInputParam(input);
+
+        result = this._createNewTemplate(input);
+		
+		if (this.trace) result.debug = this._debug;
+		
+		// return json
+		return new global.JSON().encode(result);
+	}, 
+
+	// Create a new tab in a dashboard based on a existing template
+	createNewTabFromTemplateJson: function(input) {
+
+		var result = {};
+		result.success = true;
+
+		// Read input param
+		input = this._getInputParam(input);
+
+        result = this._createNewTabFromTemplate(input);
+		
+		if (this.trace) result.debug = this._debug;
+		
+		// return json
+		return new global.JSON().encode(result);
+    }, 
+    
+	
+	selectTabTemplatesJson: function(input) {
+		// Result data
+		var data = {};
+		
+		// When this call is made by glideajax, input parameters should be red
+		try {
+		
+			var inputStr = this.getParameter('sysparm_input');		
+			if (typeof input === "undefined") {
+				if (inputStr) {
+					input = new global.JSON().decode(inputStr); 
+				} else {
+					input = { note: "No input values set" };
+				}				
+			} 
+			if (this.trace) this._debug.push("Searching for tabs: '" + JSON.stringify(input) + "'");
+            data = this._selectTabTemplates(input);
+            
+            // Count the number of row's and columns per template
+            data.templates.forEach(function(t) { 
+                var columns_per_row = [];
+                var gr_rows = new GlideRecord('sn_kpi_composer_row');
+                gr_rows.addQuery("tab", t.sys_id);
+                gr_rows.orderBy("order");
+                gr_rows.query();
+                // Should only be one row
+                while(gr_rows.next()) {
+                    columns_per_row.push(parseInt(gr_rows.getValue("nrofcanvasses")));
+                }
+                t.columns_per_row = columns_per_row;
+            });
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},
+    
+
+    type: 'TemplateApi'
+
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-01-14 09:26:02</sys_created_on>
+        <sys_id>fee59d4cdb75a85095fe870968961958</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_name>TemplateApi</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_fee59d4cdb75a85095fe870968961958</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-08-26 08:02:31</sys_updated_on>
+    </sys_script_include>
+</record_update>

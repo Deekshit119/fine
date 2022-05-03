@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl_role">
+    <sys_security_acl_role action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_security_acl_role</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-02 12:56:08</sys_created_on>
+        <sys_id>9f7a6df8db1c4c10cbe5ba103996190b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>sn_kpi_composer_widgetvisualisation.sn_kpi_composer.admin</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_security_acl display_value="sn_kpi_composer_widgetvisualisation">40b47496db7a7f00d5b45bd2ca9619f5</sys_security_acl>
+        <sys_update_name>sys_security_acl_role_9f7a6df8db1c4c10cbe5ba103996190b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-10-02 12:56:08</sys_updated_on>
+        <sys_user_role display_value="sn_kpi_composer.admin" name="sn_kpi_composer.admin">6f42718b1b6fa34019e8ed7b2f4bcbb4</sys_user_role>
+        <transaction_id/>
+    </sys_security_acl_role>
+</record_update>

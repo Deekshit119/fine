@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Breakdown Definition" max_length="40" name="sn_kpi_composer_breakdown" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Abbreviation" mandatory="true" max_length="10" name="abbreviation" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Color Name" mandatory="true" max_length="32" name="color" reference="sys_report_color" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" label="Conditions" max_length="40" name="conditions" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated" max_length="40" name="definition_updated" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated by" max_length="40" name="definition_updated_by" type="string"/>
+        <element attributes="base_start=true,edge_encryption_enabled=true,track_definition_updated=true" label="Facts Table" max_length="80" name="facts_table" type="table_name"/>
+        <element attributes="track_definition_updated=true" label="Name" max_length="200" name="name" type="translated_field"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="PA Breakdown" max_length="32" name="pa_breakdown" reference="pa_breakdowns" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <index name="index">
+            <element name="color"/>
+        </index>
+        <index name="index2">
+            <element name="pa_breakdown"/>
+        </index>
+        <index name="index3">
+            <element name="sys_domain"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Task Definition" max_length="40" name="sn_kpi_composer_task_definition" type="collection">
+        <element dependent="artifact_table" dependent_on_field="artifact_table" label="Artifact Record" max_length="32" name="artifact_record" type="document_id"/>
+        <element attributes="base_start=true" label="Artifact Table" max_length="80" name="artifact_table" type="table_name"/>
+        <element dependent="definition_table" dependent_on_field="definition_table" display="true" label="Definition Record" mandatory="true" max_length="32" name="definition_record" type="document_id"/>
+        <element attributes="base_start=true" label="Definition Table" max_length="80" name="definition_table" type="table_name"/>
+        <element attributes="no_sort=true,slushbucket_ref_no_expand=true" label="Dependencies" max_length="4000" name="dependencies" reference="sn_kpi_composer_task_definition" type="glide_list"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="4000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Last status OK" max_length="40" name="last_status_ok" type="glide_date_time"/>
+        <element attributes="no_sort=true,slushbucket_ref_no_expand=true" label="Projects" max_length="4000" name="projects" reference="sn_kpi_composer_project" type="glide_list"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Create" value="3"/>
+                <element inactive_on_update="false" label="Deleted" value="5"/>
+                <element inactive_on_update="false" label="Incomplete" value="1"/>
+                <element inactive_on_update="false" label="OK" value="0"/>
+                <element inactive_on_update="false" label="Update" value="4"/>
+            </choice>
+        </element>
+        <element attributes="encode_utf8=false" label="Task" max_length="32" name="task" reference="sn_kpi_composer_task" type="reference"/>
+        <element label="Waiting on dependencies" max_length="40" name="waiting_on_dependencies" type="boolean"/>
+        <index name="index">
+            <element name="definition_record"/>
+            <element name="definition_table"/>
+        </index>
+        <index name="index2">
+            <element name="task"/>
+        </index>
+        <index name="index3">
+            <element name="definition_record"/>
+        </index>
+        <index name="index4">
+            <element name="artifact_record"/>
+        </index>
+    </element>
+</database>

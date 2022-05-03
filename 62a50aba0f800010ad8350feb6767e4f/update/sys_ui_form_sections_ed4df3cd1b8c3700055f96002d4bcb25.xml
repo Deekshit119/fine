@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_form_sections form_id="ed4df3cd1b8c3700055f96002d4bcb25" sys_domain="global" table="sn_kpi_composer_indicator_definition" version="3">
+        <sys_ui_form_section action="INSERT_OR_UPDATE">
+            <position>0</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2019-09-26 13:17:48</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>0536faf61b400450bcb985507e4bcbb5</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_overrides/>
+            <sys_ui_form display_value="sn_kpi_composer_indicator_definition" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">ed4df3cd1b8c3700055f96002d4bcb25</sys_ui_form>
+            <sys_ui_section caption="Indicator definition" display_value="Indicator definition" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">254df3cd1b8c3700055f96002d4bcb25</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2019-09-26 13:17:48</sys_updated_on>
+        </sys_ui_form_section>
+        <sys_ui_form_section action="INSERT_OR_UPDATE">
+            <position>1</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2019-09-26 13:17:48</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>9936faf61b400450bcb985507e4bcbba</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_overrides/>
+            <sys_ui_form display_value="sn_kpi_composer_indicator_definition" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">ed4df3cd1b8c3700055f96002d4bcb25</sys_ui_form>
+            <sys_ui_section caption="Indicator definition properties" display_value="Indicator definition properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">6d4df3cd1b8c3700055f96002d4bcb24</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2019-09-26 13:17:48</sys_updated_on>
+        </sys_ui_form_section>
+        <sys_ui_form_section action="INSERT_OR_UPDATE">
+            <position>2</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2020-10-14 14:09:52</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>2b94a02adbb79c10b7ce2b24ca961985</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_overrides/>
+            <sys_ui_form display_value="sn_kpi_composer_indicator_definition" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">ed4df3cd1b8c3700055f96002d4bcb25</sys_ui_form>
+            <sys_ui_section caption="Linked indicator properties" display_value="Linked indicator properties" name="sn_kpi_composer_indicator_definition" sys_domain="global" view="654d73cd1b8c3700055f96002d4bcb9f">a794a02adbb79c10b7ce2b24ca961983</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2020-10-14 14:09:52</sys_updated_on>
+        </sys_ui_form_section>
+        <sys_ui_form action="INSERT_OR_UPDATE">
+            <name>sn_kpi_composer_indicator_definition</name>
+            <roles/>
+            <sys_class_name>sys_ui_form</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-03-06 11:47:47</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>ed4df3cd1b8c3700055f96002d4bcb25</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>sn_kpi_composer_indicator_definition</sys_name>
+            <sys_overrides/>
+            <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+            <sys_update_name>sys_ui_form_sections_ed4df3cd1b8c3700055f96002d4bcb25</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-03-06 11:47:47</sys_updated_on>
+            <sys_user/>
+            <view display_value="Test" name="Test">654d73cd1b8c3700055f96002d4bcb9f</view>
+            <view_name/>
+        </sys_ui_form>
+    </sys_ui_form_sections>
+</record_update>

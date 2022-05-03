@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.EntityDetailModal</name>
+        <script><![CDATA[var EntityDetailModal = createReactClass({	
+	getInitialState: function() {
+		return {
+			name: this.props.entity.name, saving_name: false,
+			description: this.props.entity.description, saving_description: false,
+			target: this.props.entity.target, saving_target: false,
+			activeAside: this.props.indicatordefinitions ? 'linkeddefinition' : 'info',
+			delete: false,
+			createlibraryprojectfromentity: false,
+			copylibraryentitiestoproject: false,
+		};
+	},
+
+	componentDidUpdate: function (prevProps) {
+		if (this.props.entity !== prevProps.entity) {
+			var that = this;
+			this.setState({
+				name: that.props.entity.name, saving_name: false,
+				description: that.props.entity.description, saving_description: false,
+				target: that.props.entity.target, saving_target: false
+			});
+		}
+	},
+
+	close: function() {
+		this.props.onClose();
+	},
+
+	handleInputNameChange: function(event) {
+		this.setState({ name: event.target.value });
+	},
+
+	handleInputNameBlur: function(event) {
+		this.saveNameIfNeeded();
+	},
+
+	handleNameSubmit: function(event) {
+		event.preventDefault();
+		this.saveNameIfNeeded();
+	},
+
+	saveNameIfNeeded: function() {
+		if (this.state.name !== this.props.entity.name && this.state.saving_name !== true) {
+			this.setState({saving_name: true});
+			var that = this;
+			this.props.onNameSave(this.state.name, function(error) {
+				that.setState({saving_name: false});
+			});
+		}
+	},
+
+	handleInputDescriptionChange: function(event) {
+		this.setState({ description: event.target.value });
+	},
+
+	handleInputDescriptionBlur: function(event) {
+		this.saveDescriptionIfNeeded();
+	},
+
+	handleDescriptionSubmit: function(event) {
+		event.preventDefault();
+		this.saveDescriptionIfNeeded();
+	},
+
+	saveDescriptionIfNeeded: function() {
+		if (this.state.description !== this.props.entity.description && this.state.saving_description !== true) {
+			this.setState({saving_description: true});
+			var that = this;
+			this.props.onDescriptionSave(this.state.description, function(error) {
+				that.setState({saving_description: false});
+			});
+		}
+	},
+
+	handleInputTargetChange: function(event) {
+		this.setState({ target: event.target.value });
+	},
+
+	handleInputTargetBlur: function(event) {
+		this.saveTargetIfNeeded();
+	},
+
+	handleTargetSubmit: function(event) {
+		event.preventDefault();
+		this.saveTargetIfNeeded();
+	},
+
+	saveTargetIfNeeded: function() {
+		if (this.state.target !== this.props.entity.target && this.state.saving_target !== true) {
+			this.setState({saving_target: true});
+			var that = this;
+			this.props.onTargetSave(this.state.target, function(error) {
+				that.setState({saving_target: false});
+			});
+		}
+	},
+
+	ownerOnAdd: function(user, callback) {
+		this.props.onOwnerAdd(user, function(error) {
+			callback(error);
+		});
+	},
+
+	ownerOnDelete: function(sys_id, callback) {
+		this.props.onOwnerDelete(sys_id, function (error){
+			//todo: show error
+			callback(error);
+		});
+	},
+
+	contactOnAdd: function(user, callback) {
+		this.props.onContactAdd(user, function(error) {
+			callback(error);
+		});
+	},
+
+	contactOnDelete: function(sys_id, callback) {
+		this.props.onContactDelete(sys_id, function (error){
+			//todo: show error
+			callback(error);
+		});
+	},
+
+	knowledgeArticleOnAdd: function(knowledgearticle, callback) {
+		this.props.onKnowledgeArticleAdd(knowledgearticle, function(error) {
+			callback(error);
+		});
+	},
+
+	knowledgeArticleOnDelete: function(sys_id, callback) {
+		this.props.onKnowledgeArticleDelete(sys_id, function (error){
+			//todo: show error
+			callback(error);
+		});
+	},
+
+	handleActiveAsideChange: function(activeAside) {
+		if (this.state.activeAside === activeAside) {
+			return;
+		} else {
+			this.setState({activeAside: activeAside});
+		}
+	},
+
+	onPersonaCheckedChange: function(sys_id, checked, callback) {
+		this.props.onPersonaCheckedChange(sys_id, checked, function (error){
+			//todo: show error
+			callback(error);
+		});
+	},
+
+	onBreakdownCheckedChange: function(sys_id, checked, callback) {
+		this.props.onBreakdownCheckedChange(sys_id, checked, function (error){
+			//todo: show error
+			callback(error);
+		});
+	},
+
+	indicatorDefinitionOnSave: function(indicatordefinition, callback) {
+		this.props.onIndicatorDefinitionSave(indicatordefinition, function(error) {
+			callback(error);
+		});
+	},
+
+	reportDefinitionOnSave: function(report_definition, callback) {
+		this.props.onReportDefinitionSave(report_definition, function(error) {
+			callback(error);
+		});
+	},
+
+	onOpened: function() {
+		if (this.refs.nameinput) {
+			this.refs.nameinput.focus();
+			this.refs.nameinput.select();
+		}
+	},
+
+	delete: function() {
+		this.setState({delete: true});
+	},
+
+	onDeleteNo: function() {
+		this.setState({ delete: false });
+	},
+
+	onDeleteYes: function() {
+		this.props.onDelete();
+	},
+
+	onCreateLibraryProjectFromEntity: function() {
+		this.setState({createlibraryprojectfromentity: true});
+	},
+
+	onCreateLibraryProjectFromEntityCancel: function() {
+		this.setState({ createlibraryprojectfromentity: false });
+	},
+
+	onCreateLibraryProjectFromEntitySubmit: function(name, description, callback) {
+		var that = this;
+		this.props.onCreateLibraryProjectFromEntity(name, description, function(error) {
+			if (error != null) {
+				callback(error);
+			} else {
+				that.setState({ createlibraryprojectfromentity: false });
+			}
+		});
+	},
+
+	onCopyLibraryEntitiesToProject: function() {
+		this.setState({copylibraryentitiestoproject: true});
+	},
+
+	onCopyLibraryEntitiesToProjectCancel: function() {
+		this.setState({ copylibraryentitiestoproject: false });
+	},
+
+	onCopyLibraryEntitiesToProjectSubmit: function(callback) {
+		var that = this;
+		this.props.onCopyLibraryEntitiesToProject(function(error) {
+			if (error != null) {
+				callback(error);
+			} else {
+				that.setState({ copylibraryentitiestoproject: false });
+			}
+		});
+	},
+
+	render: function() {
+		var that = this;
+
+		var confirmremoval = null;
+		var deletebutton = null;
+		if (this.props.onDelete != null) {
+			if (this.state.delete == true) {
+				confirmremoval = e(
+					ConfirmRemoval,
+					{ key: 'confirmremove', onYes: this.onDeleteYes, onNo: this.onDeleteNo }
+				);
+			}
+			deletebutton = e(
+				'button',
+				{type: 'button', className: 'btn btn-danger', onClick: this.delete },
+				getMessage('Delete')
+			);
+		}
+
+		var closeButton = e(
+			'button',
+			{ type: 'button', title: getMessage('Close'), className: 'btn btn-icon icon-cross btn-close', onClick: this.close }
+		);
+
+		var buttonsRight = e(
+			'div',
+			{ className: 'buttonsright' }
+// 			deletebutton,
+// 			closeButton
+		);
+
+		var entitytypes = this.props.entitytypes.filter(function (et) { return et.sys_id === that.props.entity.entitytype; });
+		var entitytype = null;
+		if (entitytypes.length == 1) {
+			entitytype = entitytypes[0];
+		}
+
+		var activeAsideComponent = null;
+		if (this.state.activeAside === 'linkeddefinition') {
+			activeAsideComponent =
+				e(
+					EntityLinkedDefinition,
+					{
+						entity: this.props.entity,
+						indicatordefinitions: this.props.indicatordefinitions,
+						onIndicatorDefinitionSave: this.props.onIndicatorDefinitionSave ? this.indicatorDefinitionOnSave : null,
+						showreport_definitions: this.props.showreport_definitions,
+						report_definitions: this.props.report_definitions,
+						onReportDefinitionSave: this.props.onReportDefinitionSave ? this.reportDefinitionOnSave : null,
+						onIndicatorShowDetail: this.props.onIndicatorShowDetail,
+						onReportShowDetail: this.props.onReportShowDetail
+					}
+				);
+		} else if (this.state.activeAside === 'info') {
+			activeAsideComponent =
+				e(
+					EntityInfo,
+					{
+						entity: this.props.entity,
+						onKnowledgeArticleAdd: this.props.onKnowledgeArticleAdd != null ?  this.knowledgeArticleOnAdd : null,
+						onKnowledgeArticleDelete: this.props.onKnowledgeArticleDelete != null ? this.knowledgeArticleOnDelete : null,
+						onOwnerAdd: this.props.onOwnerAdd != null ? this.ownerOnAdd : null,
+						onOwnerDelete: this.props.onOwnerDelete != null ? this.ownerOnDelete : null,
+						onContactAdd: this.props.onContactAdd != null ? this.contactOnAdd : null,
+						onContactDelete: this.props.onContactDelete != null ? this.contactOnDelete : null
+					}
+				);
+		} else if (this.state.activeAside === 'personas') {
+			activeAsideComponent =
+				e(
+					ModalPersonas,
+					{
+						personas: this.props.personas,
+						selectedpersonas: this.props.entity.personas,
+						onCheckedChange: this.props.onPersonaCheckedChange != null ? this.onPersonaCheckedChange : null
+					}
+				);
+		} else if (this.state.activeAside === 'breakdowns') {
+			activeAsideComponent =
+				e(
+					ModalBreakdowns,
+					{
+						breakdowns: this.props.breakdowns,
+						selectedbreakdowns: this.props.entity.breakdowns,
+						selectedbreakdowns_from_library: this.props.entity.breakdowns_from_library,
+						selectedbreakdowns_from_project: this.props.entity.breakdowns_from_project,
+						onCheckedChange: this.props.onBreakdownCheckedChange != null ? this.onBreakdownCheckedChange : null
+					}
+				);
+		}
+
+		var namecomponent = null;
+		var name_placeholder = getMessage('Give a unique, meaningful name.');
+
+		if (this.props.onNameSave != null) {
+			namecomponent = e(
+				'form',
+				{className: 'sn-widget sn-widget-form form-horizontal', onSubmit: this.handleNameSubmit},
+				e(
+					'div',
+					{ className: "row"},
+					e(
+						'label',
+						{ className: "col-md-3 control-label"},
+						getMessage("Name")
+					),
+					e(
+						'div',
+						{className: "col-md-9"},
+						e(
+							'input',
+							{ type: 'text', ref: 'nameinput', placeholder: name_placeholder, 'aria-label': getMessage('Name'), className: 'form-control', disabled: this.state.saving_name, value: this.state.name, onChange: this.handleInputNameChange, onBlur: this.handleInputNameBlur }
+						)
+					)
+				)
+			);
+		} else {
+			namecomponent = e(
+				'div',
+				{className: 'sn-widget sn-widget-form form-horizontal'},
+				e(
+					'div',
+					{ className: "row"},
+					e(
+						'label',
+						{ className: "col-md-3 control-label"},
+						getMessage("Name")
+					),
+					e(
+						'div',
+						{className: "col-md-9 form-control-static"},
+						this.state.name
+					)
+				)
+			);
+		}
+		var descriptioncomponent = null;
+		if (this.props.onDescriptionSave != null) {
+			descriptioncomponent = e(
+				'form',
+				{className: 'sn-widget sn-widget-form form-horizontal', onSubmit: this.handleDescriptionSubmit},
+				e(
+					'div',
+					{ className: "row"},
+					e(
+						'label',
+						{ className: "col-md-3 control-label"},
+						getMessage("Description")
+					),
+					e(
+						'div',
+						{className: "col-md-9"},
+						e(
+							'textarea',
+							{ placeholder: getMessage('Add a detailed description to help others understand the purpose of this artifact and to prevent redundancy.'), rows: 5, 'aria-label': getMessage('Description'), className: 'form-control', disabled: this.state.saving_description, value: this.state.description, onChange: this.handleInputDescriptionChange, onBlur: this.handleInputDescriptionBlur }
+						)
+					)
+				)
+			);
+		} else {
+			if (this.state.description != null && this.state.description !== '') {
+				descriptioncomponent = e(
+					'div',
+					{className: 'sn-widget sn-widget-form newlines form-horizontal'},
+					e(
+						'div',
+						{ className: "row"},
+						e(
+							'label',
+							{ className: "col-md-3 control-label"},
+							getMessage("Description")
+						),
+						e(
+							'div',
+							{className: "col-md-9 form-control-static"},
+							this.state.description
+						)
+					)
+				);
+			}
+		}
+		var targetcomponent = null;
+		if (this.props.onTargetSave != null) {
+			targetcomponent = e(
+				'form',
+				{className: 'sn-widget sn-widget-form form-horizontal', onSubmit: this.handleTargetSubmit},
+				e(
+					'div',
+					{ className: "row"},
+					e(
+						'label',
+						{ className: "col-md-3 control-label"},
+						getMessage("Target")
+					),
+					e(
+						'div',
+						{className: "col-md-9"},
+						e(
+							'textarea',
+							{ placeholder: getMessage('Targets are goals your organization wants to achieve. They embody the future performance improvement you want from Performance Analytics. While you may not yet know what quantitative target score you want for an indicator, describe here qualitatively how to arrive at the target.'), rows: 5, maxLength: 1000, 'aria-label': getMessage('Target'), className: 'form-control', disabled: this.state.saving_target, value: this.state.target, onChange: this.handleInputTargetChange, onBlur: this.handleInputTargetBlur }
+						)
+					)
+				)
+			);
+		} else {
+			if (this.state.target != null && this.state.target !== '') {
+				targetcomponent = e(
+					'div',
+					{className: 'sn-widget sn-widget-form newlines form-horizontal'},
+					e(
+						'div',
+						{ className: "row"},
+						e(
+							'label',
+							{ className: "col-md-3 control-label"},
+							getMessage("Target")
+						),
+						e(
+							'div',
+							{className: "col-md-9 form-control-static"},
+							this.state.target
+						)
+					)
+				);
+			}
+		}
+
+		var librarycontainer = null;
+		if (this.props.entity.library === true) {
+			var unlinkbutton = null;
+			if (this.props.entity.library_root === true && this.props.onCopyLibraryEntitiesToProject) {
+				unlinkbutton = e(
+					'button',
+					{ className: "btn btn-link", onClick: this.onCopyLibraryEntitiesToProject },
+					getMessage("Unlink element from library")
+				);
+			}
+			librarycontainer = e(
+				'div',
+				{className: 'sn-widget sn-widget_border-bottom', style: { paddingLeft: 15 }},
+				e(
+					'div',
+					{className: "row"},
+					e(
+						'div',
+						{className: "col-md-12"},
+						e(
+							'h4',
+							null,
+							getMessage("Library Element")
+						)
+					),
+					e(
+						'div',
+						{className: "col-md-12"},
+						e(
+							'p',
+							null,
+							e(
+								'a',
+								{ href: "/nav_to.do?uri=%2Fsn_kpi_composer_composer.do%3Fproject_sys_id%3D" + this.props.entity.project_sys_id, target: "library_" + this.props.entity.project_sys_id, className: "btn btn-link"  },
+								getMessage("Open library element")
+							),
+							e('br'),
+							unlinkbutton
+						)
+					)
+				)
+			);
+		} else if (this.props.onCreateLibraryProjectFromEntity) {
+			librarycontainer = e(
+				'div',
+				{className: 'sn-widget', style: { paddingLeft: 15 }},
+				e(
+					'div',
+					{className: "row"},
+					e(
+						'div',
+						{className: "col-md-12"},
+						e(
+							'p',
+							null,
+							e(
+								'button',
+								{ className: 'btn btn-link', onClick: this.onCreateLibraryProjectFromEntity },
+								getMessage("Add this element to the library")
+							)
+						)
+					)
+				)
+			);
+		}
+
+		var navhubbuttons = [];
+		if (this.props.indicatordefinitions) {
+			navhubbuttons.push(
+				e(
+					NavHubButton,
+					{
+						key: 'linkeddefinition',
+						id: 'linkeddefinition',
+						iconClass: 'icon-link',
+						title: getMessage('Linked Definition'),
+						isActive: this.state.activeAside === 'linkeddefinition',
+						onActiveAsideChange: this.handleActiveAsideChange
+					}
+				)
+			);
+		}
+		navhubbuttons.push(
+			e(
+				NavHubButton,
+				{
+					key: 'info',
+					id: 'info',
+					iconClass: 'icon-info',
+					title: getMessage('Info'),
+					isActive: this.state.activeAside === 'info',
+					onActiveAsideChange: this.handleActiveAsideChange
+				}
+			),
+			e(
+				NavHubButton,
+				{
+					key: 'personas',
+					id: 'personas',
+					iconClass: 'icon-user',
+					title: getMessage('Persona'),
+					isActive: this.state.activeAside === 'personas',
+					onActiveAsideChange: this.handleActiveAsideChange
+				}
+			),
+			e(
+				NavHubButton,
+				{
+					key: 'breakdowns',
+					id: 'breakdowns',
+					iconClass: 'icon-sub-elements',
+					title: getMessage('Group by'),
+					isActive: this.state.activeAside === 'breakdowns',
+					onActiveAsideChange: this.handleActiveAsideChange
+				}
+			)
+		);
+
+		var createlibraryprojectmodal = null;
+		if (this.state.createlibraryprojectfromentity === true) {
+			createlibraryprojectmodal = e(
+				CreateLibraryModal,
+				{ key: 'createlibraryprojectmodal', onCancel: this.onCreateLibraryProjectFromEntityCancel, onSubmit: this.onCreateLibraryProjectFromEntitySubmit, name: this.props.entity.name }
+			);
+		}
+		var copylibraryitemstoprojectmodal = null;
+		if (this.state.copylibraryentitiestoproject == true) {
+			copylibraryitemstoprojectmodal = e(
+				ConfirmRemoval,
+				{ key: 'copylibraryentitiestoproject', title: getMessage('Confirm unlinking'), content: getMessage('By unlinking this library element, a copy of all elements in the Library Element will be created within the project. This can not be undone. In case you want to remove this library element from your design, please use the delete icon.'), yesLabel: getMessage('Yes, convert Library Element to project elements'), noLabel: getMessage('Cancel'), onYes: this.onCopyLibraryEntitiesToProjectSubmit, onNo: this.onCopyLibraryEntitiesToProjectCancel }
+			);
+		}
+
+		return [
+			e(
+				Reactstrap.Modal,
+				{ key:'entitydetail', backdrop: 'static', 'isOpen': true, size: 'lg', className: 'entitydetail', onOpened: this.onOpened, toggle: this.close },
+				e(
+					Reactstrap.ModalHeader,
+					{ close: closeButton, toggle: this.close },
+					entitytype.name
+				),
+				e(
+					Reactstrap.ModalBody,
+					{},
+					e(
+						'div',
+						{ },
+						e(
+							'div',
+							{className: 'sn-aside', style: { width: '100%', display: 'block' }},
+							e(
+								'div',
+								{className: 'aside-dialog', style: {minWidth: '100%'}},
+								e(
+									'div',
+									{className: 'aside-content'},
+									e(
+										'div',
+										null,
+										e(
+											'div',
+											null,
+											e(
+												'div',
+												{
+													className: 'sn-aside-body wb-pa-aside-body'
+												},
+												e(
+													'div',
+													{ className: 'sn-widget sn-widget_border-bottom' },
+													namecomponent,
+													descriptioncomponent,
+													targetcomponent
+												),
+												librarycontainer
+											)
+										)
+									)
+								)
+							)
+						)
+					),
+					e(
+						'div',
+						{ style: { 'borderLeft': '1px solid #e6e8ea' } },
+						e(
+							'div',
+							{ className: 'sn-navhub' },
+							e(
+								'div',
+								{ className: 'sn-navhub-content' },
+								navhubbuttons
+							)
+						),
+						e(
+							'div',
+							{
+								className: 'sn-aside sn-aside_right sn-aside_header sn-connect-aside right am-fade-and-slide-right sn-aside_open',
+								style: { width: '100%', display: 'block' }
+							},
+							e(
+								'div',
+								{
+									className: 'aside-dialog',
+									style: {minWidth: '100%'}
+								},
+								e(
+									'div',
+									{
+										className: 'aside-content'
+									},
+									e(
+										'div',
+										null,
+										activeAsideComponent
+									)
+								)
+							)
+						)
+					)
+				)
+			),
+			confirmremoval,
+			createlibraryprojectmodal,
+			copylibraryitemstoprojectmodal
+		];
+	}
+});]]></script>
+        <script_name>EntityDetailModal</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-20 08:52:33</sys_created_on>
+        <sys_id>eede47241b3b6740bcb985507e4bcbc3</sys_id>
+        <sys_mod_count>167</sys_mod_count>
+        <sys_name>sn_kpi_composer.EntityDetailModal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_eede47241b3b6740bcb985507e4bcbc3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-05-17 07:49:01</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

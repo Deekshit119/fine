@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubLibraryItem</name>
+        <script><![CDATA[var NavHubLibraryItem = createReactClass({
+    onDragStart: function(evt) {
+		var value = { category: "LibraryElement", sys_id: this.props.libraryproject.sys_id, top_node_sys_id: this.props.libraryproject.top_node_sys_id, top_node_entitytype: this.props.libraryproject.top_node_entitytype };
+		
+		evt.dataTransfer.effectAllowed = 'copyMove';
+		/**
+		 * DataTransfer.setData only supports "Text" in AI (A.K.A. text/plain) as type
+		 */
+		evt.dataTransfer.setData("Text", JSON.stringify(value));
+    },
+    
+	render: function() {
+        var localProps = { className: "libraryitem", "data-category": "LibraryElement", 'data-sys_id': this.props.libraryproject.sys_id, 'data-top_node_sys_id': this.props.libraryproject.top_node_sys_id, 'data-top_node_entitytype': this.props.libraryproject.top_node_entitytype };
+        if (this.props.readonly !== true) {
+			localProps.onDragStart = this.onDragStart;
+			localProps["draggable"] = true;
+			localProps.className = localProps.className + " draggable";
+        }
+        if (this.props.libraryproject.top_node_color) {
+            localProps.style = { borderLeftColor: this.props.libraryproject.top_node_color };
+        }
+
+        var librarytype = "";
+        if (this.props.libraryproject.library_public) {
+            librarytype = getMessage("Global");
+        } else if (this.props.libraryproject.library_owner) {
+            librarytype = getMessage("Personal");
+        }
+
+        var addingctrl = null;
+        if (this.props.libraryproject.isadding === true) {
+            addingctrl = e(
+                'div',
+                { className: 'loading'},
+                e(
+                    'div',
+                    {className: 'icon-loading'}
+                )
+            );
+        }
+
+		return e(
+			'div',
+            localProps,
+            e(
+                'div',
+                { className: "row"},
+                e(
+                    'div',
+                    { className: "col-md-8 left" },
+                    e(
+                        "div",
+                        {className: "title"},
+                        this.props.libraryproject.name
+                    ),
+                    this.props.libraryproject.entity_types.map(function (enttype) {
+                        return e(
+                            "div",
+                            { key: enttype.entity_type, className: "entity_type"},
+                            enttype.count + " " + enttype.entity_type_dv
+                        );
+                    })
+                ),
+                e(
+                    'div',
+                    { className: "col-md-4 right" },
+                    e(
+                        "a",
+                        //{ href: "sn_kpi_composer_composer.do?project_sys_id=" + this.props.libraryproject.sys_id + "&returnUrl=" + encodeURIComponent(window.location.pathname + window.location.search), className: "btn btn-block btn-default" },
+                        { href: "/nav_to.do?uri=%2Fsn_kpi_composer_composer.do%3Fproject_sys_id%3D" + this.props.libraryproject.sys_id, target: "library_" + this.props.libraryproject.sys_id, className: "btn btn-block btn-default"  },
+                        getMessage("View")
+                    ),
+                    e(
+                        "div",
+                        {className: "librarytype"},
+                        librarytype
+                    )
+                )
+            ),
+            addingctrl
+		);
+	}
+});]]></script>
+        <script_name>NavHubLibraryItem</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-01-22 13:49:32</sys_created_on>
+        <sys_id>75ee9ba6db79e490317f6a5f05961905</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubLibraryItem</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_75ee9ba6db79e490317f6a5f05961905</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-26 17:29:02</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

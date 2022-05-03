@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskCheckBreakdown</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskCheckBreakdown</name>
+        <script><![CDATA[var ProjectTaskCheckBreakdown = Class.create();
+ProjectTaskCheckBreakdown.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	createtasks: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectTaskCheckBreakdown");
+		
+		// Select all breakdowns from a project
+		var breakdowns = this._projectApi.breakdownsInProject(data);
+		for(var bdx = 0; bdx<breakdowns.length; bdx++) {
+			var breakdown = breakdowns[bdx];		
+		
+			// Is there a pa_breakdown linked?
+			if (breakdown.pa_breakdown != null) {
+				
+			var desc = "";
+
+				var checkBreakdownTask = {};
+				checkBreakdownTask.type = this._projectTaskValidateBreakdown;
+				checkBreakdownTask.pa_record = breakdown.pa_breakdown;
+				checkBreakdownTask.pa_table = 'pa_breakdowns';						
+				checkBreakdownTask.title = gs.getMessage("Validate breakdown '{0}'", breakdown.pa_breakdown_dv);
+
+				desc += gs.getMessage("Validate breakdown '{0}'", breakdown.pa_breakdown_dv);
+				desc += gs.getMessage("\nCheck if the following properties are set:");
+				desc += gs.getMessage("\nFacts table:{0}", breakdown.facts_table);
+				if (breakdown.conditions)
+					desc += gs.getMessage("\nCondition:{0}", breakdown.conditions);
+
+				checkBreakdownTask.table = 'sn_kpi_composer_breakdown';
+				checkBreakdownTask.record = breakdown.sys_id;		
+				
+				checkBreakdownTask.description = desc;
+				this._addProjectTask(checkBreakdownTask, data.input);
+				
+				
+			}
+		}
+		
+	},
+
+    type: 'ProjectTaskCheckBreakdown'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-10 09:23:11</sys_created_on>
+        <sys_id>e5a64edfdb500410d5b45bd2ca961946</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>ProjectTaskCheckBreakdown</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_e5a64edfdb500410d5b45bd2ca961946</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-08-26 08:02:32</sys_updated_on>
+    </sys_script_include>
+</record_update>

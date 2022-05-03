@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Can be deleted?</description>
+        <global>false</global>
+        <name>sn_kpi_composer.ClientEntityUI</name>
+        <script><![CDATA[var sn_kpi_composer = sn_kpi_composer || {};
+
+sn_kpi_composer.ClientEntityUI = (function () {
+	"use strict";
+
+	function getDataFromDragDrop(diagram) {
+		//window.log("getDataFromDragDrop()");
+		if (diagram) {
+			if (diagram.toolManager) {
+				if (diagram.toolManager.draggingTool) {
+					// Get the tool
+					var tool = diagram.toolManager.draggingTool;
+					// Get the map (key value pair)
+					var map = tool.draggedParts || tool.copiedParts; // this is a Map
+					var it = map.iterator;
+
+					if (it.next()) {
+						// window.console.dir(it.key.data);
+						// The key should be the node!
+						return it.key;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	sn_kpi_composer.solutiondata = {};
+	sn_kpi_composer.solutionDiagram = {};
+
+	/* set your private variables and functions here. For example:
+	var privateVar = 0;
+	function private_function() {
+	return ++privateVar;
+	}
+	 */
+
+	/* Share variables between multiple UI scripts by adding them to your scope object. For example:
+	sn_kpi_composer.sharedVar = 0;
+
+	Then access them in your scripts the same way. For example:
+	function get_shared() {
+	return sn_kpi_composer.sharedVar;
+	}
+	 */
+
+	return {
+
+		// Draw the main graphic
+		// showSolution: function (data) {
+		// 	var c = this;
+		// 	var $ = go.GraphObject.make; // for conciseness
+
+		// 	var log = sn_kpi_composer.ClientHelper.log;
+
+		// 	log("showGraphic()");
+		// 	log(data);
+
+		// 	sn_kpi_composer.solutiondata = data;
+
+		// 	/* SOLUTION */
+		// 	var solutionDiagram = $(go.Diagram, "solution", // create a Diagram for the DIV HTML element
+		// 		{
+		// 			initialContentAlignment: go.Spot.Center, // center the content
+		// 			"undoManager.isEnabled": true, // enable undo & redo
+		// 			allowDrop: true,
+		// 			layout: $(go.TreeLayout, // specify a Diagram.layout that arranges trees
+		// 			{
+		// 				treeStyle: go.TreeLayout.StyleLastParents,
+		// 				angle: 90,
+		// 				layerSpacing: 35,
+		// 				// properties for the "last parents":
+		// 				alternateAngle: 0,
+		// 				alternateAlignment: go.TreeLayout.AlignmentStart,
+		// 				alternateNodeIndent: 20,
+		// 				alternateNodeIndentPastParent: 1,
+		// 				alternateNodeSpacing: 20,
+		// 				alternateLayerSpacing: 40,
+		// 				alternateLayerSpacingParentOverlap: 1,
+		// 				alternatePortSpot: new go.Spot(0.001, 1, 20, 0),
+		// 				alternateChildPortSpot: go.Spot.Left
+		// 			})
+
+		// 		});
+
+		// 	sn_kpi_composer.solutionDiagram = solutionDiagram;
+			
+		// 	// the template for each attribute in a node's array of item data
+		// 	var breakdownTempl = $(go.Panel, "Horizontal",
+		// 			$(go.Shape, {
+		// 				desiredSize: new go.Size(10, 10)
+		// 			},
+		// 				new go.Binding("figure", "figure"),
+		// 				new go.Binding("fill", "color")),
+		// 			$(go.TextBlock, {
+		// 				stroke: "#333333",
+		// 				font: "bold 14px sans-serif"
+		// 			},
+		// 				new go.Binding("text", "abbreviation")));
+			
+		// 	// the template for each attribute in a node's array of item data
+		// 	var personaTempl = $(go.Panel, "Horizontal",
+		// 			$(go.Shape, {
+		// 				desiredSize: new go.Size(10, 10)
+		// 			},
+		// 				new go.Binding("figure", "figure"),
+		// 				new go.Binding("fill", "color")),
+		// 			$(go.TextBlock, {
+		// 				stroke: "#333333",
+		// 				font: "bold 14px sans-serif"
+		// 			},
+		// 				new go.Binding("text", "abbreviation")));
+						
+
+		// 	// define a simple Node template
+		// 	solutionDiagram.nodeTemplate =
+		// 		$(go.Node, "Auto", // the Shape will go around the TextBlock
+		// 			$(go.Shape, "RoundedRectangle", {
+		// 				name: "entity",
+		// 				fill: "white", // the default fill, if there is no data bound value
+		// 				portId: "",
+		// 				cursor: "pointer", // the Shape is the port, not the whole Node
+		// 				// allow all kinds of links from and to this port
+		// 				// fromLinkable: true, fromLinkableSelfNode: true, fromLinkableDuplicates: false,
+		// 				// toLinkable: true, toLinkableSelfNode: false, toLinkableDuplicates: false
+		// 			},
+		// 				// Shape.fill is bound to Node.data.color
+		// 				new go.Binding("fill", "color")),
+
+		// 			$(go.Panel, "Table", {
+		// 				maxSize: new go.Size(150, 999),
+		// 				margin: new go.Margin(6, 10, 0, 3),
+		// 				defaultAlignment: go.Spot.Left
+		// 			},
+		// 				$(go.RowColumnDefinition, {
+		// 					column: 2,
+		// 					width: 4
+
+		// 					// Hoi!
+		// 				}),
+		// 				$(go.TextBlock, {
+		// 					row: 0,
+		// 					column: 0,
+		// 					columnSpan: 5,
+		// 					margin: 3, // some room around the text
+		// 					stroke: "white",
+		// 					font: "bold 16px sans-serif",
+		// 					editable: true // allow in-place editing by user
+		// 					//,textEdited: nameUpdate
+		// 				},
+		// 					// TextBlock.text is bound to Node.data.key
+		// 					new go.Binding("text", "name").makeTwoWay()),
+		// 				$(go.TextBlock, {
+		// 					row: 1,
+		// 					column: 0,
+		// 					columnSpan: 5,
+		// 					margin: 3, // some room around the text
+		// 					stroke: "white",
+		// 					font: "bold 8px sans-serif",
+		// 					editable: false // allow in-place editing by user
+		// 				},
+		// 					// TextBlock.text is bound to Node.data.key
+		// 					new go.Binding("text", "key")),
+		// 				$(go.TextBlock, {
+		// 					row: 2,
+		// 					column: 0,
+		// 					columnSpan: 5,
+		// 					margin: 3, // some room around the text
+		// 					stroke: "black",
+		// 					font: "bold 8px sans-serif",
+		// 					editable: false // allow in-place editing by user
+		// 				},
+		// 					// TextBlock.text is bound to Node.data.key
+		// 					new go.Binding("text", "entitytype")),					
+
+		// 			  $(go.Panel, "Horizontal",
+		// 				{
+		// 				  name: "LIST",
+		// 				  row: 3,
+		// 				  padding: 3,
+		// 				  alignment: go.Spot.TopLeft,
+		// 				  defaultAlignment: go.Spot.Left,
+		// 				  stretch: go.GraphObject.Horizontal,
+		// 				  itemTemplate: breakdownTempl
+		// 				},
+		// 				new go.Binding("itemArray", "breakdowns")),
+
+		// 			  $(go.Panel, "Horizontal",
+		// 				{
+		// 				  name: "LIST",
+		// 				  row: 4,
+		// 				  padding: 3,
+		// 				  alignment: go.Spot.TopLeft,
+		// 				  defaultAlignment: go.Spot.Left,
+		// 				  stretch: go.GraphObject.Horizontal,
+		// 				  itemTemplate: personaTempl
+		// 				},
+		// 				new go.Binding("itemArray", "personas"))					  
+					  
+					  
+		// 			 ), // End table
+		// 		  { // this tooltip Adornment is shared by all nodes
+		// 			toolTip:
+		// 			$(go.Adornment, "Auto",
+		// 				$(go.Shape, {
+		// 					fill: "#FFFFCC"
+		// 				}),
+		// 				$(go.TextBlock, {
+		// 					margin: 4
+		// 				}, // the tooltip shows the result of calling nodeInfo(data)
+		// 					//new go.Binding("text", "description"))
+		// 					new go.Binding("text", "key")))
+		// 		}, { // handle dragging a Node onto a Node to (maybe) change the reporting relationship
+		// 			mouseDragEnter: function (e, node, prev) {
+		// 				log("mouseDragEnter()");
+		// 				var diagram = node.diagram;
+		// 				// When dragging from a different div the selection is not changed; it could be a complete other node that is selection
+		// 				var selnode = diagram.selection.first();
+		// 				// That's why we try to get the DragDrop object a dif way:
+		// 				selnode = getDataFromDragDrop(diagram);
+		// 				sn_kpi_composer.ClientGlobalUI.dragOverNode(node, sn_kpi_composer.ClientProjectUI.allowRelation(selnode, node));
+
+		// 			},
+		// 			mouseDragLeave: function (e, node, next) {
+		// 				// Is this a entity, check if there is a stored color and return it in this color
+		// 				sn_kpi_composer.ClientGlobalUI.dragLeaveNode(node);
+		// 				/*
+		// 				var shape = node.findObject("entity");
+		// 				if (shape && shape._prevFill) {
+		// 				shape.fill = shape._prevFill; // restore the original brush
+		// 				//shape.cursor = shape._prevCursor;
+		// 				}
+		// 				 */
+		// 			},
+		// 			// Drop a item on the canvas
+		// 			mouseDrop: function (e, node) {
+		// 				log("mouseDrop()");
+		// 				var diagram = node.diagram;
+		// 				var selnode = getDataFromDragDrop(diagram);
+		// 				if (sn_kpi_composer.ClientProjectUI.allowRelation(selnode, node)) {
+		// 					// Is this node on node (entity on entity)
+		// 					log("SelNode: " + selnode.data.category + " Other: " + node.data.category);
+		// 					if ((selnode.data.category === "Entity" || selnode.data.category === "Source") && node.data.category === "Entity") {
+		// 						// find any existing link into the selected node
+		// 						var link = selnode.findTreeParentLink();
+		// 						if (link !== null) { // reconnect any existing link
+		// 							log("Changing existing link!");
+		// 							link.fromNode = node;
+		// 						} else { // else create a new link
+		// 							log("Creating link!");
+		// 							diagram.toolManager.linkingTool.insertLink(node, node.port, selnode, selnode.port);
+		// 						}
+		// 					}
+		// 				}
+		// 			}
+		// 		});
+
+
+		// 	// define template for Breakdown
+		// 	solutionDiagram.nodeTemplateMap.add("Breakdown",
+		// 		$(go.Node, "Spot",
+		// 			$(go.Shape, "Circle", {
+		// 				width: 25,
+		// 				height: 25,
+		// 				stroke: null
+		// 			},
+		// 				new go.Binding("fill", "color")),
+		// 			$(go.TextBlock, {
+		// 				font: "10pt Verdana, sans-serif"
+		// 			},
+		// 				new go.Binding("text", "capitals"))));
+
+		// 	// define a second kind of Node:
+		// 	solutionDiagram.nodeTemplateMap.add("Persona",
+		// 		$(go.Node, "Spot",
+		// 			$(go.Shape, "Circle", {
+		// 				width: 35,
+		// 				height: 35,
+		// 				fill: "#F48FB1",
+		// 				stroke: null
+		// 			}),
+		// 			$(go.TextBlock, {
+		// 				font: "10pt Verdana, sans-serif"
+		// 			},
+		// 				new go.Binding("text", "capitals"))));
+
+		// 	solutionDiagram.linkTemplate =
+		// 		$(go.Link, {
+		// 			toShortLength: 3,
+		// 			relinkableFrom: true,
+		// 			relinkableTo: true,
+		// 			routing: go.Link.Orthogonal,
+		// 			corner: 8
+		// 		},
+		// 			$(go.Shape, {
+		// 				strokeWidth: 3,
+		// 				stroke: "#555"
+		// 			})); // the link shape
+
+		// 	if (data.nodes && data.nodes.length > 0) {
+		// 		// create the model data that will be represented by Nodes and Links
+		// 		solutionDiagram.model = $(go.GraphLinksModel, {
+		// 				nodeDataArray: data.nodes,
+		// 				linkDataArray: data.relations,
+		// 				makeUniqueKeyFunction: sn_kpi_composer.ClientHelper.keyGenerator
+		// 			});
+		// 	}
+
+		// 	solutionDiagram.model.addChangedListener(function (e) {
+
+		// 		if (e.isTransactionFinished) {
+		// 			var tx = e.object;
+
+		// 			if (tx instanceof go.Transaction) {
+		// 				if (tx.name != "Initial Layout") {
+		// 					log("Transaction: " + tx.name);
+		// 					tx.changes.each(function (ch) {
+		// 						if (ch.model) {
+		// 							log(" C:" + ch.change + "  P:'" + ch.propertyName + "'  " + ch.toString());
+		// 							if (ch.change == "ChangedEvent.Property") {
+		// 								if (ch.propertyName == "name") {
+		// 									log("Rename of node detected");
+		// 									// Rename node
+		// 									var input = {};
+		// 									input.action = "updateEntity";
+		// 									input.entity = {};
+		// 									input.entity.sys_id = ch.object.key;
+		// 									input.entity.name = ch.newValue;
+		// 									sn_kpi_composer.ClientApi.updateEntityServerData(input);
+		// 								}
+		// 								if (ch.propertyName == "to") {
+		// 									log("Relink to detected");
+		// 									log("from:" + ch.object.from);
+		// 									log("relationtype:" + ch.object.relationtype);
+		// 									log("old:" + ch.oldValue);
+		// 									log("new:" + ch.newValue);
+		// 									var input = {};
+		// 									input.action = "updateEntityToEntity";
+		// 									input.entities = {};
+		// 									input.entities.from = ch.object.from;
+		// 									input.entities.relationtype = ch.object.relationtype;
+		// 									input.entities.oldto = ch.oldValue;
+		// 									input.entities.newto = ch.newValue;
+		// 									sn_kpi_composer.ClientApi.updateEntityServerData(input);
+		// 								}
+		// 								if (ch.propertyName == "from") {
+		// 									log("Relink from detected");
+		// 									log("to:" + ch.object.to);
+		// 									log("relationtype:" + ch.object.relationtype);
+		// 									log("old:" + ch.oldValue);
+		// 									log("new:" + ch.newValue);
+		// 									var input = {};
+		// 									input.action = "updateEntityFromEntity";
+		// 									input.entities = {};
+		// 									input.entities.to = ch.object.to;
+		// 									input.entities.relationtype = ch.object.relationtype;
+		// 									input.entities.oldfrom = ch.oldValue;
+		// 									input.entities.newfrom = ch.newValue;
+		// 									sn_kpi_composer.ClientApi.updateEntityServerData(input);
+		// 								}
+		// 								// alter breakdown
+		// 								if (tx.name === "alterBreakdowns") {
+		// 									// Alter of breakdowns (to a entity) is done by comparing array of breakdowns
+		// 									// oldValue = old breakdowns array (ov)
+		// 									// newValue = new breakdown array (nv)
+											
+		// 									// Filter all items that are in newValue 
+		// 									// and not in old value => INSERT
+		// 									ch.newValue.filter(function(nv) {
+		// 										if (ch.oldValue.filter(
+		// 											function(ov) { 
+		// 												if (nv.breakdown === ov.breakdown) return true; 
+		// 											 return false; 
+		// 											}).length === 0) return true; 
+		// 										return false;
+		// 										// Take each element and run INSERT
+		// 									}).each(function(nv) {
+		// 										log("Adding Breakdown ");
+		// 										var input = {};
+		// 										input.action = "insertBreakdownEntity";
+		// 										input.entity = nv.entity;
+		// 										input.breakdown = nv.breakdown;		
+		// 										sn_kpi_composer.ClientApi.updateEntityServerData(input);
+		// 									  });
+											
+		// 									// Filter all items that are in oldValue
+		// 									// but not in new value => DELETE
+		// 									ch.oldValue.filter(function(nv) {
+		// 										if (ch.newValue.filter(
+		// 											function(ov) { 
+		// 												if (nv.breakdown === ov.breakdown) return true; 
+		// 											 return false; 
+		// 											}).length === 0) return true; 
+		// 										return false;
+		// 										// Take each element and run INSERT
+		// 									}).each(function(nv) {
+		// 										log("Delete Breakdown ");
+		// 										var input = {};
+		// 										input.action = "deleteBreakdownEntity";
+		// 										input.entity = nv.entity;
+		// 										input.breakdown = nv.breakdown;		
+		// 										sn_kpi_composer.ClientApi.updateEntityServerData(input);
+		// 									  });											
+		// 								}
+		// 								// alter personas
+		// 								if (tx.name === "alterPersonas") {
+		// 									// just like breakdowns
+											
+		// 									// Filter all items that are in newValue 
+		// 									// and not in old value => INSERT
+		// 									ch.newValue.filter(function(nv) {
+		// 										if (ch.oldValue.filter(
+		// 											function(ov) { 
+		// 												if (nv.persona === ov.persona) return true; 
+		// 											 return false; 
+		// 											}).length === 0) return true; 
+		// 										return false;
+		// 										// Take each element and run INSERT
+		// 									}).each(function(nv) {
+		// 										log("Adding Persona ");
+		// 										var input = {};
+		// 										input.action = "insertPersonaEntity";
+		// 										input.entity = nv.entity;
+		// 										input.persona = nv.persona;		
+		// 										sn_kpi_composer.ClientApi.updateEntityServerData(input);
+		// 									  });
+											
+		// 									// Filter all items that are in oldValue
+		// 									// but not in new value => DELETE
+		// 									ch.oldValue.filter(function(nv) {
+		// 										if (ch.newValue.filter(
+		// 											function(ov) { 
+		// 												if (nv.persona === ov.persona) return true; 
+		// 											 return false; 
+		// 											}).length === 0) return true; 
+		// 										return false;
+		// 										// Take each element and run INSERT
+		// 									}).each(function(nv) {
+		// 										log("Delete Persona ");
+		// 										var input = {};
+		// 										input.action = "deletePersonaEntity";
+		// 										input.entity = nv.entity;
+		// 										input.persona = nv.persona;		
+		// 										sn_kpi_composer.ClientApi.updateEntityServerData(input);
+		// 									  });											
+		// 								}										
+		// 							}
+		// 							if (ch.change === go.ChangedEvent.Insert) {
+		// 								if (ch.propertyName == "nodeDataArray") {
+		// 									log("INSERT:");
+		// 									log(ch);
+		// 									var node = solutionDiagram.findNodeForKey(ch.newValue.key);
+		// 									if (ch.newValue.category) {
+		// 										if (ch.newValue.category === "Breakdown") {
+		// 											log("Insert of breakdown detected");
+		// 											if (node) {
+		// 												solutionDiagram.remove(node);
+		// 											}
+		// 										}
+		// 										if (ch.newValue.category === "Persona") {
+		// 											log("Insert of persona detected");
+		// 											if (node) {
+		// 												solutionDiagram.remove(node);
+		// 											}
+		// 										}
+		// 										if (ch.newValue.category === "Entity" || ch.newValue.category === "Source") {
+		// 											log("Insert of entity detected");
+		// 											// Insert new node (by copy)
+		// 											var input = {};
+		// 											input.action = "insertEntity";
+		// 											input.entity = {};
+		// 											input.entity.name = ch.newValue.name;
+		// 											input.entity.sys_id = ch.newValue.key;
+		// 											input.entity.entitytype = ch.newValue.entitytype;
+		// 											sn_kpi_composer.ClientApi.updateEntityServerData(input
+		// 												// Succes
+		// 											, function (result) {
+		// 												var node = solutionDiagram.findNodeForKey(input.entity.sys_id);
+		// 												if (node)
+		// 													node.data.category = "Entity";
+		// 											}
+		// 												// Fail
+		// 											, function (result) {
+		// 												log("Failed to insert.");
+		// 												g_form.addErrorMessage(getMessage("Insert failed. Node will be removed"));
+		// 												var node = solutionDiagram.findNodeForKey(input.entity.sys_id);
+		// 												if (node) {
+		// 													solutionDiagram.remove(node);
+		// 												}
+		// 											});
+		// 										}
+		// 									}
+		// 								}
+		// 								if (ch.propertyName == "linkDataArray") {
+		// 									log("Insert of link detected");
+		// 									log("from:" + ch.newValue.from);
+		// 									log("to:" + ch.newValue.to);
+		// 									var input = {};
+		// 									input.action = "insertEnityEntity";
+		// 									input.entities = {};
+		// 									input.entities.from = ch.newValue.from;
+		// 									input.entities.to = ch.newValue.to;
+		// 									// input.link.relationtype = "Normal"; value is red from project (for now)
+		// 									sn_kpi_composer.ClientApi.updateEntityServerData(input);
+		// 								}
+		// 							}
+		// 							if (ch.change == "ChangedEvent.Remove") {
+		// 								if (ch.propertyName == "nodeDataArray") {
+		// 									// Insert new node (by copy)
+		// 									log("Remove of entity detected");
+		// 									var input = {};
+		// 									input.action = "deleteEntity";
+		// 									input.entity = {};
+		// 									input.entity.sys_id = ch.oldValue.key;
+		// 									input.entity.name = ch.oldValue.name;
+		// 									input.entity.type = ch.oldValue.type;
+		// 									sn_kpi_composer.ClientApi.updateEntityServerData(input);
+		// 								}
+										
+		// 								if (ch.propertyName == "linkDataArray") {
+		// 									log("Delete of link detected");
+		// 									log("from:" + ch.oldValue.from);
+		// 									log("to:" + ch.oldValue.to);
+		// 									log("relationtype:" + ch.oldValue.relationtype);
+		// 									var input = {};
+		// 									input.action = "deleteEntityEntity";
+		// 									input.entities = {};
+		// 									input.entities.from = ch.oldValue.from;
+		// 									input.entities.to = ch.oldValue.to;
+		// 									input.entities.relationtype = ch.oldValue.relationtype;
+		// 									sn_kpi_composer.ClientApi.updateEntityServerData(input, null, function (result) {
+		// 										log("Delete of link failed. Data could already be removed (cascade delete) ignore error.");
+		// 									});
+		// 								}
+		// 							}
+		// 						}
+		// 					});
+		// 				}
+		// 			}
+		// 		} else {
+		// 			// Not a completed transaction (could be copy or drag drop)
+		// 			if (e.change === go.ChangedEvent.Insert) {
+		// 				if (e.propertyName == "nodeDataArray") {
+		// 					log("INSERT detected (copy/dragdrop);");
+		// 					console.dir(e.newValue);
+		// 				}
+		// 			}
+		// 		}
+		// 	});
+		// },
+
+		type: "ClientEntityUI"
+	};
+})();
+]]></script>
+        <script_name>ClientEntityUI</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-16 15:21:45</sys_created_on>
+        <sys_id>fb97dca11b83e3004e6921be6e4bcb87</sys_id>
+        <sys_mod_count>61</sys_mod_count>
+        <sys_name>sn_kpi_composer.ClientEntityUI</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_fb97dca11b83e3004e6921be6e4bcb87</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-02-05 15:24:28</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>true</use_scoped_format>
+    </sys_ui_script>
+</record_update>

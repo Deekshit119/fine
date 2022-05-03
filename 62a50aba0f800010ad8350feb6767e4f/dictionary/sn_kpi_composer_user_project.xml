@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="User Project" max_length="40" name="sn_kpi_composer_user_project" type="collection">
+        <element default="1" label="Count" max_length="40" name="count" type="integer"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Project" mandatory="true" max_length="32" name="project" reference="sn_kpi_composer_project" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="User" mandatory="true" max_length="32" name="user" reference="sys_user" type="reference"/>
+        <index name="index">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index2">
+            <element name="project"/>
+        </index>
+        <index name="index3">
+            <element name="user"/>
+        </index>
+    </element>
+</database>

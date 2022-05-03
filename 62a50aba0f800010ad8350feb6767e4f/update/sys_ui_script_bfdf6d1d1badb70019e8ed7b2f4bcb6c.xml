@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.OverviewProjects</name>
+        <script><![CDATA[var OverviewProjects = createReactClass({
+	render: function() {
+		var that = this;
+		
+		var projects = this.props.projects.map(
+			function (project) {
+				return e(
+					OverviewProject,
+					{
+						key: project.sys_id,
+						project: project,
+						returnUrl: that.props.returnUrl,
+						onProjectDelete: that.props.onProjectDelete
+						//gaat nu via href
+						//, onProjectSelected: that.props.onProjectSelected
+					}
+				);
+			}
+		);
+		
+		if (projects.length == 0) {
+			projects.push(
+				e(
+					'h4',
+					{ key: 'empty' },
+					getMessage("No projects available")
+				)
+			);
+		}
+		
+		return e(
+			'div',
+			{ className: 'pa-overview-cards-container' },
+			projects
+		);
+	}
+});]]></script>
+        <script_name>OverviewProjects</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-05-20 09:42:57</sys_created_on>
+        <sys_id>bfdf6d1d1badb70019e8ed7b2f4bcb6c</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>sn_kpi_composer.OverviewProjects</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_bfdf6d1d1badb70019e8ed7b2f4bcb6c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-02-26 14:43:36</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

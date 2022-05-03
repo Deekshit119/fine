@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.KnowlArticleList</name>
+        <script><![CDATA[var KnowledgeArticleList = createReactClass({
+	getInitialState: function() {
+		return { add: false };
+	},
+
+	addClick: function() {
+		this.setState({ add: true, saving: false });
+	},
+	
+	onAdd: function(knowledgearticle, callback) {
+		if (this.props.knowledgearticles.filter(function (u) { return u.sys_id === knowledgearticle.sys_id; }).length == 0) {
+			this.setState({ saving: true });
+			var that = this;
+			this.props.onKnowledgeArticleAdd(knowledgearticle, function(error) {
+				that.setState({ add: false });
+				callback(error);
+			});
+		} else {
+			//todo: knowledgearticle behoort al tot de lijst, toon bericht
+			callback(null);
+		}
+	},
+	
+	/**
+	 * When the KnowledgeArticleSelector is hidden on blur
+	 * If the user selects something with the mouse click
+	 * it would just hide the element and not wait for the async requests
+	 * Therefore we need to keep the element there until it actually finishes the selection
+	onBlur: function() {
+		if (this.state.saving == true) return;
+		
+		this.setState({ add: false });
+	},
+	*/
+	
+	onDelete: function(sys_id) {
+		this.props.onKnowledgeArticleDelete(sys_id, function (error){
+			//todo: show error
+		});
+	},
+
+	handleSubmit: function(event) {
+		event.preventDefault();
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var knowledgearticlelis = this.props.knowledgearticles.map(
+			function (knowledgearticle) {
+				return e(
+					KnowledgeArticleListItem,
+					{ key: knowledgearticle.sys_id, knowledgearticle: knowledgearticle, onDelete: that.props.onKnowledgeArticleDelete != null ? that.onDelete : null }
+				);
+			}
+		);
+		
+		if (this.props.onKnowledgeArticleAdd != null) {
+			if (this.state.add) {
+				knowledgearticlelis.push(
+					e(
+						'li',
+						{ key: 'addnew', className: 'addnew' },
+						e(
+							'span',
+							{ className: 'icon-add-circle-empty icon'}
+						),
+						e(
+							'form',
+							{className: 'item-name', onSubmit: this.handleSubmit},
+							e(
+								KnowledgeArticleSelector,
+								{ placeholder: this.props.addPlaceholder, disabled: this.state.saving, onKnowledgeArticleSelected: this.onAdd }
+							)
+						)
+					)
+				);
+			} else {
+				knowledgearticlelis.push(
+					e(
+						'li',
+						{ key: 'addnew', className: 'addnew', onClick: this.addClick },
+						e(
+							'span',
+							{ className: 'icon-add-circle-empty icon'}
+						),
+						e(
+							'div',
+							{ className: 'item-name' },
+							this.props.addPlaceholder
+						)
+					)
+				);
+			}
+		} else {
+			if (knowledgearticlelis.length == 0) {
+				knowledgearticlelis.push(e(NoneList, { key: 'none' }));
+			}
+		}
+		
+		return [
+			e(
+				'div',
+				{ className: 'sn-aside-group-title', key: 'title' },
+				e(
+					'span',
+					null,
+					this.props.title
+				)
+			),
+			e(
+				'ul',
+				{ className: 'sn-widget-datalist', key: 'list' },
+				knowledgearticlelis
+			)
+		];
+	}
+});]]></script>
+        <script_name>KnowlArticleList</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-20 12:48:52</sys_created_on>
+        <sys_id>bfe4007c1bbb6740bcb985507e4bcb32</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>sn_kpi_composer.KnowlArticleList</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_bfe4007c1bbb6740bcb985507e4bcb32</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 14:56:58</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

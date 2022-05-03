@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidation</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description>Validation functions to validate a project; Based on the base validation class</description>
+        <name>ProjectValidation</name>
+        <script><![CDATA[var ProjectValidation = Class.create();
+ProjectValidation.prototype = Object.extendsObject(sn_kpi_composer.BaseValidation, {
+
+    validationResults: function(input) {
+
+        var response = {};
+        response.success = false;
+
+        // Read input param
+        input = this._getInputParam(input);
+
+        try {
+
+            if (this.trace) this._debug.push("Calculating summery of validation for project: " + this._projectApi.project(input).sys_id);
+
+            var pv = new GlideRecord('sn_kpi_composer_project_validation');
+            pv.addQuery("project", this._projectApi.project(input).sys_id);
+            pv.query();
+
+            var validationCount = [{
+                    severity: this._projectValidationSeverityOk,
+                    description: gs.getMessage('OK'),
+                    count: 0
+                },
+                {
+                    severity: this._projectValidationSeverityInfo,
+                    description: gs.getMessage('Info'),
+                    count: 0
+                },
+                {
+                    severity: this._projectValidationSeverityWarning,
+                    description: gs.getMessage('Warning'),
+                    count: 0
+                },
+                {
+                    severity: this._projectValidationSeverityDefinitionError,
+                    description: gs.getMessage('Error'),
+                    count: 0
+                }
+            ];
+
+            var total = 0;
+            while (pv.next()) {
+                var severity = pv.getValue('severity');
+                validationCount[severity].count++;
+                total++;
+            }
+            response.total = total;
+
+            response.validations = validationCount;
+
+            response.success = true;
+
+            if (this.trace)
+                response.debug = this._debug;
+
+            return response;
+        } catch (err) {
+            gs.error(err);
+            this._debug.push(err);
+            response.debug = this._debug;
+            response.exception = err;
+            response.success = false;
+        }
+        return response;
+    },
+
+    validationResultsJSON: function(input) {
+        return JSON.stringify(this.validationResults(input));
+    },
+
+    _apply_on_dashboards: function(dashboards, func) {
+        if (dashboards) {
+            for (var di = 0, dm = dashboards.length; di < dm; di++) {
+                var dashboard = dashboards[di];
+                if (dashboard && func) func(dashboard);
+            }
+        }
+    },
+
+    _apply_on_tabs: function(tabs, func) {
+        if (tabs) {
+            for (var ti = 0, tm = tabs.length; ti < tm; ti++) {
+                var tab = tabs[ti];
+                if (tab && func) func(tab);
+            }
+        }
+    },
+
+
+    _apply_on_rows: function(rows, func) {
+        if (rows) {
+            for (var ri = 0, rm = rows.length; ri < rm; ri++) {
+                var row = rows[ri];
+                if (row && func) func(row);
+            }
+        }
+    },
+
+    _apply_on_canvasses: function(canvasses, func) {
+        if (canvasses) {
+            for (var ci = 0, cm = canvasses.length; ci < cm; ci++) {
+                var canvas = canvasses[ci];
+                if (canvas && func) func(canvas);
+            }
+        }
+    },
+
+    // Return arry of sys_id's from entities in a dashboard (by -> tabs-rows-canvas-entities)
+    // Not distinct!!
+    _all_used_entities_in_dashboard: function(dashboard) {
+        var entities = [];
+        var that = this;
+
+        that._apply_on_tabs(dashboard.tabs,
+            function(tab) {
+                that._apply_on_rows(tab.rows,
+                    function(row) {
+                        that._apply_on_canvasses(row.canvasses, function(canvas) {
+                            var canvas_entities = that._getDistinctArrayFromCSS(canvas.entities);
+
+                            // Check all elements, all should follow breakdowns
+                            for (var ei = 0, em = canvas_entities.length; ei < em; ei++) {
+                                var canvas_entity = canvas_entities[ei];
+                                entities.push(canvas_entity);
+                            }
+                        });
+                    });
+            });
+        return entities;
+    },
+
+    // Only unique values from a filter
+    // Function can be used in a array filter
+    // array.filter(onlyUnique)
+    onlyUnique: function(value, index, self) {
+        return self.indexOf(value) === index;
+    },
+
+    createValidateJSON: function(input) {
+        var response = {};
+        response.success = false;
+
+        // Read input param
+        input = this._getInputParam(input);
+
+        // Het the project
+        var project = this._projectApi.project(input);
+
+        input.project = project;
+
+        try {
+            var result = this.clearValidations(input);
+
+            if (result.success === true) {
+
+                // Create object to load data
+                var entityApi = new sn_kpi_composer.EntityApi();
+
+                // Load the data
+                var data = entityApi.getData(input);
+
+                // Make the entities distinct
+                data.entities = entityApi.distinctEntitiesByOrgSysId(data);
+
+                // Not remove change the sys_id from the entity
+                data.entities.forEach(function(entity) {
+                    // The sys_id is the sys_id used to build a tree, whe should use the org_sys_id to identify the entity
+                    // Copy the org_sys_id to the sys_id (only is sys_id exists)
+                    if (entity.org_sys_id) {
+                        entity.sys_id = entity.org_sys_id;
+                        // remove the old org_sys_id
+                        delete entity.org_sys_id;
+                    }
+                });
+
+                if (data) {
+                    if (data.success) {
+                        // Start validation
+                        if (this.trace) this._debug.push("Validate analysis");
+
+                        //-----------------------------------						
+                        // Validation of analysis
+                        //-----------------------------------						
+
+                        var projectValidationAutomatedIndicatorDefNoFactTable = new ProjectValidationAutomatedIndicatorDefNoFactTable();
+                        projectValidationAutomatedIndicatorDefNoFactTable.validate(data);
+
+                        var projectValidationFormulaIndWithoutSupInd = new ProjectValidationFormulaIndWithoutSupInd();
+                        projectValidationFormulaIndWithoutSupInd.validate(data);
+
+                        var projectValidationBreakdownDefWithoutFactsTable = new ProjectValidationBreakdownDefWithoutFactsTable();
+                        projectValidationBreakdownDefWithoutFactsTable.validate(data);
+
+                        var projectValidationCriticalSuccessFacNoIndDef = new ProjectValidationCriticalSuccessFacNoIndDef();
+                        projectValidationCriticalSuccessFacNoIndDef.validate(data);
+
+                        var projectValidationBussinessGoalFacNoIndDef = new ProjectValidationBussinessGoalFacNoIndDef();
+                        projectValidationBussinessGoalFacNoIndDef.trace = this.trace;
+                        projectValidationBussinessGoalFacNoIndDef.validate(data);
+
+                        var projectValidationMeasurementHasNoIndDef = new ProjectValidationMeasurementHasNoIndDef();
+                        projectValidationMeasurementHasNoIndDef.validate(data);
+
+                        var projectValidationReportDefHasNoFactTable = new ProjectValidationReportDefHasNoFactTable();
+                        projectValidationReportDefHasNoFactTable.trace = this.trace;
+                        projectValidationReportDefHasNoFactTable.validate(data);
+
+                        if (this.trace) this._debug.push("Validate dashboard designs");
+
+                        //-----------------------------------						
+                        // Validation of dashboard design
+                        //-----------------------------------
+						
+                        var projectValidationNoRowOnTab = new ProjectValidationNoRowOnTab();
+                        projectValidationNoRowOnTab.validate(data);
+
+                        var projectValidationNoTabOnDashboard = new ProjectValidationNoTabOnDashboard();
+                        projectValidationNoTabOnDashboard.validate(data);
+
+                        var projectValidationWidgetWithoutMeasurement = new ProjectValidationWidgetWithoutMeasurement();
+                        projectValidationWidgetWithoutMeasurement.validate(data);
+
+                        var projectValidationMeasurementMissingForPersona = new ProjectValidationMeasurementMissingForPersona();
+                        projectValidationMeasurementMissingForPersona.validate(data);
+
+                        var projectValidationPersonaNotLinkedInMeasurement = new ProjectValidationPersonaNotLinkedInMeasurement();
+                        projectValidationPersonaNotLinkedInMeasurement.validate(data);
+
+                        var projectValidationFollowElementWidgetDashboardNoBreakdowns = new ProjectValidationFollowElementWidgetDashboardNoBreakdowns();
+                        projectValidationFollowElementWidgetDashboardNoBreakdowns.validate(data);
+
+                        var projectValidationMeasurementFollowElementButMissingBreakdown = new ProjectValidationMeasurementFollowElementButMissingBreakdown();
+                        projectValidationMeasurementFollowElementButMissingBreakdown.validate(data);
+
+                        var projectValidationEntityUsedMultipleTimesOnDashboard = new ProjectValidationEntityUsedMultipleTimesOnDashboard();
+                        projectValidationEntityUsedMultipleTimesOnDashboard.validate(data);
+
+                        var projectValidationEntityNotUsedAnyDashboard = new ProjectValidationEntityNotUsedAnyDashboard();
+                        projectValidationEntityNotUsedAnyDashboard.validate(data);
+
+                        var projectValidationReportDefinitionNotLinkedInCanvas = new ProjectValidationReportDefinitionNotLinkedInCanvas();
+                        projectValidationReportDefinitionNotLinkedInCanvas.validate(data);
+
+                        var projectValidationIndicatorDefinitionNotLinkedInCanvas = new ProjectValidationIndicatorDefinitionNotLinkedInCanvas();
+                        projectValidationIndicatorDefinitionNotLinkedInCanvas.validate(data);
+
+                        var projectValidationMeasureUsedInBothTypes = new ProjectValidationMeasureUsedInBothTypes();
+                        projectValidationMeasureUsedInBothTypes.validate(data);
+
+                        var projectValidationMeasureHasMultipleDefinitions = new ProjectValidationMeasureHasMultipleDefinitions();
+                        projectValidationMeasureHasMultipleDefinitions.validate(data);
+                        
+                        var projectValidationMeasureWithBreakdownsOnlyReport = new ProjectValidationMeasureWithBreakdownsOnlyReport();
+                        projectValidationMeasureWithBreakdownsOnlyReport.validate(data);
+
+                        var projectValidationIndicatorDefNotLinkedPaIndicator = new ProjectValidationIndicatorDefNotLinkedPaIndicator();
+                        projectValidationIndicatorDefNotLinkedPaIndicator.validate(data);
+
+                        var projectValidationDashboardWithoutWidgets = new ProjectValidationDashboardWithoutWidgets();
+                        projectValidationDashboardWithoutWidgets.validate(data);
+                        
+                    } else {
+                        throw "Could not read data for this project";
+                    }
+                } else {
+                    throw "Data has no value";
+                }
+
+            } else {
+                throw "Could not clear old validation values.";
+            }
+
+            // Return the validation result (count)
+            response = this.validationResults(input);
+            response.success = true;
+
+            if (this.trace)
+                response.debug = this._debug;
+
+            return JSON.stringify(response);
+        } catch (err) {
+            gs.error(err);
+            this._debug.push("EXCEPTION: " + JSON.stringify(err));
+            response.debug = this._debug;
+            response.exception = err;
+            response.success = false;
+        }
+        return JSON.stringify(response);
+    },
+
+    type: 'ProjectValidation'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-27 10:27:39</sys_created_on>
+        <sys_id>9ef3bb371b1c73404e6921be6e4bcb42</sys_id>
+        <sys_mod_count>238</sys_mod_count>
+        <sys_name>ProjectValidation</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_9ef3bb371b1c73404e6921be6e4bcb42</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-30 11:38:06</sys_updated_on>
+    </sys_script_include>
+</record_update>

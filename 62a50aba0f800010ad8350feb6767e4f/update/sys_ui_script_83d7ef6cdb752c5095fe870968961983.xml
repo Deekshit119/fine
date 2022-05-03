@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardTabAddModal</name>
+        <script><![CDATA[var DashboardTabAddModal = createReactClass({	
+	getInitialState: function() {
+		return {
+            filter: "",
+            name: "",
+            templatetab_sysid: null,
+            disabled: true,
+            possibletemplates: null,
+            wizardstep: 1,
+            selectednamecontrol: false,
+            doautoselect: true
+		};
+    },
+    
+    componentDidMount: function() {
+        var that = this;
+        this.props.getPossibleDashboardTabTemplates(function (templates) {
+            that.setState({possibletemplates:templates, disabled: false});
+        });
+    },
+
+    componentDidUpdate: function() {
+        if (this.state.wizardstep === 2 && this.state.selectednamecontrol === false && this.refs.nameinput) {
+            this.refs.nameinput.focus();
+            this.refs.nameinput.select();
+            this.setState({selectednamecontrol: true});
+        }
+    },
+	
+	handleInputChange: function(event) {
+		var newstate = {};
+		newstate[event.target.name] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+
+        if (event.target.name === "filter") {
+            newstate.doautoselect = false;
+        }
+
+		this.setState(newstate);
+    },
+    
+    selectTemplateTab: function(templatetab) {
+        var newname;
+        if (templatetab.sys_id == null) {
+            var tabCount = this.props.currenttabcount + 1;
+            newname = new GwtMessage().getMessage("Tab {0}", tabCount);
+        } else {
+            newname = templatetab.caption;
+        }
+        this.setState({templatetab_sysid:templatetab.sys_id, wizardstep: 2, name: newname, selectednamecontrol: false});
+    },
+
+    goBack: function() {
+        this.setState({wizardstep: 1, doautoselect: true});
+    },
+
+	cancel: function() {
+		this.setState({ disabled: true });
+		this.props.onCancel();
+	},
+	
+	save: function(event) {
+        if (this.state.disabled || !this.state.name) return;
+
+        if (event && event.preventDefault) {
+            event.preventDefault();
+        }
+        
+		this.setState({ disabled: true });
+		this.props.onAdd(
+			{
+				name: this.state.name,
+				templatetab_sysid: this.state.templatetab_sysid
+			}
+		);
+	},
+
+    handleSubmit: function(event) {
+		event.preventDefault();
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var closeButton = e(
+			'button',
+			{type: 'button', title: getMessage('Close'), className: 'btn btn-icon close icon-cross  sn-tooltip-basic', disabled: this.state.disabled, onClick: this.cancel },
+			e(
+				'span',
+				{ className: 'sr-only' },
+				getMessage('Close')
+			)
+		);
+		
+		
+		var loadingOverlay = null;
+		if (this.state.disabled === true) {
+			loadingOverlay = e(
+				'div',
+				{className: 'modal-overlay'},
+				e(
+					'div',
+					{ className: 'icon-loading' }
+				)
+			);
+        }
+        
+        var container = null;
+        if (this.state.wizardstep === 1) {
+            var filterinput = e(
+                'div',
+                { className: 'form-group' },
+                e(
+                    'label',
+                    { className: 'control-label bold', htmlFor: 'canvas-details-filter-input' },
+                    getMessage('Search')
+                ),
+                e(
+                    'div',
+                    { },
+                    e(
+                        'input',
+                        { id: 'canvas-details-filter-input', className: 'form-control', type: 'search', disabled: this.state.disabled, value: this.state.filter, onChange: this.handleInputChange, name: 'filter' }
+                    )
+                )
+            );
+            
+            var notemplatesfound = null;
+            var templateitems = [{caption: getMessage('No template'), description: getMessage('Creates new empty tab canvas'), columns_per_row: null, sys_id: null}];
+            if (this.state.possibletemplates) {
+                templateitems = templateitems.concat(this.state.possibletemplates.map(function (postem) { return { caption: postem.caption, description: postem.template_description || "", columns_per_row: postem.columns_per_row, sys_id: postem.sys_id }; }));
+            }
+            if (this.state.filter) {
+                var regex = new RegExp(sn_kpi_composer.ClientHelper.escapeRegex(this.state.filter), "i");
+                templateitems = templateitems.filter(function(templateitem){
+                    return templateitem.caption.search(regex) > -1 || templateitem.description.search(regex) > -1;
+                });
+                if (templateitems.length === 0) {
+                    notemplatesfound = e(
+                        "span",
+                        {className: "list-group-item"},
+                        getMessage('No templates found')
+                    );
+                }
+            }
+            var templatescontrol = e(
+                'div',
+                { className: 'form-group' },
+                e(
+                    'label',
+                    { className: 'control-label bold' },
+                    getMessage('Templates')
+                ),
+                e(
+                    'div',
+                    { className: 'list-group dashboardtabtemplatelist' },
+                    templateitems.map(function (templateitem) {
+                        return e(
+                            DashboardTabAddTemplateItem,
+                            { key: templateitem.sys_id || "blank", templateitem: templateitem, isselected: that.state.templatetab_sysid === templateitem.sys_id, onSelected: that.selectTemplateTab, doautoselect: that.state.doautoselect }
+                        );
+                    }),
+                    notemplatesfound
+                )
+            );
+
+            container = e(
+                'form',
+                { autoComplete: 'nope', onSubmit: this.handleSubmit },
+                filterinput,
+                templatescontrol
+            );
+        } else if (this.state.wizardstep === 2) {
+            var nameinput = e(
+                'div',
+                { className: ('form-group' + (this.state.name ? '' : ' is-required')) },
+                e(
+                    'label',
+                    { className: 'control-label bold', htmlFor: 'canvas-details-name-input' },
+                    getMessage('Name'),
+                    e(
+                        'span',
+                        { className: "required-marker"}
+                    )
+                ),
+                e(
+                    'div',
+                    { },
+                    e(
+                        'input',
+                        { id: 'canvas-details-name-input', className: 'form-control', ref: 'nameinput', disabled: this.state.disabled, value: this.state.name, onChange: this.handleInputChange, name: 'name', maxLength: 40 }
+                    )
+                )
+            );
+
+            container = e(
+                'form',
+                { autoComplete: 'nope', onSubmit: this.save },
+                nameinput
+            );
+        }
+		
+        var savebutton = null;
+        var gobackbutton = null;
+		if (this.state.wizardstep === 2) {
+			savebutton = e(
+				'button',
+				{ type: 'button', className: 'btn btn-primary', disabled: this.state.disabled || !this.state.name, onClick: this.save },
+				getMessage('Add')
+            );
+            gobackbutton = e(
+				'button',
+				{ type: 'button', className: 'btn btn-default pull-left', disabled: this.state.disabled, onClick: this.goBack },
+				getMessage('Back')
+            );
+		}
+		
+		return e(
+			Reactstrap.Modal, 
+			{'isOpen': true, size: 'md', className: 'canvasmodal', onOpened: this.onOpened, backdrop: 'static', toggle: this.cancel },
+			e(
+				Reactstrap.ModalHeader,
+				{'toggle': this.cancel, close: closeButton},
+				this.state.wizardstep === 1 ? getMessage('Select dashboard template') : getMessage('Enter a name for the tab')
+			),
+			e(
+				Reactstrap.ModalBody,
+				{},
+				container
+			),
+			e(
+				Reactstrap.ModalFooter,
+                {},
+                gobackbutton,
+				savebutton,
+				e(
+					'button',
+					{ type: 'button', className: 'btn sn-btn-outline-secondary', disabled: this.state.disabled, onClick: this.cancel },
+					getMessage('Cancel')
+				)
+			),
+			loadingOverlay
+		);
+	}
+});]]></script>
+        <script_name>DashboardTabAddModal</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-01-16 09:21:06</sys_created_on>
+        <sys_id>83d7ef6cdb752c5095fe870968961983</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardTabAddModal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_83d7ef6cdb752c5095fe870968961983</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-26 17:40:42</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

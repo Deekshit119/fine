@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Entity Relation" max_length="40" name="sn_kpi_composer_entity_relation" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="1000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="From Entity" max_length="32" name="from_entity" reference="sn_kpi_composer_entity" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Project" max_length="32" name="project" reference="sn_kpi_composer_project" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Relation Type" max_length="32" name="relation_type" reference="sn_kpi_composer_entity_relation_type" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="To Entity" max_length="32" name="to_entity" reference="sn_kpi_composer_entity" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="from_entity"/>
+        </index>
+        <index name="index2">
+            <element name="to_entity"/>
+        </index>
+        <index name="index3">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index4">
+            <element name="project"/>
+        </index>
+        <index name="index5">
+            <element name="relation_type"/>
+        </index>
+    </element>
+</database>

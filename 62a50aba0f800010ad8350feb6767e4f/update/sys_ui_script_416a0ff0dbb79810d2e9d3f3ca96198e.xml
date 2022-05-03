@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.RepDefList</name>
+        <script><![CDATA[var ReportDefinitionList = createReactClass({
+	getInitialState: function() {
+		return { add: false };
+	},
+
+	addClick: function() {
+		this.setState({ add: true, saving: false });
+	},
+	
+	onAdd: function(report_definition, callback) {
+		if (this.props.report_definition == null) {
+			this.setState({ saving: true });
+			var that = this;
+			this.props.onReportDefinitionSave(report_definition, function(error) {
+				that.setState({ add: false });
+				callback(error);
+			});
+		} else {
+			//er is al een report definiton gekoppeld
+			callback(null);
+		}
+	},
+	
+	onBlur: function() {
+		if (this.state.saving == true) return;
+		
+		this.setState({ add: false });
+	},
+	
+	onDelete: function(sys_id) {
+		this.props.onReportDefinitionSave(null, function (error){
+			//todo: show error
+		});
+	},
+
+	handleSubmit: function(event) {
+		event.preventDefault();
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var toshow = null;
+		if (this.props.report_definition != null) {
+			toshow =
+				e(
+				ReportDefinitionListItem,
+				{ key: this.props.report_definition.sys_id, report_definition: this.props.report_definition, onDelete: (this.props.onReportDefinitionSave ? this.onDelete : null), onReportShowDetail: this.props.onReportShowDetail }
+			);
+		} else {
+			if (this.props.onReportDefinitionSave) {
+				if (this.state.add) {
+					toshow = e(
+						'li',
+						{ key: 'addnew', className: 'addnew' },
+						e(
+							'span',
+							{ className: 'icon-add-circle-empty icon'}
+						),
+						e(
+							'form',
+							{className: 'item-name', onSubmit: this.handleSubmit},
+							e(
+								ReportDefinitionSelector,
+								{ placeholder: this.props.addPlaceholder, disabled: this.state.saving, onReportDefinitionSelected: this.onAdd, onBlur: this.onBlur }
+							)
+						)
+					);
+				} else {
+					toshow = e(
+						'li',
+						{ key: 'addnew', className: 'addnew', onClick: this.addClick },
+						e(
+							'span',
+							{ className: 'icon-add-circle-empty icon'}
+						),
+						e(
+							'div',
+							{ className: 'item-name' },
+							this.props.addPlaceholder
+						)
+					);
+				}
+			} else {
+				toshow = e(NoneList, { key: 'none' });
+			}
+		}
+		
+		return [
+			e(
+				'ul',
+				{ className: 'sn-widget-datalist', key: 'list' },
+				toshow
+			)
+		];
+	}
+});]]></script>
+        <script_name>RepDefList</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-10-09 15:45:06</sys_created_on>
+        <sys_id>416a0ff0dbb79810d2e9d3f3ca96198e</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>sn_kpi_composer.RepDefList</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_416a0ff0dbb79810d2e9d3f3ca96198e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 14:56:58</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

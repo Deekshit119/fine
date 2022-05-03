@@ -1,0 +1,1040 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.LibraryApi</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>LibraryApi</name>
+        <script><![CDATA[var LibraryApi = Class.create();
+LibraryApi.prototype = Object.extendsObject(sn_kpi_composer.BaseApi, {
+
+
+	selectLibraryProjectsJson: function(input) {
+		// Result data
+        var data = {};
+        
+		// When this call is made by glideajax, input parameters should be red
+		try {
+
+            var projectApi = new sn_kpi_composer.ProjectApi();
+		
+            // Get input params
+            input = this._getInputParam(input);
+            
+            if (this.trace) this._debug.push("Searching for library projects: '" + JSON.stringify(input) + "'");
+
+            data = this._selectLibraryProjects(input);
+
+            var that = this;
+
+            data.projects.forEach(function(p) {
+
+                var input = {};
+                input.project = p;
+
+                // Read all entity_type summary info
+                p.entity_types = projectApi._project_entity_types(input);
+
+            });
+                        
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+    },
+    
+    // -------
+    // 
+    // Creats a new library project, based on a single entity from a existing project
+    // Parameters
+    // input.entity.sys_id     <-- the entity to copy from
+    // input.relation.sys_id   <-- the parent "relation" from the entity to copy from. The "from" node of this relation is the new mother of the lib
+    // process:
+    // - Create new project
+    // - Copy nodes from the base project to the new project
+    // - Copy the relation
+    // - remove the source entity and relation record from the project
+    // - create relation record from the base project to the lib project
+    // - Return the new project, entity and relation data
+    // 
+    // Other things to consider:
+    // - If the entity (or one of the underlying entities) is a library entity
+    //   the relation should be copied but the entities should not
+    createLibraryProjectFromEntityJson: function(input) {
+
+		// Result data
+        var data = {};
+        data.entities = [];
+        data.relations = [];
+        
+		// When this call is made by glideajax, input parameters should be red
+		try {
+		
+            // Get input params
+            input = this._getInputParam(input);
+            
+            if (this.trace) this._debug.push("Create library project from entity: '" + JSON.stringify(input) + "'");
+
+            var projectApi = new sn_kpi_composer.ProjectApi();
+
+            var entityApi = new sn_kpi_composer.EntityApi();
+
+            // Is the a relation parameter to link to or is this a root element
+            var inputRelation = {};
+            if (input.relation && input.relation.sys_id) {
+                var r_gr = new GlideRecord("sn_kpi_composer_entities_entities_m2m");
+                if (r_gr.get(input.relation.sys_id)) {
+                    inputRelation = this._relation_record(r_gr);
+                }
+            }
+
+            // Entities to remove (from then source project)
+            var entitiesToRemove = [];
+            var relationsToRemove = [];
+
+            // Debug
+            // data.entitiesToRemove = entitiesToRemove;
+
+            // Check parameters -> CH1423
+            if (input && input.project && input.project.name) {
+                // Ok       
+            } else {
+                // project.name and project.description are mandatory
+                throw "parameters project.name is missing";
+            }
+
+            // Create a project
+            // Add entities to project (or move entities to project?)
+            // Remove entities from current project (not is moved)
+            // Create link to nieuwe entity
+            if (input && input.entity && input.entity.sys_id) {
+                var entity_sys_id = input.entity.sys_id;
+
+                var e_gl = new GlideRecord("sn_kpi_composer_entity");
+                if (e_gl.get(entity_sys_id)) {                    
+                    var entity = this._entity_record(e_gl);
+
+                    // Check if the entity is a library, can't create library from base library entity
+                    //if (entity.library) 
+                    // throw "Creating a library (project) from a library entity is not allowed";
+                    // TODO: should we check if this node is not the top node of a lib project?
+
+                    data.entity = entity;
+
+                    // We should create project, by default a new project get a dashboard
+                    // We suppress this functionality
+                    input.project.suppress_dashboard_creation = true;
+                    input.project.library = true;
+                    input.project.owners = gs.getUserID();
+
+                    // Create project
+                    var projectCall = projectApi._addProject(input.project);
+
+                    if (!projectCall.success)
+                        throw "Could not create new project: " + JSON.stringify(project);
+
+
+                    // Return project
+                    data.new_lib_project = projectCall.project;
+
+                    // Now copy entity values from root entity
+                    // This must be a recursive function
+                    // Load source tree
+                    input.entity = entity;
+                    input.project = {};
+                    input.project.sys_id = entity.project_sys_id;
+                    var tree = entityApi._selectEntityTree(input);
+
+                    // Store the main source project sys_id
+                    source_project_sys_id = entity.project_sys_id;
+
+                    // Debug
+                    data.tree = tree;
+
+                    // input is reused, replace project object with new value
+                    input.project = projectCall.project;
+
+                    // Flatten tree to one list
+                    var flat_items = entityApi._entitiesAndRelationFromTree(tree, null);
+                    
+                    // Debug
+                    // data.flat_items = flat_items;
+
+                    // Debug
+                    // data.actions = [];
+
+                    // Entities to replace the sys_id from 
+                    data.replace_entities = [];
+
+                    // Copy the relation sys_id to remove in a later proces
+                    // But only copy relations from the source project
+                    // Relation from library project should be ignored
+                    flat_items.relations.forEach(function(r) {
+                        if (r.project_sys_id == entity.project_sys_id) {
+                            // Store the relation sys_id to remove later
+                            relationsToRemove.push(r.sys_id);
+                        }
+                    });
+
+                    var topNodeOfLib = null;
+
+                    // Now copy all entities values from the tree to the new project
+                    flat_items.entities.forEach(function(e) {
+
+                        // We should only copy entities that are in the source project
+                        // Other entities (library entities) should not be copied
+                        if (e.project_sys_id == entity.project_sys_id) {
+
+                            // New input object
+                            var input = {};
+                            // Set to new project
+                            input.project = projectCall.project;
+                            // Add entity by basic entity
+                            input.entity = e;
+
+                            // This is the current existing sys_id from the entity (from the project)
+                            // Store this id, and replace it in the relation table
+                            // with the new sys_id from the copied entity
+                            var org_entity_sys_id = input.entity.sys_id;
+
+                            // Store the sys_id to remove later
+                            entitiesToRemove.push(org_entity_sys_id);
+
+                            // Can not insert with existing sys_id, so delete property
+                            delete input.entity.sys_id;
+                            delete input.entity.project_sys_id;
+                            // Set the action
+                            input.action = "insertEntity";
+
+                            // Execute the action
+                            var entity_result = entityApi._updateData(input);
+
+                            // Now, we know the old and new entity sys_id
+                            // Replace the entity in the Canvas design and store the tuple so the GUI can be updated
+                            data.replace_entities.push({ "old": org_entity_sys_id, "new": entity_result.entity.org_sys_id });
+
+                            // Store the result with the action
+                            input.result = entity_result;
+
+                            // Debug, store the action
+                            if (data.actions) data.actions.push(input);
+
+
+                            // What is the result, when success store the entity
+                            if (entity_result.success) {
+
+                                if (topNodeOfLib === null) {
+                                    topNodeOfLib = entity_result.entity;
+                                }
+
+                                // New entity created
+                                // Copy breakdown's (do not copy persona's - by design)
+                                e.breakdowns.forEach(function(b) {
+                                    var input_breakdown = {};
+                                    input_breakdown.action = "insertBreakdownEntity";
+                                    input_breakdown.breakdown = b;
+                                    input_breakdown.project = projectCall.project;
+                                    input_breakdown.entity = entity_result.entity.sys_id;
+                                    var insertBreakdownResult = entityApi._updateData(input_breakdown);
+
+                                    // Store result for debug
+                                    input.result = insertBreakdownResult;
+                                    
+                                    // debug
+                                    if (data.actions) data.actions.push(input_breakdown);
+
+                                    // For all the breakdowns, enable the breakdown in the library project
+                                    var sbd = new GlideRecord('sn_kpi_composer_breakdowns_projects_m2m');
+                                    sbd.initialize();
+                                    sbd.project = projectCall.project.sys_id;
+                                    sbd.breakdown = b;
+                                    if (!sbd.insert()) {
+                                        throw "Could not enable breakdown in library project";
+                                    }
+                                });
+
+                                e.personas.forEach(function(p) {
+
+                                    var input_persona = {};
+                                    input_persona.action = "insertPersonaEntity";
+                                    input_persona.persona = p;
+                                    input_persona.project = projectCall.project;
+                                    input_persona.entity = entity_result.entity.sys_id;
+                                    
+                                    var insertPersonaResult = entityApi._updateData(input_persona);
+                                    
+                                    input_persona.result = insertPersonaResult;
+
+                                    // debug
+                                    if (data.actions) data.actions.push(input_persona);
+
+                                })
+
+                                // Modify the existing relation to point to the new entities
+                                flat_items.relations.forEach(function(r) {
+                                    // Change the from and to entity data for the insert later
+                                    if (r.from_org_sys_id == org_entity_sys_id) r.from_org_sys_id = entity_result.entity.sys_id;
+                                    if (r.to_org_sys_id == org_entity_sys_id) r.to_org_sys_id = entity_result.entity.sys_id;
+                                });
+
+                            } else {
+                                throw "Could not insert entity! " + JSON.stringify(entity_result);
+                            }
+                        }
+
+                    });
+                    
+                    // Now we know the new entities, so replace the old entities in the canvas with the new ones
+                    var input = {};
+                    input.project = { "sys_id": source_project_sys_id };
+                    input.replace_entities = data.replace_entities;
+                    var replace_entities_result = this._replaceEntityInCanvasDesign(input);
+                    
+                    // Debug
+                    if (replace_entities_result.success !== true) {
+                        data.replace_entities_result = replace_entities_result;
+                    }
+
+
+                    // Now copy all relations
+                    flat_items.relations.forEach(function(r) {
+
+                        // Only create new relation for relations that are in the source project
+                        if (r.project == entity.project_sys_id) {
+
+                            // New input object
+                            var input = {};
+                            // Set to new project
+                            input.project = projectCall.project;
+                            input.action = "insertEntityEntity";
+                            input.entities = {};
+                            // Take the orgininal sys_id from the 'to' and 'from' relations
+                            input.entities.from = r.from_org_sys_id;
+                            input.entities.to = r.to_org_sys_id;
+                            input.entities.relationtype = projectCall.defaultentityrelationtype;
+
+                            // Execute the action
+                            var relation_result = entityApi._updateData(input);
+
+                            input.result = relation_result;
+
+                            // Debug, store the action
+                            if (data.actions) data.actions.push(input);
+
+                            // When success, store new relation in the result
+                            if (relation_result.success) {
+                                // OK
+                            } else {
+                                throw "Could not insert relation" + JSON.stringify(relation_result);
+                            }           
+                        }
+
+                    });
+
+                    // When the "from" relation record is set (aka, the source is not a root element)
+                    // we should also delete the from relation
+                    // But first, store the mother entity
+                    if (inputRelation && inputRelation.sys_id) {
+                        relationsToRemove.push(inputRelation.sys_id);
+                    }
+
+                    // Remove source relation from data's
+                    relationsToRemove.forEach(function(r) {
+                        var input = {};
+                        input.action = "deleteEntityEntity";
+                        input.relation = {};
+                        input.relation.sys_id = r;
+
+                        // Execute the action
+                        var deleteRelationResult = entityApi._updateData(input);
+
+                        input.result = deleteRelationResult;
+
+                        // Debug, store the action
+                        if (data.actions) data.actions.push(input);
+
+                        // When not success throw exception
+                        if (deleteRelationResult.success !== true) {
+                            throw "Could not delete source relation" + JSON.stringify(deleteRelationResult);
+                        } 
+                    });
+
+                    // Remove the source entities 
+                    entitiesToRemove.forEach(function(e) {
+                        var input = {};
+                        input.action = "deleteEntity";
+                        input.entity = {};
+                        input.entity.sys_id = e;
+                      
+                        // Execute the action
+                        var deleteEntityResult = entityApi._updateData(input);
+
+                        input.result = deleteEntityResult;
+
+                        // Debug, store the action
+                        if (data.actions) data.actions.push(input);
+
+                        // When not success throw exception
+                        if (deleteEntityResult.success !== true) {
+                            throw "Could not delete source entity" + JSON.stringify(deleteEntityResult);
+                        }
+                    });
+
+                    
+                    relation_type_sys_id = this._libraryRelationType();
+
+                    // Now that alle entities and relations are added to the new project lib we should reload the project (lib)
+                    // We can use the data to add the final relation
+                    var input = {};
+                    input.project = {};
+                    input.project.sys_id = data.new_lib_project.sys_id;
+                    data.new_lib_project = projectApi.project(input);
+
+
+                    // Now create a new relaiton from the "from" entity of the inputRelation to the root entity of the new project
+                    var input = {};
+                    input.action = "insertEntityEntity";
+                    input.entities = {};
+                    
+                    // The from
+                    input.entities.from = "";
+                    // If there is a source relation copy the from
+                    if (inputRelation && inputRelation.from && inputRelation.from !== "") {
+                        input.entities.from = inputRelation.from;
+                    }
+
+                    // The to
+                    input.entities.to = "";
+                    if (data.new_lib_project.top_nodes.length>0) {
+                        input.entities.to = data.new_lib_project.top_nodes[0].sys_id;
+                    }
+
+                    // the source project
+                    input.project = {};
+                    input.project.sys_id = data.entity.project_sys_id;
+
+                    // the relation type
+                    input.entities.relationtype = relation_type_sys_id;
+                  
+                    // Execute the action
+                    var insertRelationResult = entityApi._updateData(input);
+
+                    input.result = insertRelationResult;
+
+                    // Debug, store the action
+                    if (data.actions) data.actions.push(input);
+
+                    // When not success throw exception
+                    if (insertRelationResult.success == true) {
+                        // Relation insert is ok, the relation is from the existing project to the lib project
+                        // So the link to the TO entity should have the prefix of the relation
+                        insertRelationResult.relation.to = insertRelationResult.relation.sys_id + "_" + insertRelationResult.relation.to;
+                        // OK
+                        data.relations.push(insertRelationResult.relation);
+                        // Add the relation_sys_id to the topnode 
+                        // This is done later, when the complete tree is reloaded
+                    } else {
+                        throw "Could not insert entity entity relation" + JSON.stringify(insertRelationResult);
+                    }
+
+                    // Now load the newly created nodes by the treefunction so all relations (sub lib's etc) are loaded correctly
+                    input = {};
+                    input.entity = topNodeOfLib;
+                    input.project = {};
+                    input.project.sys_id = entity.project_sys_id;
+
+                    // Also set the topNodeOfLib as a library_root
+                    topNodeOfLib.library_root = true;
+
+                    // The topNodeOfLib is a library (dhu) so set the depth to 1
+                    var new_tree = entityApi._selectEntityTree(input, 1);
+
+                    // The first node of the tree is based on the new relation just added
+                    new_tree.entity.relation_sys_id = insertRelationResult.relation.sys_id;
+
+                    // input is reused, replace project object with new value
+                    input.project = projectCall.project;
+                    
+                    // Flatten tree to one list
+                    var new_flat_items = entityApi._entitiesAndRelationFromTree(new_tree, [insertRelationResult.relation.sys_id]);
+
+                    // Take the new flat items list as the result
+                    data.entities = new_flat_items.entities;
+                    data.relations = data.relations.concat(new_flat_items.relations);
+                    
+                    // take the users and knowledgearticles
+                    data.users = new_flat_items.users;
+                    data.knowledgearticles = new_flat_items.knowledgearticles;
+
+
+                    // Result ok, ready
+                    data.success = true;
+
+                } else {
+                    throw "Entity with sys_id '" + entity_sys_id + "' not found in database";
+                }                
+            } else {
+                throw "input parameter entity.sys_id not found.";
+            }
+
+        }    
+        catch(err) {			
+            data.debug = this._debug;
+            data.exception = err;
+            data.success = false;
+        }
+        return new global.JSON().encode(data);
+    },
+        
+
+    // ------
+    // Insert all entities from a library project to an existing project
+    //
+    // Parameters
+    // input.relation.sys_id  -> the relaiton from the sourceproject entity to the library entity, this could be empty when the entity is a root entity
+    //
+    // Process:
+    // - Create the tree of entities and relations
+    // - Copy the entities to the project
+    // - Copy the relations to the project
+    // - Remove the relation from the source to the lib
+    // note: The library is not changed, it only creates local entities and relation of the related library
+    copyLibraryEntitiesToProjectJson: function(input) {
+
+		// Result data
+        var data = {};
+        
+		try {
+
+            var projectApi = new sn_kpi_composer.ProjectApi();
+
+            var entityApi = new sn_kpi_composer.EntityApi();
+   
+		
+            // Get input params
+            input = this._getInputParam(input);
+            
+            if (this.trace) this._debug.push("Insert library entity to existing project: '" + JSON.stringify(input) + "'");
+
+            // Check input parameter
+
+            // Is the a relation parameter to link to or is this a root element
+            var inputRelation = {};
+            if (input.relation && input.relation.sys_id) {
+                var r_gr = new GlideRecord("sn_kpi_composer_entities_entities_m2m");
+                if (r_gr.get(input.relation.sys_id)) {
+                    inputRelation = this._relation_record(r_gr);
+                } else {
+                    throw "Could not find relation record: '" + input.relation.sys_id + "'";
+                }
+            } else {
+                throw "input.relation.sys_id is not set.";
+            }
+
+            // Get target project
+            var target_project = {};
+            var input = {};
+            input.project = {};
+            input.project.sys_id = inputRelation.project;
+            target_project = projectApi.project(input);
+
+            // Get the from entity, to link the new entities as there mother
+            var lib_entity_from = {};
+            var lib_entity_to = {};
+            lib_entity_from = inputRelation.from;
+
+            // Get source/lib entity
+            var lib_entity = {};
+            var input = {};
+            input.entity = {};
+            input.entity.sys_id = inputRelation.to;
+            var e_gl = new GlideRecord("sn_kpi_composer_entity");
+            if (e_gl.get(input.entity.sys_id)) {                    
+                lib_entity = this._entity_record(e_gl);
+            } else {
+                throw "Entity with '" + input.entity.sys_id + " not found in database";
+            }
+
+            // Create a tree from the source node
+            var input = {};
+            input.entity = lib_entity;
+            input.project = target_project;
+            var tree = entityApi._selectEntityTree(input);
+                    
+            // Flatten the tree to a list
+            var flat_items = entityApi._entitiesAndRelationFromTree(tree, []);
+
+            // Debug
+            // data.actions = [];
+
+            data.entities = [];
+            data.relations = [];
+            data.replace_entities = [];
+
+            var first_child_node = {};
+
+            // Create new entities in target project
+            flat_items.entities.forEach(function(e) {
+                var input = {};
+                input.action = "insertEntity";
+
+                // Store the sys_id because we must remap the relation record
+                org_entity_sys_id = e.sys_id;
+
+                // Remove the sys_id because this function will try and insert the sys_id
+                delete e.sys_id;
+                // Set the project_sys_id to the new target
+                e.project_sys_id = target_project.sys_id;
+                // It is not a libray element anymore
+                e.library = false;
+                input.entity = e;
+                input.project = target_project;                
+
+                // Execute the action
+                var insert_entity_result = entityApi._updateData(input);
+
+                // Store entities to replace the sys_id
+                data.replace_entities.push({ "old": org_entity_sys_id, "new": insert_entity_result.entity.org_sys_id })
+
+                // What is the result, when success store the entity
+                if (insert_entity_result.success) {
+
+                    // The new entity
+                    entity_result = insert_entity_result.entity;
+
+                    // If this new node was based on the root node from the source tree, this will be the root node to read from
+                    if (e.org_sys_id == tree.entity.org_sys_id) {
+                        first_child_node = entity_result;
+                    }
+
+                    // New entity is create, copy the breakdowns to the new entity
+                    e.breakdowns.forEach(function(b) {
+                        var input_breakdown = {};
+                        input_breakdown.action = "insertBreakdownEntity";
+                        input_breakdown.breakdown = b;
+                        input_breakdown.entity = insert_entity_result.entity.sys_id;
+                        input_breakdown.project = target_project;  
+                        entityApi._updateData(input_breakdown);
+                        // debug
+                        if (data.actions) data.actions.push(input_breakdown);
+                    });
+
+                    // New entity is create, copy the persona to the new entity
+                    e.personas.forEach(function(p) {
+                        var input_persona = {};
+                        input_persona.action = "insertPersonaEntity";
+                        input_persona.persona = p;
+                        input_persona.entity = insert_entity_result.entity.sys_id;
+                        entityApi._updateData(input_persona);
+                        // debug
+                        if (data.actions) data.actions.push(input_persona);
+                    });
+              
+
+                    // Modify the existing relation to point to the new entities
+                    flat_items.relations.forEach(function(r) {
+                        // Change the from and to entity data for the insert later
+                        if (r.from == org_entity_sys_id) r.from = entity_result.sys_id;
+                        if (r.to == org_entity_sys_id) r.to = entity_result.sys_id;
+                    });
+
+
+
+                } else {
+                    throw "Could not insert entity! " + JSON.stringify(entity_result);
+                }                
+
+                // Debug
+                if (data.actions) data.actions.push(input);
+            });
+
+            // Replace the entities in the tabs with the new ones
+            input = {};
+            input.project = target_project;
+            input.replace_entities = data.replace_entities;
+            var replace_entities_result = this._replaceEntityInCanvasDesign(input);
+
+            // Debug
+            if (replace_entities_result.success !== true) {
+                data.replace_entities_result = replace_entities_result;
+            }
+            
+            // Find the "normal" relation type
+            var relation_type = {};
+            var rt_gl = new GlideRecord("sn_kpi_composer_entity_relation_type");
+            rt_gl.addQuery("name", "Normal");
+            rt_gl.query();
+            if (rt_gl.next()) {
+                relation_type = rt_gl.getValue("sys_id");
+            } else {
+                throw "Could not find entity realtiontype with the name 'Normal'";
+            }
+
+   
+            // Add all relations from the tree (library)
+            flat_items.relations.forEach(function(r) {
+                var input = {};
+                input.action = "insertEntityEntity";
+                input.project = target_project;
+                input.entities = {};
+                input.entities.from = r.from;
+                input.entities.to = r.to;
+                input.entities.relationtype = relation_type;
+
+                // Debug
+                if (data.actions) data.actions.push(input);
+
+                // Execute the action
+                var insert_relation_result = entityApi._updateData(input);
+            });
+
+            // Insert to main relation from the mother to the first child
+            if (lib_entity_from && lib_entity_from !== "null" && lib_entity_from !== "") {
+                var input = {};
+                input.action = "insertEntityEntity";
+                input.reason = "main_relation";
+                input.project = target_project;
+                input.entities = {};
+                input.entities.from = lib_entity_from;
+                input.entities.to = first_child_node.sys_id;
+                input.entities.relationtype = relation_type;
+
+                // Debug
+                if (data.actions) data.actions.push(input);
+
+                // Execute the action
+                var insert_main_relation_result = entityApi._updateData(input);            
+            }
+
+
+            // Remove relation from project (unlink lib)
+            var delete_relation = {};
+            delete_relation.action = "deleteEntityEntity";
+            delete_relation.relation = {};
+            delete_relation.relation.sys_id = inputRelation.sys_id;
+            // Debug
+            if (data.actions) data.actions.push(delete_relation);
+
+            // Execute the action
+            var delete_relation_result = entityApi._updateData(delete_relation);
+
+            // When not success throw exception
+            if (delete_relation_result.success == true) {
+                // Add the new relation                 
+            } else {
+                // Debug
+                throw "Could not remove relation record.";
+            } 
+
+            // Now read the complete new tree
+            var tree_input = {};
+            tree_input.entity = first_child_node;
+            tree_input.project = target_project;
+
+            // Create a tree of all child nodes from this node
+            tree = entityApi._selectEntityTree(tree_input);
+
+            // Flatten the nodes by adding the relation
+            flat_items = entityApi._entitiesAndRelationFromTree(tree, []);
+
+
+            // take all (new) entities
+            data.entities = flat_items.entities;
+
+            // take all (new) relations
+            data.relations = flat_items.relations;
+
+            // Add the main relation to the result
+            if (insert_main_relation_result) data.relations.push(insert_main_relation_result.relation);
+
+            data.success = true;
+
+        }    
+        catch(err) {			
+            data.debug = this._debug;
+            data.exception = err;
+            data.success = false;
+        }
+        return new global.JSON().encode(data);
+    },
+
+    //-----
+	// addLibraryToProjectJson
+	//
+    // Insert a existing library into a project
+    // Parameters:
+    // input.source.entity.sys_id   => the entity to create the relation from (optional)
+    // input.target.entity.sys_id   => the (library) entity to create the relation to
+    // when the library is added as root entity, there is no input.source.entity.sys_id
+    // but the input.project.sys_id becomes mandatory, in other cases the parameter is ignored
+    // 
+    // Creates a relation record from the source to the target with a project on the source
+    // return the relation and all library entities (and relation) to add to the tree
+    // Values are returned in:
+    // data.entities
+    // data.relaltions 
+    addLibraryToProjectJson: function(input) {
+
+        // Result data
+        var data = {};
+
+        // Store actions for debug
+        data.actions = [];
+
+        // Data to return
+        data.entities = [];
+        data.relations = [];
+            
+        try {
+
+            var projectApi = new sn_kpi_composer.ProjectApi();
+
+            var entityApi = new sn_kpi_composer.EntityApi();
+
+        
+            // Get input params
+            input = this._getInputParam(input);
+            
+            if (this.trace) this._debug.push("Insert library to existing project: '" + JSON.stringify(input) + "'");
+
+            // The source project to add the entities to
+            var source_project = {};
+
+            // Check if there is a source entity and use that as the base
+            if (input && input.source && input.source.entity && input.source.entity.sys_id) {
+                // Read the source entity
+                var source = new GlideRecord("sn_kpi_composer_entity");
+                if (!source.get(input.source.entity.sys_id)) {
+                    throw "Source entity with sys_id: '" + input.source.entity.sys_id + "' not found in database.";
+                }
+                var sourceEntity = this._entity_record(source);
+
+                // Debug
+                // data.source_entity = sourceEntity;
+
+                // Read source project
+                var source_project_input = {};
+                source_project_input.project = {};
+                source_project_input.project.sys_id = sourceEntity.project_sys_id;
+                source_project = projectApi.project(source_project_input);
+
+            } else {
+                // Source specified, ok!
+                if (input && input.project && input.project.sys_id) {
+                    // Read source project
+                    source_project = projectApi.project(input);
+                } else {
+                    throw "No source entity and project parameters specified";
+                }
+            }
+
+            // Debug
+            // data.source_project = source_project;
+
+            // Parameter target check
+            if (input && input.target && input.target.entity && input.target.entity.sys_id) {
+
+                // Read the target entity
+                var target = new GlideRecord("sn_kpi_composer_entity");
+                if (!target.get(input.target.entity.sys_id)) {
+                    throw "Target entity with sys_id: '" + input.target.entity.sys_id + "' not found in database.";                        
+                }
+                var targetEntity = this._entity_record(target);                    
+
+                // Read library/target project
+                var target_project_input = {};
+                target_project_input.project = {};
+                target_project_input.project.sys_id = targetEntity.project_sys_id;
+                var target_project = projectApi.project(target_project_input);
+
+
+                // Read the default realtion type
+                var relation_type_sys_id = this._libraryRelationType();
+
+                // First create a link 
+                action = {};
+                action.action = "insertEntityEntity";
+                action.entities = {};
+                // If there is a source, add it, else it will become a root
+                if (sourceEntity && sourceEntity.sys_id) {
+                    action.entities.from = sourceEntity.sys_id;
+                }
+                action.entities.to = targetEntity.sys_id;
+                action.entities.relationtype = relation_type_sys_id;
+                action.project = source_project;
+              
+                // Execute the action
+                var relation_result = entityApi._updateData(action);
+
+                // Debug
+                // action.result = relation_result;
+
+                // Debug, store the action
+                if (data.actions) data.actions.push(action);
+
+                if (relation_result.success === true) {
+                    // Relation create
+                    // We need to load the library tree
+
+                    var tree_input = {};
+                    tree_input.entity = input.target.entity;
+                    tree_input.project = input.project;
+
+                    // Create a tree of all child nodes from this node
+                    var tree = entityApi._selectEntityTree(tree_input);
+
+                    // Main node is bound by the new relation
+                    tree.entity.relation_sys_id = relation_result.relation.sys_id;
+
+                    // This node is a root node
+                    tree.entity.library_root = true;
+                        
+                    // Flatten the nodes by adding the relation
+                    var flat_items = entityApi._entitiesAndRelationFromTree(tree, [relation_result.relation.sys_id]);
+
+                    // Add all entities from the lib
+                    data.entities = flat_items.entities;
+
+                    // Add all relations from the lib
+                    data.relations = flat_items.relations;
+
+                    // Add new relation for this project
+                    // Before we add it, modify the to sys_id
+                    relation_result.relation.to = relation_result.relation.sys_id + "_" + relation_result.relation.to;
+
+                    // Make relation from NULL if there is no source
+                    if (input && input.source && input.source.entity && input.source.entity.sys_id) {
+                        // There is a source
+                    } else {
+                        relation_result.relation.from = "";
+                        relation_result.relation.from_dv = "[no source]";
+                    }
+                    
+                    data.relations.push(relation_result.relation);
+
+                    // Cleanup
+                    data.entities.forEach(function(e) { delete e.depth; });
+                    data.relations.forEach(function(r) { 
+                        delete r.depth; 
+                        delete r.entity;
+                    });
+
+                } else {
+                    throw "Could not create relation to entity: " + JSON.stringify(relation_result);
+                }
+
+
+
+            } else {
+                throw "Parameter missing: input.target.entity.sys_id";    
+            }
+
+            data.success = true;
+
+        }    
+        catch(err) {			
+            data.debug = this._debug;
+            data.exception = err;
+            data.success = false;
+        }
+        return new global.JSON().encode(data);        
+    
+    },
+
+    _libraryRelationType: function() {
+
+        var relation_type_sys_id = "";
+        var er_gr = new GlideRecord("sn_kpi_composer_entity_relation_type");
+        er_gr.addQuery("name", "Library");
+        er_gr.query();
+        if (er_gr.next()) {
+            relation_type_sys_id = er_gr.getValue("sys_id");
+        } else {
+            throw "Could not find relation type with the name 'Library'";
+        }
+        return relation_type_sys_id;
+
+    },
+
+    //-----
+    // Replace a entity within all canvasses from a specific project from a old sys_id to a new sys_id
+    // Used when a library is created from a entitie or when a library item is converted back to single entities
+    //
+    // Parameters:
+    // input.project.sys_id: the project sys_id
+    // input.replace_entities: [] of objects with { "old":sys_id, "new":sys_id }
+    // ----
+    _replaceEntityInCanvasDesign: function(input) {
+
+        var result = {};
+        result.replaced = []
+        result.success = false;
+
+        // Debug
+        // result.input = input;
+
+        try {
+            // Get all dashboards
+            var getDashboard = this._getDashboards(input);
+
+            // Go by all dashboards, tabs and row
+            getDashboard.dashboards.forEach(function(dashboard) {
+                dashboard.tabs.forEach(function(tab) {
+                    tab.rows.forEach(function(row) {
+                        var gr_canvas = new GlideRecord('sn_kpi_composer_canvas');
+                        gr_canvas.addQuery('row', row.sys_id);
+                        gr_canvas.query();
+                        while(gr_canvas.next()) {
+                            // Get the list of entities
+                            var entities = gr_canvas.getValue("entities");
+
+                            if (entities) {
+                                // Check all canvasses if they hold the old entity
+                                input.replace_entities.forEach(function(replace) {
+                                    // Check if the old item is in the list
+                                    if (entities.indexOf(replace.old)>-1) {
+                                        // Replace the value
+                                        entities = entities.replace(replace.old, replace.new);
+                                        // Store it back into the db
+                                        gr_canvas.setValue("entities", entities);
+                                        gr_canvas.update();
+
+                                        // Copy the replace into the result so we know what is replaces
+                                        result.replaced.push(replace);
+                                    }
+                                })
+                            }           
+                        }
+                    })
+                })
+            })
+            result.success = true;
+        }
+        catch(e) {
+            result.success = false;
+            result.exception = JSON.stringify(e);
+        }
+        return result;
+    },
+
+    type: 'LibraryApi'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-01-21 14:13:19</sys_created_on>
+        <sys_id>9bca969adbf5609095fe87096896194d</sys_id>
+        <sys_mod_count>221</sys_mod_count>
+        <sys_name>LibraryApi</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_9bca969adbf5609095fe87096896194d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-08-26 08:02:35</sys_updated_on>
+    </sys_script_include>
+</record_update>

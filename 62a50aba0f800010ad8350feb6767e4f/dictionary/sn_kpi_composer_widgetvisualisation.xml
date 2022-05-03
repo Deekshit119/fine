@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Visualización de widget" max_length="40" name="sn_kpi_composer_widgetvisualisation" type="collection">
+        <element attributes="edge_encryption_enabled=true,pdf_cell_type=image" label="FourColImg" max_length="40" name="fourcolimg" type="user_image"/>
+        <element default="0" label="Max Number of Artifacts" max_length="40" name="max_number_of_artifacts" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" label="Visualization" max_length="40" name="name" type="string"/>
+        <element attributes="edge_encryption_enabled=true,pdf_cell_type=image" label="OneColImg" max_length="40" name="onecolimg" type="user_image"/>
+        <element attributes="edge_encryption_enabled=true,pdf_cell_type=image" label="SixColImg" max_length="40" name="sixcolimg" type="user_image"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <element attributes="edge_encryption_enabled=true,pdf_cell_type=image" label="ThreeColImg" max_length="40" name="threecolimg" type="user_image"/>
+        <element attributes="edge_encryption_enabled=true,pdf_cell_type=image" label="TwelveColImg" max_length="40" name="twelvecolimg" type="user_image"/>
+        <element attributes="edge_encryption_enabled=true,pdf_cell_type=image" label="TwoColImg" max_length="40" name="twocolimg" type="user_image"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Visualisation Type" max_length="40" name="visualisationtype" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Avería" language="es" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Breakdown" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="תקלה" language="he" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="细项" language="zh" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="List" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Lista" language="es" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="רשימה" language="he" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="列表" language="zh" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Dinámica" language="es" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Pivot" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="טבלת ציר" language="he" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="数据透视" language="zh" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Puntuación" language="es" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Score" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="ציון" language="he" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="分数" language="zh" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Text" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Texto" language="es" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="טקסט" language="he" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="文本" language="zh" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Serie temporal" language="es" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="Time Series" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="סדרת זמן" language="he" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="时序" language="zh" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="Área de trabajo" language="es" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="Workbench" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="שולחן עבודה" language="he" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="工作台" language="zh" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="Barras" language="es" sequence="8" value="8"/>
+                <element inactive_on_update="false" label="Bars" sequence="8" value="8"/>
+                <element inactive_on_update="false" label="Círculos y anillos" language="es" sequence="9" value="9"/>
+                <element inactive_on_update="false" label="Pies and Donuts" sequence="9" value="9"/>
+                <element inactive_on_update="false" label="Other Reports" sequence="10" value="10"/>
+                <element inactive_on_update="false" label="Otros informes" language="es" sequence="10" value="10"/>
+                <element inactive_on_update="false" label="Tipos de controles de IU" language="es" sequence="11" value="11"/>
+                <element inactive_on_update="false" label="UI Control Types" sequence="11" value="11"/>
+                <element inactive_on_update="false" label="Foco de atención" language="es" sequence="12" value="12"/>
+                <element inactive_on_update="false" label="Spotlight" sequence="12" value="12"/>
+                <element inactive_on_update="false" label="Bloques de contenido" language="es" sequence="13" value="13"/>
+                <element inactive_on_update="false" label="Content Blocks" sequence="13" value="13"/>
+            </choice>
+        </element>
+        <element choice="1" label="Widget Type" max_length="40" name="widget_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Análisis de rendimiento" language="es" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Performance Analytics" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Informes" language="es" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Reports" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Filtros interactivos" language="es" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Interactive Filters" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Focos de atención" language="es" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Spotlights" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Bloques de contenido" language="es" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Content Blocks" sequence="5" value="5"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="sys_domain"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Canvas design" max_length="40" name="sn_kpi_composer_canvas" type="collection">
+        <element attributes="encode_utf8=false,track_definition_updated=true" label="Content Block" max_length="32" name="content_block" reference="content_block" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated" max_length="40" name="definition_updated" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated by" max_length="40" name="definition_updated_by" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="4000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true,no_sort=true,slushbucket_ref_no_expand=true,track_definition_updated=true" label="Entities" max_length="4000" name="entities" reference="sn_kpi_composer_entity" type="glide_list"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" label="Follow Element" max_length="40" name="follow_element" type="boolean"/>
+        <element attributes="track_definition_updated=true" label="Follow Interactive Filter" max_length="40" name="follow_interactive_filter" type="boolean"/>
+        <element attributes="encode_utf8=false,track_definition_updated=true" label="Interactive Filter" max_length="32" name="interactive_filter" reference="sys_ui_hp_publisher" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Order" max_length="40" name="order" type="integer"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false,track_definition_updated=true" label="PA Widget" max_length="32" name="pa_widget" reference="pa_widgets" type="reference"/>
+        <element attributes="encode_utf8=false,track_definition_updated=true" label="Report" max_length="32" name="report" reference="sys_report" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Row" max_length="32" name="row" reference="sn_kpi_composer_row" reference_cascade_rule="cascade" type="reference"/>
+        <element attributes="encode_utf8=false,track_definition_updated=true" label="Spotlight Group" max_length="32" name="spotlight_group" reference="spotlight_groups" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" choice="1" label="Time Serie" max_length="40" name="time_serie" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Day" sequence="10" value="1"/>
+                <element inactive_on_update="false" label="día" language="es" sequence="10" value="1"/>
+                <element inactive_on_update="false" label="יום" language="he" sequence="10" value="1"/>
+                <element inactive_on_update="false" label="天" language="zh" sequence="10" value="1"/>
+                <element inactive_on_update="false" label="Semana" language="es" sequence="20" value="2"/>
+                <element inactive_on_update="false" label="Week" sequence="20" value="2"/>
+                <element inactive_on_update="false" label="שבוע" language="he" sequence="20" value="2"/>
+                <element inactive_on_update="false" label="周" language="zh" sequence="20" value="2"/>
+                <element inactive_on_update="false" label="Mes" language="es" sequence="30" value="3"/>
+                <element inactive_on_update="false" label="Month" sequence="30" value="3"/>
+                <element inactive_on_update="false" label="חודש" language="he" sequence="30" value="3"/>
+                <element inactive_on_update="false" label="月" language="zh" sequence="30" value="3"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" display="true" label="Title" max_length="80" name="title" type="string"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false,track_definition_updated=true" label="WidgetVisualisation" max_length="32" name="widgetvisualisation" reference="sn_kpi_composer_widgetvisualisation" type="reference"/>
+        <index name="index">
+            <element name="content_block"/>
+        </index>
+        <index name="index2">
+            <element name="spotlight_group"/>
+        </index>
+        <index name="index3">
+            <element name="interactive_filter"/>
+        </index>
+        <index name="index4">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index5">
+            <element name="report"/>
+        </index>
+        <index name="index6">
+            <element name="pa_widget"/>
+        </index>
+        <index name="index7">
+            <element name="row"/>
+        </index>
+        <index name="index8">
+            <element name="widgetvisualisation"/>
+        </index>
+    </element>
+</database>

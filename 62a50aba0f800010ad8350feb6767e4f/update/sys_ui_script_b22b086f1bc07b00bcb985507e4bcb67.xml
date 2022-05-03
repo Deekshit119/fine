@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DraggableItem</name>
+        <script><![CDATA[var DraggableItem = createReactClass({
+	onClick: function() {
+		this.props.onClick(this.props.item);
+	},
+	
+	onDragStart: function(evt) {
+		var value = { category: this.props.category, sys_id: this.props.item.sys_id };
+		
+		evt.dataTransfer.effectAllowed = 'copyMove';
+		/**
+		 * DataTransfer.setData only supports "Text" in AI (A.K.A. text/plain) as type
+		 */
+		evt.dataTransfer.setData("Text", JSON.stringify(value));
+	},
+	
+	render: function() {
+		var localProps = {
+			key: this.props.item.sys_id,
+			className: 'wb-pa-filter-pill wb-pa-filter-pill_label sn-tooltip-basic' + (this.props.onClick != null ? ' clickable' : '') + (this.props.selected ? ' state-selected' : ''),
+			"data-category" : this.props.category,
+			"data-sys_id": this.props.item.sys_id,
+			"data-abbreviation": this.props.item.abbreviation,
+			"data-color": this.props.item.color,
+			onClick: this.props.onClick != null ? this.onClick : null
+		};
+
+		if (this.props.disableDragging !== true) {
+			localProps.onDragStart = this.onDragStart;
+			localProps["draggable"] = true;
+			localProps.className = localProps.className + " draggable";
+		}
+
+		localProps["data-" + this.props.type] = this.props.item.sys_id;
+
+		var pill = null;
+		var label = null;
+		var labelprefix = "";
+		if (this.props.displaytype === 'entitytype') {
+			labelprefix = getMessage("Add ");
+		}
+		label = e(
+			'div',
+			{className: 'wb-pa-filter-pill-label'},
+			labelprefix + this.props.item.name
+		);
+		if (this.props.displaytype === 'abbreviation') {
+			pill = e(
+				'div',
+				{className: 'wb-pa-filter-pill-decoration letter'},
+				this.props.item.abbreviation
+			);
+		} else if (this.props.displaytype === 'color' || this.props.displaytype === 'entitytype') {
+			pill = e(
+				'div',
+				{className: 'wb-pa-filter-pill-decoration', style: { backgroundColor: this.props.item.color } }
+			);
+		}
+
+		return e(
+			'div',
+			localProps,
+			e(
+				'div',
+				{ className: 'wb-pa-filter-pill-wrapper' },
+				pill,
+				label
+			)
+		);
+	}
+});]]></script>
+        <script_name>DraggableItem</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-13 12:35:04</sys_created_on>
+        <sys_id>b22b086f1bc07b00bcb985507e4bcb67</sys_id>
+        <sys_mod_count>15</sys_mod_count>
+        <sys_name>sn_kpi_composer.DraggableItem</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_b22b086f1bc07b00bcb985507e4bcb67</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-10 08:45:01</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

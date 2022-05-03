@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.ModalBreakdownList</name>
+        <script><![CDATA[var ModalBreakdownLi = createReactClass({
+	getInitialState: function() {
+		return { checked: this.props.checked };
+	},
+	
+	saveChecked: function(event) {
+		this.setState({ saving_checked: true, checked: event.target.checked });
+		var that = this;
+		this.props.onCheckedChange(this.props.breakdown.sys_id, event.target.checked, function(error) {
+			that.setState({ saving_checked: false });
+		});
+	},
+	
+	render: function() {
+		var inputswitch = null;
+		if (this.props.onCheckedChange != null) {
+			inputswitch = e(
+				'span',
+				{ className: 'input-switch' },
+				e(
+					'input',
+					{ 'aria-label': getMessage('Toggle breakdown'),id: 'edit_checked_' + this.props.breakdown.sys_id, type: 'checkbox', name: 'edit_checked_' + this.props.breakdown.sys_id, disabled: this.state.saving_checked, checked: this.state.checked, onChange: this.saveChecked }
+				),
+				e(
+					'label',
+					{ className: 'switch', 'aria-hidden': true, htmlFor: 'edit_checked_' + this.props.breakdown.sys_id }
+				)
+			);
+		}
+		
+		return e(
+			'li',
+			{ },
+			e(
+				'div',
+				{ className: 'wb-pa-filter-pill-decoration', style: { backgroundColor: this.props.breakdown.color }}
+			),
+			e(
+				'div',
+				{ className: 'item-name' },
+				this.props.breakdown.name
+			),
+			inputswitch
+		);
+	}
+});]]></script>
+        <script_name>ModalBreakdownList</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-09-19 13:30:52</sys_created_on>
+        <sys_id>5606b2acdb000c10b841ba10399619e4</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>sn_kpi_composer.ModalBreakdownList</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_5606b2acdb000c10b841ba10399619e4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-11-01 15:21:11</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

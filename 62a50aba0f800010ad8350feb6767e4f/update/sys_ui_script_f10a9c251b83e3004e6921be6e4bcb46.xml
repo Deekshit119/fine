@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Global clientside scripts </description>
+        <global>false</global>
+        <name>sn_kpi_composer.ClientGlobalUI</name>
+        <script><![CDATA[var sn_kpi_composer = sn_kpi_composer || {};
+
+sn_kpi_composer.ClientGlobalUI = (function () {
+	"use strict";
+
+	var saving = null;
+	
+	sn_kpi_composer.savingInProgress = null;
+
+	var nodeTimers = {};
+
+	return {
+		
+		setSavingInProgressElement: function(element) {
+			sn_kpi_composer.savingInProgress = element;
+		},
+		
+	
+		// Callback that will be called with the parameter true/false when the API is saving data to the server
+		setSavingCallback: function(callback) {
+			//console.log("Saving callback initialized from client");
+			sn_kpi_composer.saving = callback;
+		},
+				
+		
+		showSaving: function (saving) {
+			try {
+				//console.log("ShowSaving is called in client");
+				//  getTopWindow().document.getElementById
+				var elm = sn_kpi_composer.savingInProgress;
+				if (elm) {
+					if (elm.style.display === "none" && saving) {
+						elm.style.display = "block";
+					} 
+					if (elm.style.display === "block" && !saving) {
+						elm.style.display = "none";
+					}
+				} else {
+					this.ClientHelper.log("Please set the element to show while savind data. Use sn_kpi_composer.setSavingInProgressElement() to set.", "warn");
+				}
+			} 
+			catch(ex) {
+				this.ClientHelper.log("Exception showing saving notification.", "error", ex);
+			}
+		},
+
+		getEntityBackgroundColor: function(node) {
+			return this.getEntityBackgroundColorByFilterOk(node.data.filterok);
+		},
+
+		getEntityBackgroundColorByFilterOk: function(filterok) {
+			return filterok === false ? "#A9AAAD" : "#ffffff";
+		},
+		
+		// Color or highlight the element of a go.Node
+		dragOverNode: function(node, allow) {
+			var that = this;
+			var shape = node.findObject("entity");
+			//console.log(shape);
+			if (shape) {
+				//set timeout to clear color
+				if(nodeTimers[node.data.key]) clearTimeout(nodeTimers[node.data.key]);
+				nodeTimers[node.data.key] = setTimeout(function() { shape.background = that.getEntityBackgroundColor(node); }, 1000);
+				// Check if a relation is allowed
+				if (allow && shape.background !== "#bddcfc") {
+					shape.background = "#bddcfc";
+				} 
+				if (!allow && shape.background !== "#f77481") {
+					shape.background = "#f77481";					
+				}
+			}			
+		},
+		
+		dragLeaveNode: function(node) {
+			//console.log("leave kleur");
+			//console.log(node);
+			if (node) {
+				var shape = node.findObject("entity");
+				if (shape) {
+					if(nodeTimers[node.data.key]) clearTimeout(nodeTimers[node.data.key]);
+ 					shape.background = this.getEntityBackgroundColor(node);
+				}			
+			}
+		},
+
+		getParameterByName: function (name, url) {
+			if (!url) {
+				url = window.location.href;
+			}
+			name = name.replace(/[\[\]]/g, "\\$&");
+			var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+					results = regex.exec(url);
+			if (!results) return '';
+			if (!results[2]) return '';
+			return decodeURIComponent(results[2].replace(/\+/g, " "));
+		},
+		
+		// Skips undo
+		// Starts transactions
+		// Calls functions
+		// ENds transaction
+		// Undoskipper back to normal
+		skipUndoGoJs: function(diagram, func) {
+			 var oldskips = diagram.skipsUndoManager;
+			  diagram.skipsUndoManager = true;
+			  diagram.startTransaction("skiptran");
+			  func();
+			  diagram.commitTransaction("skiptran");
+			  diagram.skipsUndoManager = oldskips;			
+		},
+		
+		type: "ClientGlobalUI"
+	};
+})();
+]]></script>
+        <script_name>ClientGlobalUI</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-16 15:30:36</sys_created_on>
+        <sys_id>f10a9c251b83e3004e6921be6e4bcb46</sys_id>
+        <sys_mod_count>72</sys_mod_count>
+        <sys_name>sn_kpi_composer.ClientGlobalUI</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_f10a9c251b83e3004e6921be6e4bcb46</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-01-29 14:56:31</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>true</use_scoped_format>
+    </sys_ui_script>
+</record_update>

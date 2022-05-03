@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardTabListItem</name>
+        <script><![CDATA[var DashboardTabListItem = createReactClass({
+	// setEdit: function() {
+	// 	this.onEditClick(null);
+	// },
+	
+	getInitialState: function() {
+		return { edit: false, hover: false, delete: false, dropdownOpen: false, addastemplate: false, addedastemplate: false };
+	},
+	
+	componentDidUpdate: function(prevProps, prevState) {
+		if (prevState.edit === false && this.state.edit === true && this.refs.nameinput != null) {
+			this.refs.nameinput.select();
+		}
+	},
+	
+	stopClick: function(evt) {
+		evt.stopPropagation();
+	},
+	
+	onMouseEnter: function() {
+		this.setState({ hover: true });
+	},
+	
+	onMouseLeave: function() {
+		this.setState({ hover: false });
+	},
+	
+	onEditClick: function (evt) {
+		if (evt != null) evt.stopPropagation();
+		this.setState({ edit: true, saving: false, name: this.props.dashboardtab.name });
+	},
+	
+	handleNameInputChange: function(event) {
+		this.setState({ name: event.target.value });
+	},
+	
+	handleNameInputBlur: function(event) {
+		this.saveItemIfNeeded();
+	},
+	
+	handleSubmit: function(event) {
+		event.preventDefault();
+		this.saveItemIfNeeded();
+	},
+	
+	saveItemIfNeeded: function() {
+		if (this.state.name !== this.props.dashboardtab.name) {
+			this.setState({ saving: true });
+			var that = this;
+			this.props.onDashboardTabSaveName(this.props.dashboardtab.sys_id, this.state.name, function(error) {
+				that.setState({ edit: false });
+			});
+		} else {
+			this.setState({ edit: false });
+		}
+	},
+	
+	onMoveToLeftClick: function(evt) {
+		evt.preventDefault();
+		evt.stopPropagation();
+		this.setState({ dropdownOpen: false });
+		this.props.onDashboardTabMoveTo('left', this.props.dashboardtab.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onMoveToRightClick: function(evt) {
+		evt.preventDefault();
+		evt.stopPropagation();
+		this.setState({ dropdownOpen: false });
+		this.props.onDashboardTabMoveTo('right', this.props.dashboardtab.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onDeleteClick: function(evt) {
+		evt.preventDefault();
+		evt.stopPropagation();
+		this.setState({ delete: true, dropdownOpen: false });
+	},
+	
+	onDeleteNo: function() {
+		this.setState({ delete: false });
+	},
+	
+	onDeleteYes: function() {
+		this.props.onDashboardTabDelete(this.props.dashboardtab.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onSelectClick: function(evt) {
+		this.props.onDashboardTabSelect(this.props.dashboardtab);
+	},
+
+	onDropdownToggle: function(evt) {
+		this.setState(function (prevState) { return { dropdownOpen: !prevState.dropdownOpen }; });
+	},
+
+	onAddAsTemplateClick: function(evt) {
+		evt.preventDefault();
+		evt.stopPropagation();
+		this.setState({ addastemplate: true, dropdownOpen: false });
+	},
+
+	addAsTemplateOnCancel: function() {
+		this.setState({ addastemplate: false });
+	},
+	
+	addAsTemplateSave: function(data) {
+		var that = this;
+		this.props.onDashboardTabAddAsTemplate(this.props.dashboardtab.sys_id, data, function(error){
+			that.setState({ addastemplate: false, addedastemplate: !error });
+		});
+	},
+
+	onAddedAsMessageOk: function() {
+		this.setState({ addedastemplate: false });
+	},
+	
+	render: function() {
+		var that = this;
+		var confirmremoval = null;
+		if (this.state.delete === true) {
+			confirmremoval = e(
+				ConfirmRemoval,
+				{ onYes: this.onDeleteYes, onNo: this.onDeleteNo }
+			);
+		}
+
+		var addastemplatemodal = null;
+		if (this.state.addastemplate === true) {
+			addastemplatemodal = e(
+				DashboardTabAddAsTemplateModal,
+				{
+					key: 'addastemplatemodal',
+					initial_title: this.props.dashboardtab.name,
+					onSave: this.addAsTemplateSave,
+					onCancel: this.addAsTemplateOnCancel
+				}
+			);
+		}
+
+		var addedastemplatemodal = null;
+		if (this.state.addedastemplate === true) {
+			addedastemplatemodal = e(
+				ConfirmMessage,
+				{ title: getMessage("Tab layout saved"), content: getMessage("The tab has been saved as template"), onOk: this.onAddedAsMessageOk }
+			);
+		}
+		
+		var buttons = null;
+		if ((this.props.onDashboardTabMoveTo || this.props.onDashboardTabDelete || this.props.onDashboardTabAddAsTemplate) && this.props.isselected === true && this.state.edit === false) {
+			var buttonactions = [];
+			if (this.props.onDashboardTabMoveTo) {
+				if (this.props.allowmoveleft) {
+					buttonactions.push(e(
+						Reactstrap.DropdownItem,
+						{ tag: 'li', key: 'moveleft' },
+						e(
+							'a',
+							{ href: window.location.href, title: getMessage("Move left"), onClick: this.onMoveToLeftClick },
+							e('span', {className: 'icon icon-arrow-left'}),
+							getMessage("Move left")
+						)
+					));
+				}
+				if (this.props.allowmoveright) {
+					buttonactions.push(e(
+						Reactstrap.DropdownItem,
+						{ tag: 'li', key: 'moveright' },
+						e(
+							'a',
+							{ href: window.location.href, title: getMessage("Move right"), onClick: this.onMoveToRightClick },
+							e('span', {className: 'icon icon-arrow-right'}),
+							getMessage("Move right")
+						)
+					));
+				}
+			}
+			if (this.props.onDashboardTabDelete) {
+				buttonactions.push(e(
+					Reactstrap.DropdownItem,
+					{ tag: 'li', key: 'delete' },
+					e(
+						'a',
+						{ href: window.location.href, title: getMessage("Delete item"), onClick: this.onDeleteClick },
+						e('span', {className: 'icon icon-trash'}),
+						getMessage("Delete item")
+					)
+				));
+			}
+			if (this.props.onDashboardTabAddAsTemplate) {
+				buttonactions.push(e(
+					Reactstrap.DropdownItem,
+					{ tag: 'li', key: 'addastemplate' },
+					e(
+						'a',
+						{ href: window.location.href, title: getMessage("Save as template"), onClick: this.onAddAsTemplateClick },
+						e('span', {className: 'icon icon-add'}),
+						getMessage("Save as template")
+					)
+				));
+			}
+
+			if (buttonactions.length) {
+				buttons = e(
+					'div',
+					{ className: 'icon-contain' },
+					e(
+						Reactstrap.Dropdown,
+						{ isOpen: this.state.dropdownOpen, toggle: this.onDropdownToggle, size: 'sm' },
+						e(
+							Reactstrap.DropdownToggle,
+							{ className: 'btn btn-link' },
+							e(
+								'span',
+								{className: 'caret'}
+							)
+						),
+						e(
+							Reactstrap.DropdownMenu,
+							{ tag: 'ul' },
+							buttonactions
+						)
+					)
+				);
+			}
+		}
+		var name = null;
+		if (this.state.edit === true) {
+			name = e(
+				'form',
+				{className: 'item-name', onSubmit: this.handleSubmit},
+				e(
+					'input',
+					{ ref: 'nameinput', type: 'text', autoFocus: true, placeholder: getMessage('Edit Item'), className: 'form-control', disabled: this.state.saving, value: this.state.name, onChange: this.handleNameInputChange, onBlur: this.handleNameInputBlur, maxLength: 40, onClick: this.stopClick }
+				)
+			);
+		} else {
+			var nameprops = { className: 'item-name' };
+			if (this.props.onDashboardTabSaveName && this.props.isselected === true) {
+				nameprops.className += ' editable';
+				nameprops.onClick = this.onEditClick;
+			}
+			name = e(
+				'div',
+				nameprops,
+				this.props.dashboardtab.name
+			);
+		}
+		
+		return e(
+			'li',
+			{
+				className: 'tabs2_tab' + (this.state.hover ? ' onhover' : '') + (this.props.isselected ? ' tabs2_active' : ''), onMouseEnter: this.onMouseEnter, onMouseLeave: this.onMouseLeave, onClick: this.onSelectClick
+			},
+			e(
+				'h2',
+				{ className: 'sr-only ng-binding' },
+				this.props.dashboardtab.name
+			),
+			e(
+				'header',
+				{ className: 'wb-pa-dashboardtabitem-header' },
+				e(
+					'div',
+					{ className: 'tab_caption_text', style: { overflow: 'visible' } },
+					name,
+					buttons,
+					e(
+						'div',
+						{ className: 'clearfix' }
+					)
+				)
+			),
+			confirmremoval,
+			addastemplatemodal,
+			addedastemplatemodal
+		);
+	}
+});]]></script>
+        <script_name>DashboardTabListItem</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-08 11:29:43</sys_created_on>
+        <sys_id>e4870a0b1b43370019e8ed7b2f4bcb6f</sys_id>
+        <sys_mod_count>53</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardTabListItem</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_e4870a0b1b43370019e8ed7b2f4bcb6f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-26 17:40:42</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

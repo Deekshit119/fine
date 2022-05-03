@@ -1,0 +1,1295 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectApi</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description>Generic class to do project manipulation and project-user related data</description>
+        <name>ProjectApi</name>
+        <script><![CDATA[var ProjectApi = Class.create();
+ProjectApi.prototype = Object.extendsObject(sn_kpi_composer.RecordApi, {
+
+	// Stores the last/current project of the user
+	_project: null,
+
+
+	// Get a list of project
+	// Has the last edit datetime for the current user
+	getProjectsHistoryJson: function(input) {
+
+		var result = {};
+		result.success = false;
+
+		try {
+
+			if (this.trace) result.debug = this._debug;
+
+			// Read input param
+			input = this._getInputParam(input);
+
+			// Create result
+			result = this._projectsHistory();		
+			
+			//if (result && result.success && result.success == true)
+			// Try to sort
+			var that = this;
+			result.projects.sort(
+				function(a, b){ 
+					//if (that.trace) that._debug.push("Sorting objects A:" + a.lastedit_ord + " B:" + b.lastedit_ord);
+					return b.lastedit_ord - a.lastedit_ord; 
+				});
+
+			result.success = true;
+
+		} catch(err) {
+			result.exception = err.message;
+		}
+	
+				
+		// return json
+		return new global.JSON().encode(result);
+	}, 
+	
+	addProjectJson: function(input) {
+		// Read input param
+		input = this._getInputParam(input);
+		// Create project
+		var result = this._addProject(input);
+		// Return result
+		return new global.JSON().encode(result);
+	},
+
+
+	// ---
+	// Add/Create new a project
+	// parameters:
+	// input.name => the name of the new project
+	// input.description => the description of the project (optional)
+	// input.suppress_dashboard_creation => when set to true no default dashboard will be created (for lib) (optional)
+	// input.defaultentityrelationtype => the default reation to take (optinal)
+	// ----
+	_addProject: function(input) {
+		
+		var result = {};
+		result.success = false;
+		
+		try {
+
+			// Read input param
+			input = this._getInputParam(input);
+
+			// Is the default relation type set, if not make it the "normal"
+			if (input.defaultentityrelationtype === undefined || input.defaultentityrelationtype === null || input.defaultentityrelationtype === "")
+				input.defaultentityrelationtype = "73996b5d1b03e3004e6921be6e4bcb5f";
+
+			// Create project record
+			sn = new GlideRecord('sn_kpi_composer_project');
+			// Create a new userProject record 
+			sn.initialize();
+
+			// Take the name
+			if (input.name)
+				sn.setValue("name", input.name);
+
+			// Take the description
+			if (input.description)
+				sn.setValue("description", input.description);
+
+			// Set the library property if set (default false)
+			if (input.library && input.library === true) 
+				sn.setValue("library", true);
+
+			// Set the default relation
+			if (input.defaultentityrelationtype)
+				sn.setValue("default_entity_relation_type", input.defaultentityrelationtype);
+
+			// Set the owner 
+			if (input.owners)
+				sn.setValue("owners", input.owners);
+			
+
+			// Create record and return the new sys_id
+			var new_sys_id = sn.insert();
+
+			var project =  this._project_record(sn);
+
+			result.project = project;
+			
+			// By default we shoud create a basic dashboard. this functionalty can be suppress by setting the property suppress_dashboard_creation to false
+			if (input.suppress_dashboard_creation === undefined || input.suppress_dashboard_creation === false) {
+				// Create dashboard!
+				var baseApi = new BaseApi();
+				var create_dashboard = {};
+				create_dashboard.action = "insertDashboard";
+				create_dashboard.dashboard = {};
+				create_dashboard.dashboard.name = "Dashboard 1";
+				create_dashboard.dashboard.description = "";
+				create_dashboard.dashboard.order = 1;
+				create_dashboard.project = project;
+				var new_dashboard = baseApi._updateData(create_dashboard);			
+				result.new_dashboard = new_dashboard;
+				
+				// Create tab (when dashboard is created)
+				if (new_dashboard.success) {
+					var create_tab = {};
+					create_tab.action = "insertTab";
+					create_tab.tab = {};
+					create_tab.tab.dashboard = new_dashboard.dashboard.sys_id;
+					create_tab.tab.order = 1;
+					create_tab.tab.caption = "Tab 1";
+					create_tab.project = project;
+					new_tab = baseApi._updateData(create_tab);
+					result.new_tab = new_tab;
+				}
+			}
+						
+			result.success = true;
+		}
+		catch(ex) {
+			this._debug.push("Exception while adding project!");
+			this._debug.push(JSON.stringify(ex));
+			gs.error("Exception while adding project:" + ex);			
+		}		
+		return result;
+	},
+	
+
+	
+	// ---
+	// deleteProject
+	// ---
+	// Deletes project and all related data
+	// parameters:
+	// input.project.sys_id 
+	// ----
+	deleteProjectJson: function(input) {
+
+		// Read input param		
+		input = this._getInputParam(input);
+
+		var result = {};
+
+		result.success = false;
+
+		if (input && input.project && input.project.sys_id) {
+			if (input.project.sys_id === "all" || input.project.sys_id === "clear") {
+				
+				var clear_database = false;
+				if (input.project.sys_id === "clear")
+					clear_database = true;
+				
+				var g = new GlideRecord("sn_kpi_composer_project");
+				g.query();
+				while(g.next()) {
+					input = {};
+					input.project = {};
+					input.project.sys_id = g.getValue("sys_id");
+					result = this._deleteProject(input, true, clear_database);	
+				}
+			} else {
+				// Delete project
+				result = this._deleteProject(input);
+			}
+		} else {
+			result.exception = "No project.sys_id set";			
+		}
+		
+		// return json
+		return new global.JSON().encode(result);
+	}, 	
+
+
+	// Remove a specific project from the database
+	// keep_taskdefs_refs => will not delete the project from the related project field in the taskdefs table, this is used when the project is delete
+	//	                     right before the update and the "new" project (with same sys_id) will be inserted soon
+	// clear_database => removes ALL KPI data - makes a complete clean database for KPI composer (debug only)
+	_deleteProject: function(input, keep_taskdefs_refs, clear_database) {
+
+		var result = {};
+		result.success = false;
+
+		try {
+
+			if (input && input.project && input.project.sys_id) {
+
+				var entityApi = new sn_kpi_composer.EntityApi();								
+
+				// Load the project to collect all data
+				var data = entityApi.getData(input);
+				if (data.success && data.success === true) {
+					// Now delete all project related data
+					
+					var project = input.project.sys_id;
+					
+						// eslint-disable-next-line no-inner-declarations
+						function deleteByTableName(tableNm) {
+							var gr = new GlideRecord(tableNm);
+							gr.addQuery("project", project);
+							gr.deleteMultiple();							
+						}
+
+					// EntityBreakdown
+					deleteByTableName("sn_kpi_composer_entity_breakdown_m2m")
+
+					// EntityCollapsed
+					deleteByTableName("sn_kpi_composer_entity_collapsed");
+
+					// EntityPersona
+					deleteByTableName("sn_kpi_composer_entity_persona_m2m");		
+					
+					// ProjectPermissions
+					deleteByTableName("sn_kpi_composer_project_permissions");						
+
+					// EntitiesEntities
+					deleteByTableName("sn_kpi_composer_entities_entities_m2m");		
+					
+					// EntityRelation
+					deleteByTableName("sn_kpi_composer_entity_relation");				
+					
+					// ProjectsUsers
+					deleteByTableName("sn_kpi_composer_m2m_projects_users");		
+					
+					// ProjectTask
+					deleteByTableName("sn_kpi_composer_project_task");	
+					
+					// ProjectValidation
+					deleteByTableName("sn_kpi_composer_project_validation");	
+
+					// UserProject
+					deleteByTableName("sn_kpi_composer_user_project");	
+					
+					// Get all dashboard designs
+					var gr_dash = new GlideRecord('sn_kpi_composer_dashboard');
+					gr_dash.addQuery('project',project);
+					gr_dash.query();
+					
+					while (gr_dash.next()){
+						
+						// For each dashboard get all tabs
+						var dashboard_sys_id = gr_dash.getValue('sys_id');
+						var gr_tabs = new GlideRecord('sn_kpi_composer_tab');
+						gr_tabs.addQuery('dashboard',dashboard_sys_id);
+						gr_tabs.query();
+						
+						while (gr_tabs.next()){
+							
+							// For each tab get all rows
+							var tab_sys_id = gr_tabs.getValue('sys_id');
+							var gr_rows = new GlideRecord('sn_kpi_composer_row');
+							gr_rows.addQuery('tab',tab_sys_id);		
+							gr_rows.deleteMultiple();
+						}
+						gr_tabs.deleteMultiple();
+					}
+					gr_dash.deleteMultiple();
+
+					// Project
+					var gr = new GlideRecord('sn_kpi_composer_project');
+					gr.get(project);
+					gr.deleteMultiple();	
+
+					if (global.JSUtil.nil(keep_taskdefs_refs) || keep_taskdefs_refs == false) { 
+					
+						// Remove all refs to this project in the task_defintions
+						var pv = new GlideRecord('sn_kpi_composer_task_definition');
+						var queryStr = "projectsLIKE" + project;
+						pv.addEncodedQuery(queryStr);
+						pv.query();
+						var projectTask = new ProjectTask();
+						projectTask.trace = this.trace;
+						while(pv.next()) {
+							projectTask.removeProjectUsedInTaskDef(pv, project);
+							pv.update();
+						}
+
+						// data.project.sys_id
+						// Set all task defs to deleted when it is a orphan
+						var projectTaskValidateTaskDefOrphans = new ProjectTaskValidateTaskDefOrphans();
+						projectTaskValidateTaskDefOrphans.trace = this.trace;
+						projectTaskValidateTaskDefOrphans.validatetasks({ "project": { "sys_id": project, "name": "removed"} });
+
+					}
+					
+					
+					// Optional clear database
+					if (clear_database == true){
+						
+						var clearTableName = function (tableNm) {
+							var gr = new GlideRecord(tableNm);
+							gr.deleteMultiple();							
+						};
+						
+						// indicator def
+						clearTableName("sn_kpi_composer_indicator_definition");	
+
+						// Report def
+						clearTableName("sn_kpi_composer_report_definition");	
+
+						// task def
+						clearTableName("sn_kpi_composer_task_definition");	
+
+						// tasks
+						clearTableName("sn_kpi_composer_task");	
+						
+						// validations
+						clearTableName("sn_kpi_composer_project_validation");	
+						
+						// breakdowns
+						clearTableName("sn_kpi_composer_persona");	
+						
+						// personas
+						clearTableName("sn_kpi_composer_breakdown");
+						
+					}
+											
+					result.success = true;
+
+				} else {
+					throw "Could not load project from entityapi: " + JSON.stringify(data);
+				}
+
+			} else {
+				throw "No input parameter found 'project.sys_id'";
+			}
+			
+		} 
+		catch(err) {			
+			result.exception = JSON.stringify(err);
+		}
+
+		return result;
+	},
+
+	
+	mark_project_as_edited: function(input) {
+		
+		if (input && input.project && input.project.sys_id) {
+			var gr = new GlideRecord("sn_kpi_composer_user_project");
+			gr.addQuery("project", input.project.sys_id);
+			gr.addQuery("user", gs.getUserID());
+			gr.query();
+			if (gr.next()) {
+				// Force update time to record
+				var c = gr.getValue("count");
+				if (!c) c = 1;
+				c++;
+				gr.setValue("count", c);
+				gr.update();
+			} else {
+				// Create record
+				gr.initialize();
+				gr.setValue("project", input.project.sys_id);
+				gr.setValue("user", gs.getUserID());
+				gr.insert();				
+			}
+			return gr.getValue("sys_updated_on");
+		}
+		return null;
+
+	},
+
+	/*
+	* Short function to the current project (object) of this user
+	* The record will be red from the database and a local copy of the data
+	* will be stored and used when the object is used again
+	*/
+	project: function(input) {
+
+		// If the project is a parameter from the call, ignore the ProjectUser table at all, just load the project from the parameter
+		if (input && input.project && input.project.sys_id) {
+			var gr = new GlideRecord("sn_kpi_composer_project");
+			if (gr.get(input.project.sys_id)) {
+				// this._debug.push("Project ID from input parameter.");
+				this._project = this._project_record(gr);
+				return this._project;
+			} else {
+				return { "sys_id": input.project.sys_id, "not_found": true };
+			}
+		}
+
+		if (this._project && this.trace) {
+			this._debug.push("Return cached project information: " + this._project.sys_id);
+			return this._project;
+		}
+		return { "sys_id": "unknown", "not_found": true };
+	},
+
+	// Reads all project_sys_id that are related (by libary) to the current project
+	// Return a array of distinct project_sys_id's
+	_project_and_related_projects: function(input) {
+		
+		var project = this.project(input);
+
+		// Select all projects (and its entity) that are used in the current project
+		// This can be libary projects
+
+		var projects = this._project_and_related_projects_recursive(project.sys_id, 0);
+
+		return projects;
+
+	},
+
+	_project_and_related_projects_recursive: function(project_sys_id, recursiveCount) {
+
+		// Select all projects (and its entity) that are used in the current project
+		// This can be libary projects
+		var projects = [];
+		projects.push(project_sys_id);
+
+		// gs.info("project_sys_id: {0}", project_sys_id);
+
+		// Select the libary project
+		var er_gl = new GlideRecord("sn_kpi_composer_entities_entities_m2m");
+		// Take relation from your project
+		er_gl.addQuery("project", project_sys_id);
+		// That does point to your project (result => lib projects)
+		er_gl.addQuery("to_entity.project", "!=", project_sys_id);
+		er_gl.query();
+		// Loop and add to array
+		while(er_gl.next()) {
+			// .walk project_sys_id
+			// Force sub_project_sys_id to be a string
+			var sub_project_sys_id = '' + er_gl.getElement("to_entity.project.sys_id");
+			if (projects.indexOf(sub_project_sys_id)<0) {
+				projects.push(sub_project_sys_id);
+				if (recursiveCount<8) {
+					var sub_projects = this._project_and_related_projects_recursive(sub_project_sys_id, (recursiveCount+1));
+					sub_projects.forEach(function(p) { 
+						if (projects.indexOf(p)<0) {
+							projects.push(p);
+						}
+					});
+				}
+			}		
+		}		
+		return projects;
+	},
+
+	// Return a filter to use as encodes query string based
+	// on the distinct projects that are used within a project (including the actual project)
+	_encoded_filter_project_and_related_projects: function(input) {
+
+		// Get all related projects
+		var projects = this._project_and_related_projects(input);
+		
+		// Create dynamic filter
+		var project_filter = "";
+		projects.forEach(function(p) {
+			if (project_filter.length>0)
+				project_filter += "^OR";
+			project_filter += "project.sys_id=" + p;				
+		});
+		return project_filter;
+	},
+
+
+	//------
+	// Reads all entities and relations from a project
+	// Takes all related project (libraries) and modifies the sys_id
+	// for unique tree id's
+	_project_entities_and_relations: function(input, recursive) {
+
+		// Check if the recursion value is set, else create a empty array
+		if (recursive === undefined || recursive === null) recursive = [];	
+
+		// Create prefix based on the current recursive values
+		var prefix = recursive.join("_");
+
+		// Add a "_" 
+		if (prefix.length>0) prefix += "_";
+		
+
+		if (this.trace) this._debug.push("_project_entities_and_relations() input:" + JSON.stringify(input) + "  Recursive:" + JSON.stringify(recursive) );
+
+		var result = {};
+		result.success = false;
+		result.entities = [];		
+		result.relations = [];
+
+		// Read the entity for the active project
+		var entities = this._entitiesFromProject(input);
+
+		// For all entities apply stuff
+		entities.forEach(function(e) {
+
+			// Create array for later use
+			e.breakdowns = [];
+
+			// Create array for later use
+			e.personas = [];			
+
+			// Create base relation record
+			e.relation_sys_id = "";
+
+			// If there is a relation store the last relation
+			if (recursive.length>0) 
+				e.relation_sys_id = recursive[recursive.length-1];
+
+			// TODO: calculate
+			e.library_root = false;
+
+			// By default collapsed and collaseddd = false
+			e.collapsed = false;
+			e.collapseddd = false;
+
+			// Store original sys_id
+			e.org_sys_id = e.sys_id;
+
+			// Apply prefix
+			e.sys_id = prefix + e.sys_id;
+
+			// Store for result
+			result.entities.push(e);
+		});
+
+		var that = this;
+
+		// Now get all relation for this project
+		var relations = this._relationsFromProject(input);
+
+		// For all relations, check prefix and recursion
+		relations.forEach(function(r) {
+
+			// Store original sys_id
+			r.org_sys_id = r.sys_id;
+
+			// Apply prefix
+			r.sys_id = prefix + r.sys_id;
+
+			// Change the from with the prefix
+			r.from = prefix + r.from;
+
+			// If this relation is to a node from a other project start recursion
+			if (r.to_project !== input.project.sys_id) {
+				// Add to recursive list
+				recursive.push(r.org_sys_id);
+
+				// Change the prefix for this TO node
+				var new_prefix = recursive.join("_");
+				// Apply to
+				r.to = new_prefix + "_" + r.to;
+				// Read ub nodes (recursion)
+				var sub = that._project_entities_and_relations({ "project": { "sys_id": r.to_project } }, recursive);
+				// Apply all sub nodes 
+				result.entities = result.entities.concat(sub.entities);
+				// Apply all sub nodes 
+				result.relations = result.relations.concat(sub.relations);
+			} else {
+				// Apply basic prefix to the to node when relation is within the project
+				r.to = prefix + r.to;
+			}
+
+			// Add relation to result
+			result.relations.push(r);
+
+		});		
+		
+		// Create distinct project sys_id list
+		result.projects = [];
+		result.entities.forEach(function(e) {
+			if (result.projects.indexOf(e.project_sys_id)<0)
+				result.projects.push(e.project_sys_id);
+		});
+
+		// Create dynamic filter
+		var projects_filter = "";
+		result.projects.forEach(function(p) {
+			if (projects_filter.length>0)
+				projects_filter += "^OR";
+			projects_filter += "project.sys_id=" + p;				
+		});
+		result.projects_filter = projects_filter;
+
+		// local vars containing only persona's for this project
+		var projects_personas = [];
+
+		// Personas for all projects
+		var ep = new GlideRecord('sn_kpi_composer_entity_persona_m2m');
+		ep.addEncodedQuery(projects_filter);
+		ep.query();
+		while (ep.next()) {
+			projects_personas.push({
+				entity: ep.getValue('entity'),
+				persona: ep.getValue('persona'),
+			});
+		}
+
+		// local vars containing only breakdowns for this project
+		var projects_breakdowns = [];
+
+		// All entity_breakdowns for this projects
+		var eb = new GlideRecord('sn_kpi_composer_entity_breakdown_m2m');
+		eb.addEncodedQuery(projects_filter);
+		eb.query();
+		while (eb.next()) {
+			projects_breakdowns.push({
+				entity: eb.getValue('entity'),
+				breakdown: eb.getValue('breakdown'),
+			});
+		}			
+
+		// Now add breakdowns and persona to the entities
+		result.entities.forEach(function(entity) {
+			// Add breakdowns 
+			entity.breakdowns = projects_breakdowns.filter(function (b) { return b.entity === entity.org_sys_id;}).map(function(b) { return b.breakdown; });
+			// Add persona's
+			entity.personas = projects_personas.filter(function (p) { return p.entity === entity.org_sys_id;}).map(function(p) { return p.persona; });			
+		});
+
+		var libraryApi = new sn_kpi_composer.LibraryApi();
+
+		var libraryRelationType = libraryApi._libraryRelationType();
+
+		// Now to mark nodes as the topnode of a library we go by all relations
+		result.relations.forEach(function(r) {
+			// if the relation is the the libraty type
+			if (r.relationtype === libraryRelationType) {
+				// Take al look at all entities
+				result.entities.forEach(function(e) {
+					// If the node is the to, the node is the start of the library
+					if (e.sys_id === r.to) {
+						e.library_root = true;
+					}
+				})
+			}
+		});
+
+		result.success = true;
+
+		return result;
+	},
+
+
+	//-----
+	// Loads a summary info from a project
+	// entity_types[] => entity_type .counts
+	//
+	_project_entity_types: function(input) {
+
+		var entity_types = [];
+
+		var projects_filter = this._encoded_filter_project_and_related_projects(input);
+
+		// Count the number of entity type for this project
+		var ep_gr = new GlideAggregate("sn_kpi_composer_entity");
+		ep_gr.addEncodedQuery(projects_filter);
+		ep_gr.addAggregate("COUNT", "entity_type");
+		ep_gr.query();
+
+		while(ep_gr.next()) {
+			var entity_type = {};
+			entity_type.count = ep_gr.getAggregate("COUNT", "entity_type");
+			entity_type.entity_type_dv = ep_gr.getDisplayValue("entity_type");
+			entity_type.entity_type = ep_gr.getValue("entity_type");
+			entity_types.push(entity_type);
+		}
+
+		return entity_types;
+
+	},
+
+
+	// Reads all project_sys_id that are related (by libary) to the current project
+	// It returns a object array of project_sys_id and relation_sys_id
+	// this can be used to multiply the entities when used multiple times within the same project
+	// The top_entity_sys_id is the first forgein key in the list, later used to mark the top node
+	// Return a array with objects:
+	// - main_project => boolean
+	// - project_sys_id => sys_id
+	// - relation_sys_id => sys_id
+	// - relation_prefix => string
+	// - top_entity_sys_id => sys_id 
+
+	// DEPRICATED
+
+	_project_and_related_projects_with_relations_OLD: function(input) {
+		
+		var project = this.project(input);
+
+		// Select all projects (and its entity) that are used in the current project
+		// This can be libary projects
+		var projects = [];
+		projects.push({ 
+			main_project: true, 
+			project_sys_id: project.sys_id, 
+			relation_sys_id: null,
+			relation_prefix: ""
+		});
+
+		// Select the libary project
+		var er_gl = new GlideRecord("sn_kpi_composer_entities_entities_m2m");
+		// Take relation from your project
+		er_gl.addQuery("project", project.sys_id);
+		// That does point to your project (result => lib projects)
+		er_gl.addQuery("to_entity.project", "!=", project.sys_id);
+		er_gl.query();
+		// Loop and add to array
+		while(er_gl.next()) {
+			// .walk project_sys_id
+			var project_sys_id = er_gl.getElement("to_entity.project.sys_id");
+			var p = {};
+			p.main_project = false;
+			p.project_sys_id = project_sys_id.toString();
+			p.relation_sys_id = er_gl.getValue('sys_id');
+			p.relation_prefix = er_gl.getValue('sys_id') + "_";
+			p.top_entity_sys_id = er_gl.getValue("to_entity");
+			projects.push(p);
+		}		
+		return projects;
+	},
+
+
+	/*
+	* Get a list of all projects, and get the last datetime the project was edited by this user
+	*/
+	_projectsHistory: function(input) {
+		var result = {};
+		result.projects = [];
+		result.success = false;
+
+		// Get input params
+		input = this._getInputParam(input);
+		
+		// General AccessControl stuff
+		var ac = new sn_kpi_composer.AccessControl;
+
+		var projectApi = new sn_kpi_composer.ProjectApi();
+
+		var pr = new GlideRecordSecure('sn_kpi_composer_project');
+		pr.query();
+		while(pr.next()) {
+			// Create project
+			var p = this._project_record(pr);
+			
+			p.lastedit = "1970-01-01 00:00:00";
+			p.lastedit_ord = "19700101000000";
+			p.comments = pr.comments.getJournalEntry(-1);
+			
+			var l_e_r = new GlideRecord("sn_kpi_composer_user_project");
+			l_e_r.addQuery("project", p.sys_id);			
+			l_e_r.addQuery("user", gs.getUserID());
+			l_e_r.query();
+			if (l_e_r.next()) {							
+				p.lastedit = l_e_r.getValue("sys_updated_on");
+				p.lastedit_ord = p.lastedit.toString().replace(/\D/g,'');
+			}
+
+			// shared
+			p.shared = (ac._project_share_read(p.sys_id));
+
+			// Responsible (by owner)
+			p.responsible = (ac._project_owner(p.sys_id));
+
+			// Mark readonly
+			p.readonly = !pr.canWrite() && !ac.project_write(p.sys_id);
+
+			// Get entity type summary info
+        	p.entity_types = projectApi._project_entity_types({ "project": {"sys_id": p.sys_id} });	
+
+			// Add project to the list
+			result.projects.push(p);
+
+		}
+		// Can there 
+		result.cancreate = ac.project_create();
+
+		// Result to true
+		result.success = true;
+				
+		return result;		
+	},
+
+
+	/* 
+	* Return 0, 1 or more nodes that are the top nodes for a project 
+	* This can be 0 node
+	* This can be 1 node that is related to the project but does not have a relation record (in this project)
+	* There can be more nodes because there can be relation records that have no from node but only a to node
+	* parameter: the project_sys_id
+	*/
+	
+	_projectTopNodes: function(project_sys_id) {
+
+		var result = [];
+		var to_nodes = [];
+
+		try {
+			// This query has 2 purposes
+			// 1) Check if there is a record without a "from" node, then its a root
+			// 2) Create a list of "to" nodes to compare to the entity table (later on)
+			var ee_gr = new GlideRecord("sn_kpi_composer_entities_entities_m2m");
+			ee_gr.addQuery("project", project_sys_id);
+			ee_gr.query();
+
+			while(ee_gr.next()) {
+
+				// Is there a from_node -> if not, the to_node is a root node
+				if (ee_gr.getValue("from_entity") == null) {				
+				
+					// Read entity
+					var er = new GlideRecord("sn_kpi_composer_entity");
+					if (er.get(ee_gr.getValue("to_entity"))) {
+						result.push(this._entity_record(er));
+					}
+				}
+
+				// Add the sys_id to the list
+				to_nodes.push(ee_gr.getValue("to_entity"));				
+			}				
+			// Check all entities from this project
+			var e_gr = new GlideRecord("sn_kpi_composer_entity");
+			e_gr.addQuery("project", project_sys_id);
+			e_gr.query();
+			while(e_gr.next()) {
+				
+				var sys_id = e_gr.getValue("sys_id");
+
+				// Check if the node is not used as a TO_ENTITY
+				// Then it is a root node
+				if (to_nodes.indexOf(sys_id)<0) {
+					// Not found, it is a root
+					var entity = this._entity_record(e_gr);
+					result.push(entity);
+				}
+			}
+		}	
+		catch(err) {
+			result.push(JSON.stringify(err));
+		}
+
+		return result;
+
+	},
+
+	/*
+	* Add project permission record
+	*
+	*/
+	_getProjectPermissions: function(project_sys_id) {
+		var result = {};
+		result.success = false;
+		result.project_permissions = [];
+		try {
+				var pp = new GlideRecord('sn_kpi_composer_project_permissions');
+				pp.addQuery("project", project_sys_id);
+				pp.query();
+				while(pp.next()) {
+					result.project_permissions.push(this._project_permission_record(pp));
+				}
+				result.success = true;			
+		} catch(err) {			
+			result.exception = JSON.stringify(err);
+		}
+		return result;
+	},
+
+
+	
+	/*
+	* Add project permission record
+	*
+	*/
+	_addProjectPermissions: function(data) {
+		var result = {};
+		result.success = true;
+		try {
+
+			if (data.permissions) {
+
+				var project = this.project(data);
+
+				var pp = new GlideRecord('sn_kpi_composer_project_permissions');
+				
+				// Check if the write permission is set, default is false
+				if (data.permissions.write === undefined) data.permissions.write = false;
+
+				if (data.permissions.groups) {
+					result.groups = [];
+					data.permissions.groups.forEach(function(group) {
+						pp.initialize();
+						pp.setValue("project", project.sys_id);
+						pp.setValue("permissiontype", "2");
+						pp.setValue("group", group);
+						pp.setValue("write", data.permissions.write);
+						var pp_sys_id = pp.insert();
+						result.groups.push(pp_sys_id);	
+					});			
+				}
+				if (data.permissions.users) {
+					result.users = [];
+					data.permissions.users.forEach(function(user) {
+						pp.initialize();
+						pp.setValue("project", project.sys_id);
+						pp.setValue("permissiontype", "1");
+						pp.setValue("user", user);
+						pp.setValue("write", data.permissions.write);
+						var pp_sys_id = pp.insert();
+						result.users.push(pp_sys_id);	
+					});
+				}
+			} else {
+				throw "No permissions data provided";				
+			}
+		} catch(err) {
+			result.success = false;
+			result.exception = JSON.stringify(err);
+		}
+		return result;
+	},
+
+	
+	
+	/*
+	* Removes the default project for the current user
+	*/
+	addProjectPermissionsJson: function(input) {
+		input = this._getInputParam(input);
+		var result = this._addProjectPermissions(input);
+		return JSON.stringify(result);
+	},
+		
+
+
+	/*
+	* update project permission record
+	*/
+	_updateProjectPermissions: function(data) {
+		var result = {};
+		result.success = true;
+		try {
+
+			if (data.permissions) {
+
+				var project = this.project(data);
+
+				var pp = new GlideRecord('sn_kpi_composer_project_permissions');
+				
+				// Check if the write permission is set, default is false
+				if (data.permissions.write === undefined) data.permissions.write = false;
+
+				if (data.permissions.groups) {
+					result.groups = [];
+					data.permissions.groups.forEach(function(group) {
+						pp.addQuery("project", project.sys_id);
+						pp.addQuery("permissiontype", "2");
+						pp.addQuery("group", group);
+						pp.query();
+						while(pp.next()) {
+							pp.setValue("write", data.permissions.write);
+							pp.update();
+							result.groups.push({sys_id: group, write:  data.permissions.write});	
+							result.success = true;
+						}
+					});			
+				}
+				if (data.permissions.users) {
+					result.users = [];
+					data.permissions.users.forEach(function(user) {
+						pp.addQuery("project", project.sys_id);
+						pp.addQuery("permissiontype", "1");
+						pp.addQuery("user", user);
+						pp.query();
+						while(pp.next()) {
+							pp.setValue("write", data.permissions.write);
+							pp.update();
+							result.users.push({sys_id: user, write:  data.permissions.write});	
+							result.success = true;
+						}
+					});
+				}
+			} else {
+				throw "No permissions data provided";				
+			}
+		} catch(err) {
+			result.success = false;
+			result.exception = JSON.stringify(err);
+		}
+		return result;
+	},
+
+	
+	/*
+	* Removes the default project for the current user
+	*/
+	updateProjectPermissionsJson: function(input) {
+		input = this._getInputParam(input);
+		var result = this._updateProjectPermissions(input);
+		return JSON.stringify(result);
+	},
+	
+
+
+
+	/*
+	* delete project permission record
+	*
+	*/
+	_deleteProjectPermissions: function(data) {
+		var result = {};
+		result.success = false;
+		try {
+
+			if (data.permissions) {
+
+				var project = this.project(data);
+
+				var pp = new GlideRecord('sn_kpi_composer_project_permissions');
+
+				if (data.permissions.groups) {
+					data.permissions.groups.forEach(function(group) {
+						pp.addQuery("project", project.sys_id);
+						pp.addQuery("group", group);
+						pp.addQuery("permissiontype", "2");
+						pp.deleteMultiple();
+						result.success = true;
+					});			
+				}
+				if (data.permissions.users) {
+					data.permissions.users.forEach(function(user) {
+						pp.addQuery("project", project.sys_id);
+						pp.addQuery("user", user);
+						pp.addQuery("permissiontype", "1");
+						pp.deleteMultiple();
+						result.success = true;
+					});
+				}
+			} else {
+				throw "No permissions data provided";				
+			}
+		} catch(err) {
+			result.success = false;
+			result.exception = JSON.stringify(err);
+		}
+		return result;
+	},
+
+	
+	
+	/*
+	* Removes the default project for the current user
+	*/
+	deleteProjectPermissionsJson: function(input) {
+		input = this._getInputParam(input);
+		var result = this._deleteProjectPermissions(input);
+		return JSON.stringify(result);
+	},
+	
+
+
+	/*
+	* Read all breakdowns from the data object (EntityApi.getData())
+	* Return only the breakdowns that are used in the project
+	*/
+	breakdownsInProject: function(data) {
+		var breakdowns = [];
+		
+		for(var idx = 0; idx<data.breakdowns.length; idx++) {
+			var breakdown = data.breakdowns[idx];
+
+			// Check if this breakdown is used
+			var isUsed = false;
+			// Loop by all entities
+			for(var edx = 0; edx<data.entities.length; edx++) {
+				var entity = data.entities[edx];
+				// Check for each entity, if it uses the breakdown								
+				for(var bdx = 0; bdx<entity.breakdowns.length; bdx++) {
+					var eBreakdown = entity.breakdowns[bdx];
+					if (eBreakdown == breakdown.sys_id) {									
+						isUsed = true;
+						break;
+					}									
+				}
+				if (isUsed) break;
+			}
+
+			/*
+			// Loop dashboards
+			data.dashboards.forEach(function(dashboard) {
+				if (dashboard.breakdowns.indexOf(breakdown.sys_id)>-1) {
+					isUsed = true;
+					return;
+				}
+			});
+			*/
+
+			// The breakdown is used, so run checks
+			if (isUsed) {
+				breakdowns.push(breakdown);
+			}
+		}	
+		return breakdowns;
+	},
+
+	allBreakdownsWithShow: function(project_sys_id) {
+
+		// Set of breakdowns
+		var breakdowns = [];	
+
+		// local vars containing all breakdowns (ids) that are selected to be shown
+		var breakdowns_to_show = [];
+		
+		// Enabled breakdowns for this project
+		var eb = new GlideRecord('sn_kpi_composer_breakdowns_projects_m2m');
+		eb.addQuery("project", project_sys_id);
+		eb.query();
+		while (eb.next()) {
+			breakdowns_to_show.push(eb.getValue('breakdown'));
+		}		
+		
+		// All availible breakdowns
+		var eb2 = new GlideRecordSecure('sn_kpi_composer_breakdown');
+		eb2.query();
+		while (eb2.next()) {
+			var breakdown = this._breakdown_record(eb2);
+			breakdown.show = (breakdowns_to_show.indexOf(eb2.getValue('sys_id'))>-1);
+			breakdowns.push(breakdown);
+		}
+
+		return breakdowns;
+	},
+	
+	/*
+	* Find all (distinct) indicator definitions that should be mapped to a facttable based on the breakdown
+	* Take all entities, if the entity uses the breakdown -> true
+	* Take the indicator_def from the entity -> take the facts table
+	* Also take all supporting indicators from the indicator -> take the facts table
+	* the list should be a distinct list of facts tables
+	*/
+	indicatorDefsByBreakdown: function(breakdown, data) {
+						
+		var indicatordefs = [];		
+		var local = this;
+		
+		// Go by all entities
+		for(var edx = 0; edx<data.entities.length; edx++) {
+			var entity = data.entities[edx];
+			
+			if (local.trace) local._debug.push("Check for entity (1): " + entity.name);
+			
+			// Check if the breakdown is used in the entity
+			entity.breakdowns.forEach(function(bd) {
+				if (breakdown.sys_id == bd) {
+					// Get the indicator_definition of the entity
+					if (entity.indicator_definition != null) {						
+						if (local.trace) local._debug.push("Entity:" + entity.name + " has  indicator definition: " + entity.indicator_definition);						
+						// A to the list if not exists
+						if (indicatordefs.indexOf(entity.indicator_definition)<0) {							
+							indicatordefs.push(entity.indicator_definition);
+							
+							// Any childs?
+							data.indicatordefinition_indicatordefinition.forEach(function(e) {
+								// If the main indicator is the current indicator
+								if (e.main_indicator_definition == entity.indicator_definition) {
+									// Add the sub_indicator if not exists
+									if (indicatordefs.indexOf(e.sup_indicator_definition)<0) {
+										indicatordefs.push(e.sup_indicator_definition);
+									}
+								}
+							});							
+						}												
+					} else {
+						local._debug.push("Entity:" + entity.name + " has no indicator definition");
+					}
+					var id = entity.indicator_definition;
+				}
+			});
+			
+		}
+		
+		if (local.trace) local._debug.push("Found indicator ids:" + JSON.stringify(indicatordefs));
+		
+		var items = [];
+		for(var qwe = 0; qwe<data.indicatordefinitions.length; qwe++) {
+			if (indicatordefs.indexOf(data.indicatordefinitions[qwe].sys_id)>=0)
+				items.push(data.indicatordefinitions[qwe]);
+		}
+		
+		if (local.trace) local._debug.push("Found indicator defs:" + JSON.stringify(items));
+		
+		return items;
+	},
+	
+	/*
+	* Return a distinct set of entities based on the indicator definition that is selected
+	*/
+	entityByIndicatorDefinition: function(indicatorDefinition, data) {
+		var entities = [];
+		var entity_ids = [];
+		
+		if (data.entities) {
+			for(var ie = 0; ie < data.entities.length; ie++) {
+				var entity = data.entities[ie];
+				if (entity.indicator_definition && entity.indicator_definition != null && entity.indicator_definition == indicatorDefinition.sys_id) {
+					if (entity_ids.indexOf(entity.sys_id)<0) {
+						entity_ids.push(entity.sys_id);
+						entities.push(entity);
+					}												
+				}
+			}
+		}
+		
+		return entities;
+	},
+	
+	// Read all entities from a project
+	// parameters: input.project.sys_id
+	_entitiesFromProject: function(input) {
+		var entities = [];
+
+		if (input && input.project && input.project.sys_id) {
+
+			var g = new GlideRecord("sn_kpi_composer_entity");
+			g.addQuery("project", input.project.sys_id);
+			g.query();
+			while(g.next()) {
+				var entity = this._entity_record(g);
+				entities.push(entity);
+			}
+
+		} else {
+			throw "input.project.sys_id is mandatory (_entitiesFromProject)";
+		}
+
+		return entities;
+	},
+
+	// Read all relations from a project
+	// parameters: input.project.sys_id
+	_relationsFromProject: function(input) {
+		var relations = [];
+
+		if (input && input.project && input.project.sys_id) {
+
+			var g = new GlideRecord("sn_kpi_composer_entities_entities_m2m");
+			g.addQuery("project", input.project.sys_id);
+			g.query();
+			while(g.next()) {
+				var relation = this._relation_record(g);
+				relations.push(relation);
+			}
+
+		} else {
+			throw "input.project.sys_id is mandatory (_relationsFromProject)";
+		}
+
+		return relations;
+	},
+
+	
+    type: 'ProjectApi'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-27 11:16:17</sys_created_on>
+        <sys_id>965fb3fb1b1c73404e6921be6e4bcbb0</sys_id>
+        <sys_mod_count>301</sys_mod_count>
+        <sys_name>ProjectApi</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>protected</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_965fb3fb1b1c73404e6921be6e4bcbb0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-24 14:08:22</sys_updated_on>
+    </sys_script_include>
+</record_update>

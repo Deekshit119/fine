@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.PaDashSelector</name>
+        <script><![CDATA[var PaDashboardSelector = createReactClass({
+	getInitialState: function() {
+		return { pa_dashboard: null, loading: false, pa_dashboards: [] };
+	},
+	
+	onSearch: function(query) {
+		var that = this;
+		that.setState({ loading: true });
+		
+		var searcher = {};
+		searcher.filter = query;
+		searcher.maxresult = 50;
+		
+		sn_kpi_composer.ClientApi.selectPaDashboards(
+			searcher,
+			function (result) {
+				if (result.success) {
+					//console.log(result.pa_dashboards);
+					for (var i = 0; i < result.pa_dashboards.length; i++) {
+						if (result.pa_dashboards[i].name == null) {
+							result.pa_dashboards[i].name = "(no name specified)";
+						}
+					}
+					that.setState({ pa_dashboards: result.pa_dashboards, loading: false });
+				} else {
+					that.setState({ loading: false });	
+				}
+			},
+			function (error) {
+				that.setState({ loading: false });
+			}
+		);
+	},
+	
+	onChange: function(selected) {
+		if (selected.length > 0) {
+			var that = this;
+			this.props.onPaDashboardSelected(selected[0], function(error) {
+				if (error == null) {
+					if (that.refs.typeahead != null) that.refs.typeahead.getInstance().clear();	
+				}
+			});	
+		}
+	},
+	
+	renderMenuItemChildren: function(option, props, index) {
+		return [
+			e(
+				'div',
+				{ key: 'name' },
+				option.name
+			)
+		];
+	},
+	
+	filterBy: function() {
+		return true;
+	},
+	
+	render: function() {
+		return e(
+			ReactBootstrapTypeahead.AsyncTypeahead,
+			{
+				ref: 'typeahead',
+				isLoading: this.state.loading,
+				minLength: 0,
+				labelKey: 'name',
+				filterBy: this.filterBy,
+				onSearch: this.onSearch,
+				onChange: this.onChange,
+				onBlur: this.props.onBlur,
+				renderMenuItemChildren: this.renderMenuItemChildren,
+				options: this.state.pa_dashboards,
+				disabled: this.props.disabled,
+				placeholder: this.props.placeholder,
+				selectHintOnEnter: true,
+				autoFocus: true,
+				//bodyContainer: true, //bij rtl komt dit niet goed, daarom positionFixed gebruiken
+				positionFixed: true,
+				useCache: false, //werkt niet goed,
+				promptText: getMessage('Type to search...'),
+				emptyLabel: getMessage('No matches found.')
+			}
+		);
+	}
+});]]></script>
+        <script_name>PaDashSelector</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-09-25 07:55:56</sys_created_on>
+        <sys_id>b3726caedb4c0050b841ba10399619af</sys_id>
+        <sys_mod_count>10</sys_mod_count>
+        <sys_name>sn_kpi_composer.PaDashSelector</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_b3726caedb4c0050b841ba10399619af</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 08:23:10</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

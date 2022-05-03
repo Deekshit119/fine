@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DasTabTemplateModal</name>
+        <script><![CDATA[var DashboardTabAddAsTemplateModal = createReactClass({	
+	getInitialState: function() {
+		return {
+			title: this.props.initial_title,
+			description: "",
+			disabled: false
+		};
+	},
+	
+	handleInputChange: function(event) {
+		var newstate = {};
+		newstate[event.target.name] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+
+		this.setState(newstate);
+	},
+		
+	onOpened: function() {
+		if (this.refs.titleinput) {
+			this.refs.titleinput.focus();
+			this.refs.titleinput.select();
+		}
+	},
+	
+	cancel: function() {
+		this.setState({ disabled: true });
+		this.props.onCancel();
+	},
+	
+	save: function() {
+		this.setState({ disabled: true });
+		this.props.onSave(
+			{
+				caption: this.state.title,
+				description: this.state.description
+			}
+		);
+	},
+
+	handleSubmit: function(event) {
+		event.preventDefault();
+		this.save();
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var closeButton = e(
+			'button',
+			{type: 'button', title: getMessage('Close'), className: 'btn btn-icon close icon-cross  sn-tooltip-basic', disabled: this.state.disabled, onClick: this.cancel },
+			e(
+				'span',
+				{ className: 'sr-only' },
+				getMessage('Close')
+			)
+		);
+		
+		
+		var loadingOverlay = null;
+		if (this.state.disabled === true) {
+			loadingOverlay = e(
+				'div',
+				{className: 'modal-overlay'},
+				e(
+					'div',
+					{ className: 'icon-loading' }
+				)
+			);
+		}
+		
+		var titleinputcontrol;
+		if (this.props.onSave) {
+			titleinputcontrol = e(
+				'input',
+				{ id: 'canvas-details-title-input', className: 'form-control', ref: 'titleinput', disabled: this.state.disabled, value: this.state.title, onChange: this.handleInputChange, name: 'title' }
+			);
+		} else {
+			titleinputcontrol = e(
+				'p',
+				{ className: 'form-control-static' },
+				this.state.title
+			);
+		}
+		var titleinput = e(
+			'div',
+			{ className: ('form-group' + (this.state.title ? '' : ' is-required')) },
+			e(
+				'label',
+				{ className: 'control-label bold', htmlFor: 'canvas-details-title-input' },
+				getMessage('Title'),
+				e(
+					'span',
+					{ className: "required-marker"}
+				)
+			),
+			e(
+				'div',
+				{ },
+				titleinputcontrol
+			)
+		);
+
+		var descriptioninputcontrol = null;
+		if (this.props.onSave) {
+			descriptioninputcontrol = e(
+				'textarea',
+				{ id: 'canvas-details-description-input', className: 'form-control', rows: 3, disabled: this.state.disabled, value: this.state.description, onChange: this.handleInputChange, name: 'description' }
+			);
+		} else if (this.state.description) {
+			descriptioninputcontrol = e(
+				'p',
+				{ className: 'form-control-static newlines' },
+				this.state.description
+			);
+		}
+		var descriptioninput = null;
+		if (descriptioninputcontrol) {
+			descriptioninput = e(
+				'div',
+				{ className: ('form-group' + (this.state.description ? '' : ' is-required')) },
+				e(
+					'label',
+					{ className: 'control-label bold', htmlFor: 'canvas-details-description-input' },
+                    getMessage('Description'),
+                    e(
+                        'span',
+                        { className: "required-marker"}
+                    )
+				),
+				e(
+					'div',
+					{ },
+					descriptioninputcontrol
+				)
+			);
+		}
+
+		var savebutton = null;
+		if (this.props.onSave) {
+			savebutton = e(
+				'button',
+				{ type: 'button', className: 'btn btn-primary', disabled: this.state.disabled || !this.state.title || !this.state.description, onClick: this.save },
+				getMessage('Save')
+			);
+		}
+		
+		return e(
+			Reactstrap.Modal, 
+			{'isOpen': true, size: 'sm', className: 'canvasmodal', onOpened: this.onOpened, backdrop: 'static', toggle: this.cancel },
+			e(
+				Reactstrap.ModalHeader,
+				{'toggle': this.cancel, close: closeButton},
+				getMessage('Save tab layout as template')
+			),
+			e(
+				Reactstrap.ModalBody,
+				{},
+				e(
+					'form',
+					{ autoComplete: 'nope', onSubmit: this.handleSubmit },
+					titleinput,
+					descriptioninput
+				)
+			),
+			e(
+				Reactstrap.ModalFooter,
+				{},
+				savebutton,
+				e(
+					'button',
+					{ type: 'button', className: 'btn sn-btn-outline-secondary', disabled: this.state.disabled, onClick: this.cancel },
+					this.props.onSave ? getMessage('Cancel') : getMessage('Close')
+				)
+			),
+			loadingOverlay
+		);
+	}
+});]]></script>
+        <script_name>DasTabTemplateModal</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-01-15 14:52:51</sys_created_on>
+        <sys_id>d53a6bd4db3dec50317f6a5f05961945</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>sn_kpi_composer.DasTabTemplateModal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_d53a6bd4db3dec50317f6a5f05961945</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 14:56:58</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

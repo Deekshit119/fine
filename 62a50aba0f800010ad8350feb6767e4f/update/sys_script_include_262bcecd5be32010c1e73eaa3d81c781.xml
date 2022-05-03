@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectExport</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Adds all records related to a KPI Composer Project into a json</description>
+        <name>ProjectExport</name>
+        <script><![CDATA[var ProjectExport = Class.create();
+ProjectExport.prototype = {
+    initialize: function() {},
+    getJsonForProject: function(projectID) {
+
+        gs.info("Starting to export project with sys_id: {0}", projectID);
+
+        // Should the lib projects be exported to? (make this a parameter of the function?)
+        var exportLibProjects = true;
+
+        // the ProjectId is the starting project
+        var projects = [];
+        
+        // If we export the libs, find all related projects
+        if (exportLibProjects) {
+
+            // if project uses other projects (libs) we should load the project id's        
+            var projectApi = new sn_kpi_composer.ProjectApi();
+            var otherProjects = projectApi._project_and_related_projects({ project: { sys_id: projectID } });
+        
+            // Add the other projects
+            projects = projects.concat(otherProjects);
+        } else {
+            // Only this project
+            projects.push(projectID);
+        }
+
+        gs.info("Projects to export: {0}", JSON.stringify(projects));
+
+        // json to export
+        var fullJson = {};
+
+        // Array of all the properties in the json result
+        var allProps = [
+            "sn_kpi_composer_project"
+            , "sn_kpi_composer_canvas"
+            , "sn_kpi_composer_row"
+            , "sn_kpi_composer_tab"
+            , "sn_kpi_composer_dashboard"
+            , "sn_kpi_composer_indicator_def_indicator_def_m2m"
+            , "sn_kpi_composer_indicator_definition"
+            , "sn_kpi_composer_entities_entities_m2m"
+            , "sn_kpi_composer_entity"
+            , "sn_kpi_composer_entity_relation"
+            , "sn_kpi_composer_persona"
+            , "sn_kpi_composer_entity_persona_m2m"
+            , "sn_kpi_composer_report_definition"
+            , "sn_kpi_composer_breakdowns_projects_m2m"
+            , "sn_kpi_composer_breakdown"
+            , "sn_kpi_composer_entity_breakdown_m2m"];
+
+        // Add empty array's to the property
+        allProps.forEach(function(p) { 
+            fullJson['' + p] = [];
+        });
+
+        // Export all projects
+        for(var i = 0; i<projects.length; i++) {
+
+            var p_sys_id = projects[i];
+
+            gs.info("Export project: {0}", p_sys_id);
+
+            //Add data from each table to the fullJson object.
+            fullJson = this.insertProject(p_sys_id, fullJson, "sn_kpi_composer_project");
+            fullJson = this.insertComposerCanvas(p_sys_id, fullJson, "sn_kpi_composer_canvas");
+            fullJson = this.insertComposerRow(p_sys_id, fullJson, "sn_kpi_composer_row");
+            fullJson = this.insertComposerTab(p_sys_id, fullJson, "sn_kpi_composer_tab");
+            fullJson = this.insertComposerDashboard(p_sys_id, fullJson, "sn_kpi_composer_dashboard");
+            fullJson = this.insertIndicatorDefM2M(p_sys_id, fullJson, "sn_kpi_composer_indicator_def_indicator_def_m2m");
+            fullJson = this.insertIndicatorDef(p_sys_id, fullJson, "sn_kpi_composer_indicator_definition");
+            fullJson = this.insertEntityEntityM2M(p_sys_id, fullJson, "sn_kpi_composer_entities_entities_m2m");
+            fullJson = this.insertEntity(p_sys_id, fullJson, "sn_kpi_composer_entity");
+            fullJson = this.insertEntityRelation(p_sys_id, fullJson, "sn_kpi_composer_entity_relation");
+            fullJson = this.insertPersona(p_sys_id, fullJson, "sn_kpi_composer_persona");
+            fullJson = this.insertEntityPersonaM2M(p_sys_id, fullJson, "sn_kpi_composer_entity_persona_m2m");
+            fullJson = this.insertReportDefinition(p_sys_id, fullJson, "sn_kpi_composer_report_definition");
+            fullJson = this.insertBreakdownProjectM2M(p_sys_id, fullJson, "sn_kpi_composer_breakdowns_projects_m2m");
+            fullJson = this.insertBreakdownDefinition(p_sys_id, fullJson, "sn_kpi_composer_breakdown");
+            fullJson = this.insertEntityBreakdownM2M(p_sys_id, fullJson, "sn_kpi_composer_entity_breakdown_m2m");
+        }
+
+
+        return fullJson;
+    },
+
+
+    concatArrayToProp: function(projectJson, propName, values) {
+        if (projectJson[propName] == null) {
+            gs.warn("projectJson does not contain: '{0}'  ('{1}')", propName, JSON.stringify(projectJson));
+        }
+        projectJson[propName] = projectJson[propName].concat(values);
+        return projectJson;
+    },
+
+    insertProject: function(projectID, projectJson, propName) {
+        var gr = new GlideRecord('sn_kpi_composer_project');
+        gr.addQuery('sys_id', projectID);
+        gr.query();
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertComposerCanvas: function(projectID, projectJson, propName) {
+        // projectJson['sn_kpi_composer_canvas'] = [];
+        var rowQuery = this.getRowsForTabs(this.getTabsForDashboards(this.getDashboardDesignForProject(projectID)));
+        var gr = new GlideRecord('sn_kpi_composer_canvas');
+        gr.addQuery('row', 'IN', rowQuery);
+        gr.query();
+        //projectJson['sn_kpi_composer_canvas'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertComposerRow: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_row'] = [];
+        var tabQuery = this.getTabsForDashboards(this.getDashboardDesignForProject(projectID));
+        var gr = new GlideRecord('sn_kpi_composer_row');
+        gr.addQuery('tab', 'IN', tabQuery);
+        gr.query();
+        //projectJson['sn_kpi_composer_row'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertComposerTab: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_tab'] = [];
+        var dashboardQuery = this.getDashboardDesignForProject(projectID);
+        var gr = new GlideRecord('sn_kpi_composer_tab');
+        gr.addQuery('dashboard', 'IN', dashboardQuery);
+        gr.query();
+        //projectJson['sn_kpi_composer_tab'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertComposerDashboard: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_dashboard'] = [];
+        var dashboardQuery = this.getDashboardDesignForProject(projectID);
+        var gr = new GlideRecord('sn_kpi_composer_dashboard');
+        gr.addQuery('sys_id', 'IN', dashboardQuery);
+        gr.query();
+        //projectJson['sn_kpi_composer_dashboard'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertIndicatorDefM2M: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_indicator_def_indicator_def_m2m'] = [];
+        var indicatorDefQuery = this.getIndicatorDefinitionForProject(projectID);
+        var gr = new GlideRecord('sn_kpi_composer_indicator_def_indicator_def_m2m');
+        var qc = gr.addQuery('sup_indicator_definition', 'IN', indicatorDefQuery);
+        qc.addOrCondition('main_indicator_definition', 'IN', indicatorDefQuery);
+        gr.query();
+        //projectJson['sn_kpi_composer_indicator_def_indicator_def_m2m'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertIndicatorDef: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_indicator_definition'] = [];
+        var indicatorDefQuery = this.getIndicatorDefinitionForProject(projectID);
+        var gr = new GlideRecord('sn_kpi_composer_indicator_definition');
+        gr.addQuery('sys_id', 'IN', indicatorDefQuery);
+        gr.query();
+        //projectJson['sn_kpi_composer_indicator_definition'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertEntityEntityM2M: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_entities_entities_m2m'] = [];
+        var gr = new GlideRecord('sn_kpi_composer_entities_entities_m2m');
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        //projectJson['sn_kpi_composer_entities_entities_m2m'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertEntity: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_entity'] = [];
+        var gr = new GlideRecord('sn_kpi_composer_entity');
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        //projectJson['sn_kpi_composer_entity'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertEntityRelation: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_entity_relation'] = [];
+        var gr = new GlideRecord('sn_kpi_composer_entity_relation');
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        //projectJson['sn_kpi_composer_entity_relation'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertPersona: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_persona'] = [];
+        var gr = new GlideRecord('sn_kpi_composer_persona');
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        //projectJson['sn_kpi_composer_persona'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertEntityPersonaM2M: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_entity_persona_m2m'] = [];
+        var gr = new GlideRecord('sn_kpi_composer_entity_persona_m2m');
+        gr.addQuery('persona', 'IN', this.getPersonaForProject(projectID));
+        gr.query();
+        //projectJson['sn_kpi_composer_entity_persona_m2m'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertReportDefinition: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_report_definition'] = [];
+        var gr = new GlideRecord('sn_kpi_composer_report_definition');
+        gr.addQuery('sys_id', 'IN', this.getReportsForProject(projectID));
+        gr.query();
+        //projectJson['sn_kpi_composer_report_definition'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertBreakdownProjectM2M: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_breakdowns_projects_m2m'] = [];
+        var gr = new GlideRecord('sn_kpi_composer_breakdowns_projects_m2m');
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        //projectJson['sn_kpi_composer_breakdowns_projects_m2m'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertBreakdownDefinition: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_breakdown'] = [];
+        var gr = new GlideRecord('sn_kpi_composer_breakdown');
+        gr.addQuery('sys_id', 'IN', this.getBreakdownProjectsM2MForProject(projectID));
+        gr.query();
+        //projectJson['sn_kpi_composer_breakdown'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    insertEntityBreakdownM2M: function(projectID, projectJson, propName) {
+        //projectJson['sn_kpi_composer_entity_breakdown_m2m'] = [];
+        var gr = new GlideRecord('sn_kpi_composer_entity_breakdown_m2m');
+        gr.addQuery('breakdown', 'IN', this.getBreakdownDefinition(projectID));
+        gr.query();
+        //projectJson['sn_kpi_composer_entity_breakdown_m2m'] = this.convertGrToJSON(gr);
+        return this.concatArrayToProp(projectJson, propName, this.convertGrToJSON(gr));
+    },
+
+    getRowsForTabs: function(tabIDs) {
+        var rowIDs = [];
+        var gr = new GlideRecord('sn_kpi_composer_row');
+        gr.initialize();
+        gr.addQuery('tab', 'IN', tabIDs);
+        gr.query();
+        while (gr.next()) {
+            rowIDs.push(gr.getValue('sys_id'));
+        }
+        return rowIDs;
+    },
+    getTabsForDashboards: function(dashboardIDs) {
+        var tabIDs = [];
+        var gr = new GlideRecord('sn_kpi_composer_tab');
+        gr.initialize();
+        gr.addQuery('dashboard', 'IN', dashboardIDs);
+        gr.query();
+        while (gr.next()) {
+            tabIDs.push(gr.getValue('sys_id'));
+        }
+        return tabIDs;
+    },
+    getDashboardDesignForProject: function(projectID) {
+        var dashboardID = [];
+        var gr = new GlideRecord('sn_kpi_composer_dashboard');
+        gr.initialize();
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        while (gr.next()) {
+            dashboardID.push(gr.getValue('sys_id'));
+        }
+        return dashboardID;
+    },
+
+    getIndicatorDefinitionForProject: function(projectID) {
+        var indicatorDefID = [];
+        var gr = new GlideRecord('sn_kpi_composer_indicator_definition');
+        gr.initialize();
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        while (gr.next()) {
+            indicatorDefID.push(gr.getValue('sys_id'));
+        }
+        return indicatorDefID;
+    },
+
+    getPersonaForProject: function(projectID) {
+        var personaID = [];
+        var gr = new GlideRecord('sn_kpi_composer_persona');
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        while (gr.next()) {
+            personaID.push(gr.getValue('sys_id'));
+        }
+        return personaID;
+    },
+
+    getReportsForProject: function(projectID) {
+        var reportList = [];
+        var gr = new GlideRecord('sn_kpi_composer_entity');
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        while (gr.next()) {
+            reportList.push(gr.getValue('report_definition'));
+        }
+        return reportList;
+    },
+
+    getBreakdownProjectsM2MForProject: function(projectID) {
+        var breakdownProjects = [];
+        var gr = new GlideRecord('sn_kpi_composer_breakdowns_projects_m2m');
+        gr.addQuery('project', 'IN', projectID);
+        gr.query();
+        while (gr.next()) {
+            breakdownProjects.push(gr.getValue('breakdown'));
+        }
+        return breakdownProjects;
+    },
+
+    getBreakdownDefinition: function(projectID) {
+        var breakdownDefinitionList = [];
+        var gr = new GlideRecord('sn_kpi_composer_breakdown');
+        gr.addQuery('sys_id', 'IN', this.getBreakdownProjectsM2MForProject(projectID));
+        gr.query();
+        while (gr.next()) {
+            breakdownDefinitionList.push(gr.getValue('sys_id'));
+        }
+        return breakdownDefinitionList;
+    },
+
+    getFieldsForGr: function(gr) {
+        //Skip Reference Fields
+        var fieldsToSkip = ['knowledgearticles', 'contacts', 'owners', 'comments'];
+        var fieldsToReturn = [];
+        var name, element, elementList = gr.getElements();
+        for (var i = 0; i < elementList.length; i++) {
+            element = elementList[i];
+            try {
+                name = element.getName();
+                if (fieldsToSkip.indexOf(name) > -1) {
+                   // gs.info("Skipping field: " + name);
+                    continue;
+                }
+                fieldsToReturn.push(name);
+            } catch (e) {
+                gs.info("Some Error Occured while getting field list" + e);
+            }
+        }
+        return fieldsToReturn;
+    },
+
+    convertGrToJSON: function(gr) {
+        var fields = this.getFieldsForGr(gr);
+       // gs.info("Fields To Use for Conversion: " + fields);
+        fields.sort();
+        //Array and pointer for all rows that are fetched by this gr
+        var row = [];
+        var i = 0;
+        //Iterate till we get the last row for this gr.
+        while (gr.next()) {
+            //current record returned by the gr
+            var recordObj = {};
+            for (var field in fields) {
+                var type = gr.getElement(fields[field]).getED().getInternalType();
+
+                if (type == 'boolean' || type == 'journal_input' || type == 'journal') {
+                    recordObj[fields[field]] = gr.getDisplayValue(fields[field]);
+                } else {
+                    recordObj[fields[field]] = gr.getValue(fields[field]);
+                }
+               // gs.info("Added Field: " + fields[field] + " with Value " + recordObj[fields[field]] + " to json");
+            }
+            row[i] = recordObj;
+            i++;
+        }
+        return row;
+    },
+    type: 'ProjectExport'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-04-14 15:45:44</sys_created_on>
+        <sys_id>262bcecd5be32010c1e73eaa3d81c781</sys_id>
+        <sys_mod_count>34</sys_mod_count>
+        <sys_name>ProjectExport</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_262bcecd5be32010c1e73eaa3d81c781</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-06 09:49:44</sys_updated_on>
+    </sys_script_include>
+</record_update>

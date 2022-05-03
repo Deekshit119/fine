@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Definición de indicador de definición de indicador" max_length="40" name="sn_kpi_composer_indicator_def_indicator_def_m2m" type="collection">
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Main Indicator Definition" max_length="32" name="main_indicator_definition" reference="sn_kpi_composer_indicator_definition" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Supporting Indicator Definition" max_length="32" name="sup_indicator_definition" reference="sn_kpi_composer_indicator_definition" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <index name="index">
+            <element name="sup_indicator_definition"/>
+        </index>
+        <index name="index2">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index3">
+            <element name="main_indicator_definition"/>
+        </index>
+    </element>
+</database>

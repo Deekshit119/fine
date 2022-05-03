@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubShareContainer</name>
+        <script><![CDATA[var NavHubShareContainer = createReactClass({
+	getInitialState: function() {
+		return {
+            add: false,
+            edit_sys_id: null,
+            filter_permissiontype: ""
+		};
+    },
+    
+    filterPermissionTypeChanged: function(value) {
+        this.setState({filter_permissiontype: value});
+    },
+
+    permissionAdd: function() {
+        this.setState({add: true});
+    },
+
+    onPermissionCancel: function() {
+        this.setState({add: false, edit_sys_id: null});
+    },
+
+    onPermissionsAdd: function(data) {
+        var that = this;
+        this.props.onPermissionsAdd(data, function(error) {
+            that.setState({add: false});
+        });
+    },
+
+    permissionEdit: function(sys_id) {
+        this.setState({edit_sys_id: sys_id});
+    },
+
+    onPermissionSaveEdit: function(permission, write) {
+        var that = this;
+        this.props.onPermissionEdit(permission, write, function(error) {
+            that.setState({edit_sys_id: null});
+        });
+    },
+		
+	render: function() {
+        var that = this;
+        
+        if (this.state.add === true) {
+            //show add
+            return e(
+                NavHubShareAdd,
+                { onSave: this.onPermissionsAdd, onCancel: this.onPermissionCancel, onCloseActiveAside: this.props.onCloseActiveAside }
+            );
+        } else if (this.state.edit_sys_id !== null) {
+            var edit_sys_id = this.state.edit_sys_id;
+            var permissions = this.props.project_permissions.filter(function (p) { return p.sys_id === edit_sys_id; });
+            //show edit
+            return e(
+                NavHubShareEdit,
+                { permission: permissions[0], onSave: this.onPermissionSaveEdit, onCancel: this.onPermissionCancel, onCloseActiveAside: this.props.onCloseActiveAside }
+            );
+        } else {
+            //show overview
+            return e(
+                NavHubShareOverview,
+                { 
+                    project_permissions: this.props.project_permissions,
+                    filter_permissiontype: this.state.filter_permissiontype,
+                    onFilterPermissionTypeChanged: this.filterPermissionTypeChanged,
+                    onPermissionAdd: this.props.readonly ? null : this.permissionAdd,
+                    onPermissionEdit: this.props.readonly ? null : this.permissionEdit,
+                    onPermissionDelete: this.props.readonly ? null : this.props.onPermissionDelete,
+                    onCloseActiveAside: this.props.onCloseActiveAside,
+                    project_sys_id: this.props.project_sys_id
+                }
+            );
+        }
+	}
+});]]></script>
+        <script_name>NavHubShareContainer</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-11-27 12:34:52</sys_created_on>
+        <sys_id>dab472ecdbb02010b7ce2b24ca961979</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubShareContainer</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_dab472ecdbb02010b7ce2b24ca961979</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 08:42:23</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

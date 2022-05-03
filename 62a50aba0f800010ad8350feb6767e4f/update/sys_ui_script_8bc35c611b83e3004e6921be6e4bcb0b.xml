@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Functions used by the client browser; check project information </description>
+        <global>false</global>
+        <name>sn_kpi_composer.ClientProjectUI</name>
+        <script><![CDATA[var sn_kpi_composer = sn_kpi_composer || {};
+
+sn_kpi_composer.ClientProjectUI = (function () {
+	"use strict";
+
+	/* set your private variables and functions here. For example:
+	var privateVar = 0;
+	function private_function() {
+	return ++privateVar;
+	}
+	 */
+	// 'global' project data
+	sn_kpi_composer.projectdata = {};
+
+	/* Share variables between multiple UI scripts by adding them to your scope object. For example:
+	sn_kpi_composer.sharedVar = 0;
+
+	Then access them in your scripts the same way. For example:
+	function get_shared() {
+	return sn_kpi_composer.sharedVar;
+	}
+	 */
+
+	return {
+
+		// Draw the main graphic
+		showProject: function (data, breakdownDiv, personaDiv) {
+
+			var c = this;
+			var $ = go.GraphObject.make; // for conciseness
+			var log = sn_kpi_composer.ClientHelper.log;
+
+			log("showProject()");
+			log(data);
+
+			sn_kpi_composer.projectdata = data;
+
+			/* SOURCE */
+			var sourceDiagram = $(go.Palette, "source", // create a Diagram for the DIV HTML element
+				{
+					initialContentAlignment: go.Spot.Center, // center the content
+					"undoManager.isEnabled": false, // enable undo & redo
+					//layout: $(go.TreeLayout, { angle: 90, layerSpacing: 35 })
+					layout: $(go.GridLayout, {
+						cellSize: new go.Size(1, 1),
+						spacing: new go.Size(5, 5),
+						wrappingColumn: 12
+					})
+				});
+
+			// define a simple Node template
+			sourceDiagram.nodeTemplate =
+				$(go.Node, "Auto", // the Shape will go around the TextBlock
+					$(go.Shape, "RoundedRectangle", {
+						fill: "white", // the default fill, if there is no data bound value
+						portId: "",
+						cursor: "pointer" // the Shape is the port, not the whole Node
+					},
+						// Shape.fill is bound to Node.data.color
+						new go.Binding("fill", "color")),
+					$(go.TextBlock, {
+						margin: 3, // some room around the text
+						stroke: "white",
+						font: "bold 16px sans-serif",
+						editable: false // allow in-place editing by user
+					},
+						new go.Binding("text", "name")), { // this tooltip Adornment is shared by all nodes
+					toolTip:
+					$(go.Adornment, "Auto",
+						$(go.Shape, {
+							fill: "#FFFFCC"
+						}),
+						$(go.TextBlock, {
+							margin: 4
+						}, // the tooltip shows the result of calling nodeInfo(data)
+							new go.Binding("text", "description")))
+				});
+
+			if (data.sources && data.sources.length > 0) {
+
+				// create the model data that will be represented by Nodes and Links
+				sourceDiagram.model = $(go.GraphLinksModel, {
+						copiesArrays: true,
+						copiesArrayObjects: true,
+						linkFromPortIdProperty: "fid",
+						linkToPortIdProperty: "tid",
+						nodeDataArray: data.sources
+					});
+			}
+			
+			// Render buttons (react!)
+			if (breakdownDiv) {
+				data.breakdowns.map(function(b) {
+					var bHtml = "<div class=\"breakdown draggable\" draggable=\"true\" data-breakdown=\"" + b.sys_id + "\" data-category=\"Breakdown\" data-abbreviation=\"" + b.abbreviation + "\" data-capitals=\"" + b.capitals + "\" data-color=\"" + b.color + "\" style=\"background-color: " + b.color + "\">" + b.name + "</div>";
+					
+					breakdownDiv.innerHTML += bHtml;
+					
+				});
+			}
+			
+			if (personaDiv) {
+				data.persona.map(function(p) {
+					var bHtml = "<div class=\"persona draggable\" draggable=\"true\" data-persona=\"" + p.sys_id + "\" data-category=\"Persona\" data-abbreviation=\"" + p.abbreviation + "\" data-capitals=\"" + p.capitals + "\" data-color=\"" + p.color + "\" style=\"background-color: " + p.color + "\">" + p.name + "</div>";
+					
+					personaDiv.innerHTML += bHtml;
+					
+				});
+			}			
+
+			
+		},
+
+		/////////////////////////////////////////////////
+		// Check if relation between elements is allowd
+		// Realtion between entities (oa. CS -> Messure)
+		// Also relations between Entity and breakdown etc.
+		
+		// FromEntity should be a go.Node
+		// ToEntity can be a go.Node or a string (the type of source)
+		allowRelation: function (allownewroot, rules, entitytypes, to_entity, from_entity, newParentIsNotCircular) {
+
+			var log = sn_kpi_composer.ClientHelper.log;
+
+			//log("allowRelation()");
+
+			if (to_entity == null || (!(to_entity instanceof go.Node) && ((to_entity.category == null))))
+				return false; // must be a Node
+			if (!(from_entity instanceof go.Node) && !(from_entity == null && to_entity.category != null))
+				return false; // must be a Node
+			if (from_entity === to_entity)
+				return false; // cannot drag drop on yourself
+
+			/*
+			log("From:");
+			log(from_entity.data);
+			log("To:");
+			if ((typeof to_entity) === "string") {
+				log(to_entity); } else { log(to_entity.data); }
+				*/
+
+			// Check what type of nodes
+			var fromCategory = null;
+			if (from_entity != null) {
+				fromCategory = from_entity.data.category;
+			}
+			var toCategory = "";
+			var toEntityType;
+			
+			if (to_entity instanceof go.Node) {
+				toCategory = to_entity.data.category;
+				toEntityType = to_entity.data.entitytype;
+			} else {
+				toCategory = to_entity.category;
+				toEntityType = to_entity.entitytype || to_entity.top_node_entitytype; //when it's a libraryelement, the property is top_node_entitytype
+			}
+			
+
+			// log("from:" + fromCategory + " to:" + toCategory);
+
+			//var pd = sn_kpi_composer.projectdata;
+			
+			if (from_entity == null) {
+				//this is as root, so on the canvas itself, new node
+				if (toCategory === "EntityType" || toCategory === "LibraryElement") {
+					return allownewroot;
+				}
+			}
+
+			if (from_entity !== null && to_entity !== null && rules != null && entitytypes != null) {
+
+				// Allow existing entity / new entity / library element on entity?
+				if (fromCategory === "Entity" && (toCategory === "Entity" || toCategory === "EntityType" || toCategory === "LibraryElement")) {
+					//from_entity is een gewone entity, dat is waar je op dropt
+					if (from_entity.data.library === true) return false; 
+					//to_entity kan entity of entity type zijn (van onderen), dat drag je dus
+					if (toCategory === "Entity" && to_entity.data && to_entity.data.library === true && to_entity.data.library_root === false) return false;
+					//first level circulair, dit houdt enkel rekening met de top node, eigenlijk zou hier op project_sys_id moeten gechecked worden, maar hebben we hier voorlopig niet. we halen gewoon de huidige project uit de library list
+					if (toCategory === "LibraryElement" && to_entity.top_node_sys_id === from_entity.data.key) return false;
+
+					// console.log(to_entity.top_node_sys_id);
+					// console.log(from_entity);
+					// console.log(toCategory);
+					// console.log(to_entity);
+					
+					if (newParentIsNotCircular) {
+						if (!newParentIsNotCircular(from_entity.data.key, to_entity.data.key)) {
+							//console.log("circle not allowed");
+							return false;
+						}
+					}
+					if (rules != null) {
+						for (var i = 0; i < rules.length; i++) {
+							if ((rules[i].to_type === toEntityType) &&
+								(rules[i].from_type === from_entity.data.entitytype)) {
+								// log("Relation is allowed!");
+								return true;
+							}
+						}
+					}
+				}
+				
+				// Allow breakdown on entity?
+				if (fromCategory === "Entity" && toCategory === "Breakdown") {
+					//console.log(entitytypes);
+					if (entitytypes != null) {
+						for (var i = 0; i < entitytypes.length; i++) {
+							if (entitytypes[i].sys_id === from_entity.data.entitytype && entitytypes[i].allowbreakdown) {
+								// log("Breakdown to entity is allowed!");
+								return true;
+							}
+						}
+					}
+				}
+				// Allow persona on entity
+				if (fromCategory === "Entity" && toCategory === "Persona") {
+					if (entitytypes != null) {
+						for (var i = 0; i < entitytypes.length; i++) {
+							if (entitytypes[i].sys_id === from_entity.data.entitytype && entitytypes[i].allowpersona) {
+								// log("Persona to entity is allowed!");
+								return true;
+							}
+						}
+					}
+				}
+			}
+			return false;
+		},
+
+		type: "ClientProjectUI"
+	};
+})();
+]]></script>
+        <script_name>ClientProjectUI</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-16 15:05:33</sys_created_on>
+        <sys_id>8bc35c611b83e3004e6921be6e4bcb0b</sys_id>
+        <sys_mod_count>101</sys_mod_count>
+        <sys_name>sn_kpi_composer.ClientProjectUI</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_8bc35c611b83e3004e6921be6e4bcb0b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-27 09:56:22</sys_updated_on>
+        <ui_type>1</ui_type>
+        <use_scoped_format>true</use_scoped_format>
+    </sys_ui_script>
+</record_update>

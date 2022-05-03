@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardList</name>
+        <script><![CDATA[var DashboardList = createReactClass({
+	getInitialState: function() {
+		return { adding: false };
+	},
+	
+	onAddClick: function() {
+		this.setState({ adding: true });
+		var that = this;
+		this.props.onDashboardSaveName(null, new GwtMessage().getMessage("Dashboard #{0}", this.props.dashboards.length + 1), function(error, newone) {
+			that.setState({ adding: false });
+			if (newone != null && that.refs[newone.sys_id] != null) {
+				that.refs[newone.sys_id].setEdit();
+				that.props.onDashboardSelect(newone);
+			}
+		});
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var dashboardlistitems = this.props.dashboards.map(
+			function (dashboard, index, arr) {
+				return e(
+					DashboardListItem,
+					{
+						ref: dashboard.sys_id,
+						key: dashboard.sys_id,
+						dashboard: dashboard,
+						isselected: dashboard.sys_id === that.props.selecteddashboardid,
+						allowmoveleft: index > 0,
+						allowmoveright: index < arr.length - 1,
+						breakdowns: that.props.breakdowns,
+						personas: that.props.personas,
+						pa_dashboards: that.props.pa_dashboards,
+						onDashboardSelect: that.props.onDashboardSelect,
+						onDashboardDelete: that.props.onDashboardDelete,
+						onDashboardMoveTo: that.props.onDashboardMoveTo,
+						onDashboardSaveName: that.props.onDashboardSaveName,
+						onDashboardSaveDescription: that.props.onDashboardSaveDescription,
+						onDashboardBreakdownDelete: that.props.onDashboardBreakdownDelete,
+						onDashboardBreakdownInsert: that.props.onDashboardBreakdownInsert,
+						onDashboardPersonaDelete: that.props.onDashboardPersonaDelete,
+						onDashboardPersonaInsert: that.props.onDashboardPersonaInsert,
+						onDashboardPaDashboardSave: that.props.onDashboardPaDashboardSave
+					}
+				);
+			}
+		);
+		
+		if (this.props.onDashboardSaveName) {
+			dashboardlistitems.push(
+				e(
+					'li',
+					{
+						key: 'add',
+						className: 'wb-pa-dashboarditem add'
+					},
+					e(
+						'button',
+						{
+							className: 'btn btn-lg wb-pa-dashboard-add-btn', onClick: this.onAddClick
+						},
+						e(
+							'span',
+							{
+								className: 'icon-add'
+							}
+						),
+						e(
+							'span',
+							{
+								className: 'add-dashboard-text'
+							},
+							getMessage('Add Dashboard')
+						)
+					)
+				)
+			);
+		}
+		
+		
+		return [
+			e(
+				'ul',
+				{
+					key: 'itemcontainer',
+					className: 'wb-pa-dashboardlist'
+				},
+				dashboardlistitems
+			)
+		];
+	}
+});]]></script>
+        <script_name>DashboardList</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-07 09:25:38</sys_created_on>
+        <sys_id>227128361b83f30019e8ed7b2f4bcb32</sys_id>
+        <sys_mod_count>49</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardList</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_227128361b83f30019e8ed7b2f4bcb32</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-02-12 12:35:00</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

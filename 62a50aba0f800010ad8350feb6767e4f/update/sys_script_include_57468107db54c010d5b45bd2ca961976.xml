@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskCheckIndicator</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskCheckIndicator</name>
+        <script><![CDATA[var ProjectTaskCheckIndicator = Class.create();
+ProjectTaskCheckIndicator.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	createtasks: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectTaskCheckIndicator");	
+			
+		// Indicators with pa link
+		for(var idx = 0; idx<data.indicatordefinitions.length; idx++) {
+			var indicator = data.indicatordefinitions[idx];
+			if (this.trace) this._debug.push("Check indicator definition: " + indicator.name);
+
+			var validationErrors = this._hasValidationError(indicator.sys_id, data.input);
+			if (validationErrors.validationError || indicator.pa_indicator == null) {
+				if (this.trace) this._debug.push("Indicator: " + indicator.name + " skipped (2)!!");
+			} else {								
+
+				var desc = "";
+
+				var validateIndicatorTask = {};
+				validateIndicatorTask.type = this._projectTaskValidateIndicator;
+				validateIndicatorTask.pa_record = indicator.pa_indicator;
+				validateIndicatorTask.pa_table = 'pa_indicators';						
+				validateIndicatorTask.title = gs.getMessage("Validate indicator '{0}'",indicator.dv_pa_indicator);
+
+				desc += gs.getMessage("Validate indicator '{0}'",indicator.dv_pa_indicator);
+				/* Verify Indicator  'Betere klanttevredenheid'
+								* Check if the following breakdowns are added:
+									- Priority
+									- Age
+								*/
+
+
+				validateIndicatorTask.table = 'sn_kpi_composer_indicator_definition';
+				validateIndicatorTask.record = indicator.sys_id;
+
+				// Get all other indicator defs
+				var other_entities = this._projectApi.entityByIndicatorDefinition(indicator, data);
+				if (this.trace) this._debug.push("Other entities (2): " + JSON.stringify(other_entities));								
+				// Get all (distinct) breakdowns from entities
+				var dist_breakdown_ids = [];
+				for(var eid = 0; eid<other_entities.length; eid++) {
+					var entity = other_entities[eid];
+					if (entity.breakdowns) {
+						for(var bid = 0; bid<entity.breakdowns.length; bid++) {
+							if (dist_breakdown_ids.indexOf(entity.breakdowns[bid])) {
+								dist_breakdown_ids.push(entity.breakdowns[bid]);
+							}
+						}
+					}
+				}
+				desc += gs.getMessage("\nCheck if the following breakdowns are added:");
+
+				if (dist_breakdown_ids.length > 0) {
+					for(var bid = 0; bid<data.breakdowns.length; bid++) {
+						if (dist_breakdown_ids.indexOf(data.breakdowns[bid].sys_id)>-1) {
+							desc += "\n- " + data.breakdowns[bid].name;
+						}
+					}
+				} else { 
+					desc += gs.getMessage("No breakdowns selected!");
+				}								
+
+				desc += "\n";
+				validateIndicatorTask.description = desc;
+				this._addProjectTask(validateIndicatorTask, data.input);
+
+			}
+		}		
+		
+	},
+
+    type: 'ProjectTaskCheckIndicator'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-09 10:04:00</sys_created_on>
+        <sys_id>57468107db54c010d5b45bd2ca961976</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>ProjectTaskCheckIndicator</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_57468107db54c010d5b45bd2ca961976</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 09:09:03</sys_updated_on>
+    </sys_script_include>
+</record_update>

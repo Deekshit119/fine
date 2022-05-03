@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardListItem</name>
+        <script><![CDATA[var DashboardListItem = createReactClass({
+	setEdit: function() {
+		this.onEditNameClick(null);
+	},
+	
+	getInitialState: function() {
+		return { editname: false, hover: false, delete: false, edit: false, dragcounter: 0 };
+	},
+	
+	componentDidUpdate: function(prevProps, prevState) {
+		if (prevState.editname === false && this.state.editname === true && this.refs.nameinput != null) {
+			this.refs.nameinput.select();
+		}
+	},
+	
+	stopClick: function(evt) {
+		evt.stopPropagation();
+	},
+	
+	onMouseEnter: function() {
+		this.setState({ hover: true });
+	},
+	
+	onMouseLeave: function() {
+		this.setState({ hover: false });
+	},
+	
+	onEditNameClick: function (evt) {
+		if (evt != null) evt.stopPropagation();
+		this.setState({ editname: true, saving: false, name: this.props.dashboard.name });
+	},
+	
+	handleNameInputChange: function(event) {
+		this.setState({ name: event.target.value });
+	},
+	
+	handleNameInputBlur: function(event) {
+		this.saveItemIfNeeded();
+	},
+	
+	handleSubmit: function(event) {
+		event.preventDefault();
+		this.saveItemIfNeeded();
+	},
+	
+	saveItemIfNeeded: function() {
+		if (this.state.name !== this.props.dashboard.name) {
+			this.setState({ saving: true });
+			var that = this;
+			this.props.onDashboardSaveName(this.props.dashboard.sys_id, this.state.name, function(error) {
+				that.setState({ editname: false });
+			});
+		} else {
+			this.setState({ editname: false });
+		}
+	},
+	
+	onMoveToLeftClick: function(evt) {
+		evt.stopPropagation();
+		this.props.onDashboardMoveTo('left', this.props.dashboard.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onMoveToRightClick: function(evt) {
+		evt.stopPropagation();
+		this.props.onDashboardMoveTo('right', this.props.dashboard.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onEditClick: function(evt) {
+		evt.stopPropagation();
+		this.setState({ edit: true });
+	},
+		
+	onDeleteClick: function(evt) {
+		this.setState({ delete: true });
+	},
+	
+	onDeleteNo: function() {
+		this.setState({ delete: false });
+	},
+	
+	onDeleteYes: function() {
+		this.props.onDashboardDelete(this.props.dashboard.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onDragOver: function(evt) {
+		evt.preventDefault();
+	},
+
+	onDragEnter: function(evt) {
+		evt.preventDefault();
+		this.setState({ dragcounter: this.state.dragcounter + 1 });
+	},
+	
+	onDragLeave: function(evt) {
+		evt.stopPropagation();
+		this.setState({ dragcounter: this.state.dragcounter - 1 });
+	},
+	
+	parseDragData: function(data) {
+		try {
+			return JSON.parse(data);
+		} catch(e) {
+			return {};
+		}
+	},
+	
+	onDrop: function(evt, item) {
+		evt.stopPropagation();
+
+		var data = this.parseDragData(evt.dataTransfer.getData("Text"));
+		var category = data.category;
+		var sys_id = data.sys_id;
+
+		if (category === "Breakdown") {
+			if (evt.altKey == true) {
+				this.props.onDashboardBreakdownDelete(this.props.dashboard, sys_id, function (error) {
+
+				});	
+			} else {
+				this.props.onDashboardBreakdownInsert(this.props.dashboard, sys_id, function (error) {
+
+				});	
+			}
+		}
+		if (category === "Persona") {
+			if (evt.altKey == true) {
+				this.props.onDashboardPersonaDelete(this.props.dashboard, sys_id, function (error) {
+
+				});
+			} else {
+				this.props.onDashboardPersonaInsert(this.props.dashboard, sys_id, function (error) {
+
+				});
+			}
+		}
+	
+		this.setState({ dragcounter: 0 });
+	},
+	
+	onSelectClick: function(evt) {
+		this.props.onDashboardSelect(this.props.dashboard);
+	},
+	
+	modalClose: function() {
+		this.setState({ hover: false, edit: false });
+	},
+	
+	modalNameSave: function(name, callback) {
+		this.props.onDashboardSaveName(this.props.dashboard.sys_id, name, callback);
+	},
+	
+	modalDescriptionSave: function(description, callback) {
+		this.props.onDashboardSaveDescription(this.props.dashboard.sys_id, description, callback);
+	},
+	
+	modalPersonaCheckedChange: function(sys_id, checked, callback) {
+		if (checked) {
+			this.props.onDashboardPersonaInsert(this.props.dashboard, sys_id, callback);
+		} else {
+			this.props.onDashboardPersonaDelete(this.props.dashboard, sys_id, callback);
+		}
+	},
+	
+	modalBreakdownCheckedChange: function(sys_id, checked, callback) {
+		if (checked) {
+			this.props.onDashboardBreakdownInsert(this.props.dashboard, sys_id, callback);
+		} else {
+			this.props.onDashboardBreakdownDelete(this.props.dashboard, sys_id, callback);
+		}
+	},
+	
+	modalPaDashboardSave: function(pa_dashboard, callback) {
+		this.props.onDashboardPaDashboardSave(this.props.dashboard.sys_id, pa_dashboard, callback);
+	},
+	
+	render: function() {
+		var that = this;
+		var confirmremoval = null;
+		if (this.state.delete === true) {
+			confirmremoval = e(
+				ConfirmRemoval,
+				{ onYes: this.onDeleteYes, onNo: this.onDeleteNo }
+			);
+		}
+		
+		var detailmodal = null;
+		if (this.state.edit === true) {
+			detailmodal = e(
+				DashboardModal,
+				{
+					key: 'detail',
+					dashboard: this.props.dashboard,
+					personas: this.props.personas,
+					breakdowns: this.props.breakdowns,
+					pa_dashboards: this.props.pa_dashboards,
+					onClose: this.modalClose,
+					onDelete: this.props.onDashboardDelete ? this.onDeleteYes : null,
+					onNameSave: this.props.onDashboardSaveName ? this.modalNameSave : null,
+					onDescriptionSave: this.props.onDashboardSaveDescription ? this.modalDescriptionSave : null,
+					onPersonaCheckedChange: this.props.onDashboardPersonaInsert && this.props.onDashboardPersonaDelete ? this.modalPersonaCheckedChange : null,
+					onBreakdownCheckedChange: this.props.onDashboardBreakdownInsert && this.props.onDashboardBreakdownDelete ? this.modalBreakdownCheckedChange : null,
+					onPaDashboardSave: this.props.onDashboardPaDashboardSave ? this.modalPaDashboardSave : null
+				}
+			);
+		}
+		
+		var buttons = null;
+		if (this.props.isselected === true) {
+			buttons = [];
+			var deletebutton = null;
+			if (this.props.onDashboardDelete) {
+				deletebutton = e(
+					'span',
+					{ className: 'icon icon-delete sn-tooltip-basic', 'title': getMessage("Delete item"), onClick: this.onDeleteClick}
+				);
+			}
+			var editbuttonprops = { onClick: this.onEditClick };
+			if (this.props.onDashboardSaveName) {
+				editbuttonprops.className = "icon icon-edit sn-tooltip-basic";
+				editbuttonprops.title = getMessage("Edit item");
+			} else {
+				editbuttonprops.className = "icon icon-view sn-tooltip-basic";
+				editbuttonprops.title = getMessage("View item");
+			}
+			buttons.push(
+				e(
+					'div',
+					{ key: 'actions', className: 'icon-contain two' },
+					e(
+						'span',
+						editbuttonprops
+					),
+					deletebutton
+				)
+			);
+			if (this.props.onDashboardMoveTo) {
+				buttons.push(
+					e(
+						'div',
+						{ key: 'move', className: 'icon-contain two' },
+						e(
+							'span',
+							{ className: 'icon icon-arrow-left ' + (this.props.allowmoveleft ? 'enabled' : 'disabled'), title: getMessage("Move left"), onClick: this.props.allowmoveleft ? this.onMoveToLeftClick : null}
+						),
+						e(
+							'span',
+							{ className: 'icon icon-arrow-right ' + (this.props.allowmoveright ? 'enabled' : 'disabled'), title: getMessage("Move right"), onClick: this.props.allowmoveright ? this.onMoveToRightClick : null}
+						)
+					)
+				);
+			}
+		}
+		var name = null;
+		if (this.state.editname === true) {
+			name = e(
+				'form',
+				{className: 'item-name', onSubmit: this.handleSubmit},
+				e(
+					'input',
+					{ ref: 'nameinput', type: 'text', autoFocus: true, placeholder: getMessage('Edit Item'), className: 'form-control', disabled: this.state.saving, value: this.state.name, onChange: this.handleNameInputChange, onBlur: this.handleNameInputBlur, maxLength: 25, onClick: this.stopClick }
+				)
+			);
+		} else {
+			var nameprops = { className: 'item-name' };
+			if (this.props.onDashboardSaveName && this.props.isselected === true) {
+				nameprops.className += ' editable';
+				nameprops.onClick = this.onEditNameClick;
+			}
+			name = e(
+				'div',
+				nameprops,
+				this.props.dashboard.name
+			);
+		}
+		
+		var breakdowns = [];
+		var breakdowntooltip = null;
+		var breakdownkey = "breakdown";
+		for (var i = 0; i < this.props.dashboard.breakdowns.length; i++) {
+			var breakdown = this.props.dashboard.breakdowns[i];
+			if (breakdown.show) {
+				if (breakdowntooltip == null) {
+					breakdowntooltip = "";
+				} else {
+					breakdowntooltip += ", ";
+				}
+				breakdowntooltip += breakdown.name;
+				breakdownkey += breakdown.sys_id;
+				
+				breakdowns.push(
+					e(
+						'div',
+						{
+							key: breakdown.sys_id,
+							className: 'wb-pa-filter-pill-decoration',
+							style: { backgroundColor: breakdown.color }
+						}
+					)
+				);
+			}
+		}
+		if (breakdowns.length > 3) {
+			var newbreakdowns = [];
+			for (var i = 0; i < 2; i++) {
+				newbreakdowns.push(breakdowns[i]);
+			}
+			newbreakdowns.push(
+				e(
+						'div',
+						{
+							key: 'plus',
+							className: 'wb-pa-filter-pill-decoration letter plus'
+						},
+						'+'
+					)
+			);
+			breakdowns = newbreakdowns;
+		}
+		if (breakdowns.length == 0) {
+			breakdowns.push(
+					e(
+						'div',
+						{
+							key: 'empty',
+						},
+						'\u00A0'
+					)
+				);	
+		}
+		breakdowns.push(
+			e(
+				'div',
+				{
+					key: 'clear',
+					className: 'clearfix'
+				}
+			)
+		);
+		
+		var personas = [];
+		var personatooltip = null;
+		var personakey = "persona";
+		for (var i = 0; i < this.props.dashboard.personas.length; i++) {
+			var persona = this.props.dashboard.personas[i];
+			
+			if (personatooltip == null) {
+				personatooltip = "";
+			} else {
+				personatooltip += ", ";
+			}
+			personatooltip += persona.name;
+			personakey += persona.sys_id;
+			
+			personas.push(
+				e(
+					'div',
+					{
+						key: persona.sys_id,
+						className: 'wb-pa-filter-pill-decoration letter'
+					},
+					persona.abbreviation
+				)
+			);
+		}
+		if (personas.length > 3) {
+			var newpersonas = [];
+			for (var i = 0; i < 2; i++) {
+				newpersonas.push(personas[i]);
+			}
+			newpersonas.push(
+				e(
+						'div',
+						{
+							key: 'plus',
+							className: 'wb-pa-filter-pill-decoration letter plus'
+						},
+						'+'
+					)
+			);
+			personas = newpersonas;
+		}
+		personas = personas.reverse();
+		personas.push(
+			e(
+				'div',
+				{
+					key: 'clear',
+					className: 'clearfix'
+				}
+			)
+		);
+
+		var candraganddrop = this.props.onDashboardBreakdownDelete && this.props.onDashboardBreakdownInsert && this.props.onDashboardPersonaDelete && this.props.onDashboardPersonaInsert;
+		
+		return e(
+			'li',
+			{
+				className: 'wb-pa-dashboarditem' + (this.state.hover ? ' onhover' : '') + (this.props.isselected ? ' ui-state-focus' : ''), onMouseEnter: this.onMouseEnter, onMouseLeave: this.onMouseLeave, onClick: this.onSelectClick
+			},
+			e(
+				'h2',
+				{ className: 'sr-only ng-binding' },
+				this.props.dashboard.name
+			),
+			e(
+				'header',
+				{ className: 'wb-pa-dashboarditem-header' },
+				e(
+					'div',
+					{ className: 'wb-pa-dashboarditem-header-title' },
+					name,
+					buttons,
+					e(
+						'div',
+						{ className: 'clearfix' }
+					)
+				)
+			),
+			e(
+				'div',
+				{ className: 'wb-pa-dashboarditem-bodycontainer' + (this.state.dragcounter > 0 ? ' draghighlight' : ''), onDragOver: (candraganddrop ? this.onDragOver : null), onDragEnter: (candraganddrop ? this.onDragEnter : null), onDragLeave: (candraganddrop ? this.onDragLeave : null), onDrop: (candraganddrop ? this.onDrop : null) },
+				e(
+					'div', 
+					{ className: 'wb-pa-dashboarditem-body breakdownandpersona' },
+					[
+					e(
+						'div',
+						{ className: 'breakdowns sn-tooltip-basic', title: breakdowntooltip, key: breakdownkey},
+						breakdowns
+					),
+					e(
+						'div',
+						{ className: 'personas sn-tooltip-basic', title: personatooltip, key: personakey },
+						personas
+					),
+					e(
+						'div',
+						{ className: 'clearfix', key: 'clearfix' }
+					)
+					]
+				)
+			),
+			confirmremoval,
+			detailmodal
+		);
+	}
+});]]></script>
+        <script_name>DashboardListItem</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-07 09:27:06</sys_created_on>
+        <sys_id>31d160761b83f30019e8ed7b2f4bcba9</sys_id>
+        <sys_mod_count>143</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardListItem</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_31d160761b83f30019e8ed7b2f4bcba9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-01-15 09:58:47</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

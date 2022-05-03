@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.OverviewLoading</name>
+        <script><![CDATA[var OverviewLoading = createReactClass({
+	getDefaultProps: function() {
+		return {
+			title: getMessage('Loading Data...'),
+			show: true
+		};
+	},
+	
+	render: function() {
+		if (this.props.show === false) return null;
+		
+		return e(
+			'div',
+			{ className: 'pa-loading pa-loading-overview' },
+			e(
+				'div',
+				{className: 'icon-loading'}
+			),
+			e(
+				'div',
+				{className: 'pa-loading-text'},
+				this.props.title
+			)
+		);
+	}
+});]]></script>
+        <script_name>OverviewLoading</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-05-20 12:17:07</sys_created_on>
+        <sys_id>eb2312d11b21f70019e8ed7b2f4bcba7</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>sn_kpi_composer.OverviewLoading</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_eb2312d11b21f70019e8ed7b2f4bcba7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-01-06 14:06:25</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

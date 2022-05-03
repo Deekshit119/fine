@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationMeasurementFollowElementButMissingBreakdown</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationMeasurementFollowElementButMissingBreakdown</name>
+        <script><![CDATA[var ProjectValidationMeasurementFollowElementButMissingBreakdown = Class.create();
+ProjectValidationMeasurementFollowElementButMissingBreakdown.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationMeasurementFollowElementButMissingBreakdown");
+
+		var globals_x = sn_kpi_composer.globalFunctions();
+				
+		this._apply_on_dashboards(data.dashboards, 
+			function(dashboard) { 
+				// Get breakdowns from the dashboard
+				var breakdowns_dashboard = that._getObjectsFromArrayBySysId(data.breakdowns, that._getDistinctArrayFromCSS(dashboard.breakdowns));
+				
+				//that._debug.push("Dashboard: '" + dashboard.name + "' has breakdowns: " + JSON.stringify(breakdowns_dashboard));
+
+				// Only check if the dashboard has breakdowns
+				if (breakdowns_dashboard.length > 0) {
+
+					that._apply_on_tabs(dashboard.tabs,										
+										function(tab) {		
+						that._apply_on_rows(tab.rows, 
+											function(row) {
+							that._apply_on_canvasses(row.canvasses, function(canvas) {
+
+								// Check if follow element is set
+								if (canvas.follow_element) {	
+									// Take entities from canvas
+									// that._debug.push("Canvas: " + JSON.stringify(canvas));																		
+									var entities = that._getObjectsFromArrayBySysId(data.entities, that._getDistinctArrayFromCSS(canvas.entities));
+									
+									//that._debug.push("Check canvas (FE) entities: " + JSON.stringify(entities));
+									//that._debug.push("Data.entities: " + JSON.stringify(data.entities));
+									//that._debug.push("Canvas.entities: " + JSON.stringify(that._getDistinctArrayFromCSS(canvas.entities)));
+									
+									// Check all elements, all should follow breakdowns
+									for(var ei = 0, em = entities.length; ei<em; ei++) {
+
+										var entity = entities[ei];
+										
+										for(var bi = 0, bm = breakdowns_dashboard.length; bi<bm; bi++) {
+											var breakdown = breakdowns_dashboard[bi];
+
+											if (that.trace) that._debug.push("entity (canvas):" + JSON.stringify(entity));
+											if (that.trace) that._debug.push("breakdown (dashboard):" + JSON.stringify(breakdown));
+
+											// Does the entity contain the breakdown?
+											if (sn_kpi_composer.findBySysIdList(entity.breakdowns, breakdown.sys_id) == null) {
+												// If not log a error
+												that._addProjectValidationDefinitionError(
+													{ 
+														description:  gs.getMessage("Measurement '{0}' is missing breakdown '{1}' to follow element on dashboard '{2}'", [entity.name, breakdown.name, dashboard.name]),
+														table: "sn_kpi_composer_canvas",
+														record: canvas.sys_id,
+													}, { project: { sys_id: data.project.sys_id } });
+											}
+										}
+									}									
+								}
+							});
+						});
+					});
+				}
+			});
+	},
+	
+
+    type: 'ProjectValidationMeasurementFollowElementButMissingBreakdown'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-02 12:02:50</sys_created_on>
+        <sys_id>424bd1bcdb1c8850d5b45bd2ca961961</sys_id>
+        <sys_mod_count>23</sys_mod_count>
+        <sys_name>ProjectValidationMeasurementFollowElementButMissingBreakdown</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_424bd1bcdb1c8850d5b45bd2ca961961</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 15:00:25</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.UserSelector</name>
+        <script><![CDATA[var UserSelector = createReactClass({
+	getInitialState: function() {
+		return { user: null, loading: false, users: [] };
+	},
+	
+	onSearch: function(query) {
+		var that = this;
+		that.setState({ loading: true });
+		
+		var searcher = {};
+		searcher.filter = query;
+		searcher.maxresult = 50;
+		
+		sn_kpi_composer.ClientApi.selectUsers(
+			searcher,
+			function (result) {
+				if (result.success) {
+					for (var i = 0; i < result.users.length; i++) {
+						if (result.users[i].name == null) {
+							result.users[i].name = "(no name specified)";
+						}
+					}
+					that.setState({ users: result.users, loading: false });
+				} else {
+					that.setState({ loading: false });	
+				}
+			},
+			function (error) {
+				that.setState({ loading: false });
+			}
+		);
+	},
+	
+	onChange: function(selected) {
+		if (this.props.multiple === true) {
+			this.props.onChange(selected);
+		} else {
+			if (selected.length > 0) {
+				var that = this;
+				this.props.onUserSelected(selected[0], function(error) {
+					if (error == null) {
+						if (that.refs.typeahead != null) that.refs.typeahead.getInstance().clear();	
+					}
+				});
+			}
+		}
+	},
+	
+	renderMenuItemChildren: function(option, props, index) {
+		return [
+			e(
+				'div',
+				{ key: 'name' },
+				option.name
+			),
+			e(
+				'div',
+				{ key: 'email' },
+				option.email
+			)
+		];
+	},
+	
+	filterBy: function() {
+		return true;
+	},
+	
+	render: function() {
+		return e(
+			ReactBootstrapTypeahead.AsyncTypeahead,
+			{
+				ref: 'typeahead',
+				isLoading: this.state.loading,
+				minLength: 0,
+				labelKey: 'name',
+				filterBy: this.filterBy,
+				onSearch: this.onSearch,
+				onChange: this.onChange,
+				onBlur: this.props.onBlur,
+				renderMenuItemChildren: this.renderMenuItemChildren,
+				options: this.state.users,
+				disabled: this.props.disabled,
+				placeholder: this.props.placeholder,
+				multiple: this.props.multiple === true,
+				selectHintOnEnter: true,
+				autoFocus: this.props.autoFocus !== false,
+				//bodyContainer: true, //bij rtl komt dit niet goed, daarom positionFixed gebruiken
+				positionFixed: true,
+				useCache: false, //werkt niet goed,
+				promptText: getMessage('Type to search...'),
+				emptyLabel: getMessage('No matches found.')
+				
+			}
+		);
+	}
+});]]></script>
+        <script_name>UserSelector</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-12 10:00:25</sys_created_on>
+        <sys_id>878152061b276340bcb985507e4bcb8b</sys_id>
+        <sys_mod_count>41</sys_mod_count>
+        <sys_name>sn_kpi_composer.UserSelector</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_878152061b276340bcb985507e4bcb8b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 08:23:10</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

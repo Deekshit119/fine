@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl">
+    <sys_security_acl action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <admin_overrides>true</admin_overrides>
+        <advanced>true</advanced>
+        <condition/>
+        <description>Allow read for records in sn_kpi_composer_task_definition, if the ACL script returns true.</description>
+        <name>sn_kpi_composer_task_definition</name>
+        <operation display_value="read">read</operation>
+        <script><![CDATA[var ac = new sn_kpi_composer.AccessControl();
+answer = ac.task_definition_read(current.getValue("projects")) || current.isNewRecord() || current.sys_created_by == gs.getUserName();
+]]></script>
+        <sys_class_name>sys_security_acl</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-09-09 10:04:08</sys_created_on>
+        <sys_id>b0c84fa0db2a7410317f6a5f0596190c</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>sn_kpi_composer_task_definition</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_security_acl_b0c84fa0db2a7410317f6a5f0596190c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 10:47:14</sys_updated_on>
+        <type display_value="record">record</type>
+    </sys_security_acl>
+</record_update>

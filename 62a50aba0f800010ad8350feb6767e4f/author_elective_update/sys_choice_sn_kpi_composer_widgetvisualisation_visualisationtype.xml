@@ -1,0 +1,820 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="visualisationtype" table="sn_kpi_composer_widgetvisualisation" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>visualisationtype</element>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_id>50eb36e4875bc910115042ad0ebb3567</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>visualisationtype</sys_name>
+            <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+            <sys_update_name>sys_choice_sn_kpi_composer_widgetvisualisation_visualisationtype</sys_update_name>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Avería</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>edf2abb187298510115042ad0ebb3555</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Breakdown</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>90eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>תקלה</label>
+            <language>he</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>d0eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>细项</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>1</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>14eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>List</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>54eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Lista</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>adf2abb187298510115042ad0ebb3556</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>רשימה</label>
+            <language>he</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>94eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>列表</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>2</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>d4eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Dinámica</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>6df2abb187298510115042ad0ebb3557</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Pivot</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>18eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>טבלת ציר</label>
+            <language>he</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>58eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>数据透视</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>3</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>98eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Puntuación</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>2df2abb187298510115042ad0ebb3558</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>4</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Score</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>d8eb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>4</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>ציון</label>
+            <language>he</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>1ceb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>4</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>分数</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>4</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>5ceb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>4</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Text</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>9ceb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>5</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Texto</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e9f2abb187298510115042ad0ebb3559</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>5</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>טקסט</label>
+            <language>he</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>dceb36e4875bc910115042ad0ebb3560</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>5</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>文本</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>5</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>10eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>5</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Serie temporal</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>6</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a9f2abb187298510115042ad0ebb355a</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>6</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Time Series</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>6</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>50eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>6</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>סדרת זמן</label>
+            <language>he</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>6</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>90eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>6</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>时序</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>6</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>d0eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>6</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Área de trabajo</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>7</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>69f2abb187298510115042ad0ebb355b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>7</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Workbench</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>7</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>14eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>7</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>שולחן עבודה</label>
+            <language>he</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>7</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>54eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>7</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>工作台</label>
+            <language>zh</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>7</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>94eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>7</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Barras</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>8</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>29f2abb187298510115042ad0ebb355c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>8</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Bars</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>8</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>d4eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>8</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Círculos y anillos</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>9</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e5f2abb187298510115042ad0ebb355d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>9</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Pies and Donuts</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>9</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>18eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>9</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Other Reports</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>10</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>58eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>10</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Otros informes</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>10</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>adf2abb187298510115042ad0ebb3551</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>10</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Tipos de controles de IU</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>11</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a1f2abb187298510115042ad0ebb3553</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>11</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>UI Control Types</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>11</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>98eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>11</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Foco de atención</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>12</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>61f2abb187298510115042ad0ebb3554</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>12</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Spotlight</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>12</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>d8eb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>12</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Bloques de contenido</label>
+            <language>es</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>13</sequence>
+            <synonyms/>
+            <sys_created_by>madhavaramsravan.kum@snc</sys_created_by>
+            <sys_created_on>2022-02-09 12:18:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>21f2abb187298510115042ad0ebb3555</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>madhavaramsravan.kum@snc</sys_updated_by>
+            <sys_updated_on>2022-02-09 12:18:14</sys_updated_on>
+            <value>13</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>visualisationtype</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Content Blocks</label>
+            <language>en</language>
+            <name>sn_kpi_composer_widgetvisualisation</name>
+            <sequence>13</sequence>
+            <synonyms/>
+            <sys_created_by>deekshitulu.malladi@snc</sys_created_by>
+            <sys_created_on>2022-05-03 12:04:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>1ceb36e4875bc910115042ad0ebb3561</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+            <sys_updated_on>2022-05-03 12:04:57</sys_updated_on>
+            <value>13</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

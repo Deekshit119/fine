@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Dashboard Design" max_length="40" name="sn_kpi_composer_dashboard" type="collection">
+        <element attributes="edge_encryption_enabled=true,no_sort=true,slushbucket_ref_no_expand=true,track_definition_updated=true" label="Breakdowns" max_length="4000" name="breakdowns" reference="sn_kpi_composer_breakdown" type="glide_list"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated" max_length="40" name="definition_updated" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated by" max_length="40" name="definition_updated_by" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="4000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" label="Name" max_length="80" name="name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Order" max_length="40" name="order" type="integer"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Pa Dashboard" max_length="32" name="pa_dashboard" reference="pa_dashboards" type="reference"/>
+        <element attributes="edge_encryption_enabled=true,no_sort=true,slushbucket_ref_no_expand=true" label="Persona" max_length="4000" name="persona" reference="sn_kpi_composer_persona" reference_qual="return &quot;project=&quot; + current.project;" reference_qual_condition="return &quot;project=&quot; + current.project;" type="glide_list"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Project" mandatory="true" max_length="32" name="project" reference="sn_kpi_composer_project" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <index name="index">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index2">
+            <element name="project"/>
+        </index>
+        <index name="index3">
+            <element name="pa_dashboard"/>
+        </index>
+    </element>
+</database>

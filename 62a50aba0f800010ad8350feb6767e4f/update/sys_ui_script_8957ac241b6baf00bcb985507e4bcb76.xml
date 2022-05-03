@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubBreakdowns</name>
+        <script><![CDATA[var NavHubBreakdowns = createReactClass({
+	getInitialState: function() {
+		return { add: false };
+	},
+	
+	onAddItemClick: function() {
+		this.setState({ add: true, saving: false, name: '' });
+	},
+	
+	handleAddInputChange: function(event) {
+		this.setState({name: event.target.value});
+	},
+	
+	handleAddInputBlur: function(event) {
+		this.saveItemIfNeeded();
+	},
+	
+	handleAddSubmit: function(event) {
+		event.preventDefault();
+		this.saveItemIfNeeded();
+	},
+	
+	saveItemIfNeeded: function() {
+		if (this.state.name != null && this.state.name !== '') {
+			this.setState({saving: true});
+			var that = this;
+			this.props.onBreakdownSave(null, this.state.name, function(error) {
+				that.setState({ add: false });
+			});
+		} else {
+			this.setState({ add: false });
+		}
+	},
+	
+	render: function() {
+		var that = this;
+				
+		var listitems = this.props.breakdowns.map(
+			function (breakdown) {
+				return e(
+					NavHubBreakdownList,
+					{ key: breakdown.sys_id, breakdown: breakdown, onBreakdownSetShow: (that.props.readonly ? null : that.props.onBreakdownSetShow), onBreakdownSave: (that.props.readonly ? null : that.props.onBreakdownSave), onRefreshBreakdownDefinitions: that.props.onRefreshBreakdownDefinitions }
+				);
+			}
+		);
+		
+		if (this.props.readonly) {
+			if (listitems.length === 0) {
+				listitems.push(e(NoneList, { key: 'none' }));
+			}
+		} else {
+			if (this.state.add) {
+				listitems.push(
+					e(
+						'li',
+						{ key: 'addnew', className: 'addnew' },
+						e(
+							'span',
+							{ className: 'icon-add-circle-empty icon'}
+						),
+						e(
+							'form',
+							{className: 'item-name', onSubmit: this.handleAddSubmit},
+							e(
+								'input',
+								{ type: 'text', autoFocus: true, placeholder: getMessage('Add Item'), className: 'form-control', disabled: this.state.saving, value: this.state.name, onChange: this.handleAddInputChange, onBlur: this.handleAddInputBlur, maxLength: 25 }
+							)
+						)
+					)
+				);
+			} else {
+				listitems.push(
+					e(
+						'li',
+						{ key: 'addnew', className: 'addnew', onClick: this.onAddItemClick },
+						e(
+							'span',
+							{ className: 'icon-add-circle-empty icon'}
+						),
+						e(
+							'div',
+							{ className: 'item-name' },
+							getMessage('Add Item')
+						)
+					)
+				);
+			}
+		}
+		
+		
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+				{className: 'sn-aside-header'},
+				e(
+					'span',
+					null,
+					getMessage('Group By')
+				),
+				e(
+					'div',
+					{className : 'sn-aside-btn icon-cross', 'aria-label': getMessage('Close Group By Panel'), role: 'button', tabIndex: '0', onClick: this.props.onCloseActiveAside}
+				)
+			),
+			e(
+				'div',
+				{className: 'sn-aside-body wb-pa-aside-body'},
+				e(
+					'ul',
+					{className: 'sn-widget-datalist'},
+					listitems
+				)
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubBreakdowns</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-07 10:25:00</sys_created_on>
+        <sys_id>8957ac241b6baf00bcb985507e4bcb76</sys_id>
+        <sys_mod_count>53</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubBreakdowns</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_8957ac241b6baf00bcb985507e4bcb76</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-17 12:44:43</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

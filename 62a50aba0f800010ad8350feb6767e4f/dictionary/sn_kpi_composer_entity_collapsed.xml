@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Entity Collapsed" max_length="40" name="sn_kpi_composer_entity_collapsed" type="collection">
+        <element default="False" label="Analysis" max_length="40" name="analysis" type="boolean"/>
+        <element default="False" label="Data Definition" max_length="40" name="data_definition" type="boolean"/>
+        <element attributes="encode_utf8=false" label="Entity" max_length="32" name="entity" reference="sn_kpi_composer_entity" type="reference"/>
+        <element attributes="encode_utf8=false" label="Project" max_length="32" name="project" reference="sn_kpi_composer_project" type="reference"/>
+        <element attributes="encode_utf8=false" label="Relation" max_length="32" name="relation" reference="sn_kpi_composer_entities_entities_m2m" type="reference"/>
+        <index name="index">
+            <element name="project"/>
+        </index>
+        <index name="index2">
+            <element name="entity"/>
+        </index>
+        <index name="index3">
+            <element name="relation"/>
+        </index>
+    </element>
+</database>

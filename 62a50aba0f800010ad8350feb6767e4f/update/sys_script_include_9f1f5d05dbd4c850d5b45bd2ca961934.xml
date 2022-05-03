@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationCriticalSuccessFacNoIndDef</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationCriticalSuccessFacNoIndDef</name>
+        <script><![CDATA[var ProjectValidationCriticalSuccessFacNoIndDef = Class.create();
+ProjectValidationCriticalSuccessFacNoIndDef.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationCriticalSuccessFacNoIndDef");	
+	
+			
+		// Loop all entities
+		for(var idx = 0; idx<data.entities.length; idx++) {
+			var entity = data.entities[idx];
+
+			// Check the Critical Success Factor
+			if (entity.entitytype == this._entityTypeCriticalSuccessFactor) {
+				/*
+				* Critical Success Factor zonder Indicator definition"
+				*/
+				if (entity.indicator_definition == null) {									
+					if (entity.used_in_canvas && entity.used_in_canvas.length>0) {
+						this._addProjectValidationDefinitionError(
+							{ 
+								description: gs.getMessage("Critical Success Factor has no indicator definition"),
+								table: "sn_kpi_composer_entity",
+								record: entity.sys_id,
+							}, { project: { sys_id: data.project.sys_id } });									
+
+					} else {
+						this._addProjectValidationWarning(
+							{ 
+								description: gs.getMessage("Critical Success Factor has no indicator definition"),
+								table: "sn_kpi_composer_entity",
+								record: entity.sys_id,
+							}, { project: { sys_id: data.project.sys_id } });									
+					}
+				}								
+			}				
+		}		
+	},
+		
+
+    type: 'ProjectValidationCriticalSuccessFacNoIndDef'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-03 06:44:58</sys_created_on>
+        <sys_id>9f1f5d05dbd4c850d5b45bd2ca961934</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>ProjectValidationCriticalSuccessFacNoIndDef</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_9f1f5d05dbd4c850d5b45bd2ca961934</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-30 11:36:58</sys_updated_on>
+    </sys_script_include>
+</record_update>

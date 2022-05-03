@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardRowDetail</name>
+        <script><![CDATA[var DashboardRowDetail = createReactClass({
+	getInitialState: function() {
+		return { edit: false, hover: false, delete: false };
+	},
+	
+// 	stopClick: function(evt) {
+// 		evt.stopPropagation();
+// 	},
+	
+	onMouseEnter: function() {
+		this.setState({ hover: true });
+	},
+	
+	onMouseLeave: function() {
+		this.setState({ hover: false });
+	},
+	
+	onEditClick: function (evt) {
+		if (evt != null) evt.stopPropagation();
+		this.setState({ edit: true });
+	},
+	
+	editOnCancel: function() {
+		this.setState({edit: false});
+	},
+	
+	editOnSave: function(rowdetails) {
+		var that = this;
+		if (this.props.row.nrofcanvasses !== rowdetails.nrofcanvasses) {
+			this.props.onDashboardTabRowEdit(this.props.row.sys_id, rowdetails.nrofcanvasses, function(error) {
+				that.setState({edit: false});	
+			});	
+		} else {
+			this.setState({edit: false});
+		}
+	},
+
+	onMoveToUpClick: function(evt) {
+		evt.stopPropagation();
+		this.props.onDashboardTabRowMoveTo('up', this.props.row.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onMoveToDownClick: function(evt) {
+		evt.stopPropagation();
+		this.props.onDashboardTabRowMoveTo('down', this.props.row.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	onDeleteClick: function(evt) {
+		evt.stopPropagation();
+		this.setState({ delete: true });
+	},
+	
+	onDeleteNo: function() {
+		this.setState({ delete: false });
+	},
+	
+	onDeleteYes: function() {
+		this.props.onDashboardTabRowDelete(this.props.row.sys_id, function(error){
+			//todo: show error
+		});
+	},
+	
+	dashboardTabRowCanvasSaveTitle: function(canvas_sysid, title, callback) {
+		this.props.onDashboardTabRowCanvasSaveTitle(this.props.row.sys_id, canvas_sysid, title, callback);
+	},
+	
+	dashboardTabRowCanvasEdit: function(canvas_sysid, details, callback) {
+		this.props.onDashboardTabRowCanvasEdit(this.props.row.sys_id, canvas_sysid, details, callback);
+	},
+	
+	dashboardTabRowCanvasEntityDelete: function(canvas, entity_sysid, callback) {
+		this.props.onDashboardTabRowCanvasEntityDelete(this.props.row.sys_id, canvas, entity_sysid, callback);
+	},
+	
+	dashboardTabRowCanvasEntityInsert: function(canvas, entity_sysid, callback) {
+		this.props.onDashboardTabRowCanvasEntityInsert(this.props.row.sys_id, canvas, entity_sysid, callback);
+	},
+	
+	dashboardTabRowCanvasSaveWidgetVisualisation: function(canvas, visualisation_sysid, callback) {
+		this.props.onDashboardTabRowCanvasSaveWidgetVisualisation(this.props.row.sys_id, canvas, visualisation_sysid, callback);
+	},
+	
+	dashboardTabRowCanvasMoveTo: function(direction, canvas_sysid, callback) {
+		this.props.onDashboardTabRowCanvasMoveTo(direction, this.props.row.sys_id, canvas_sysid, callback);
+	},
+	
+	render: function() {
+		var that = this;
+		var confirmremoval = null;
+		if (this.state.delete === true) {
+			confirmremoval = e(
+				ConfirmRemoval,
+				{ key:'confirm', onYes: this.onDeleteYes, onNo: this.onDeleteNo }
+			);
+		}
+		
+		var roweditmodal = null;
+		if (this.state.edit == true) {
+			roweditmodal = e(
+				DashboardRowModal,
+				{ key: 'editmodal', row: this.props.row, onSave: this.props.onDashboardTabRowEdit ? this.editOnSave : null, onCancel: this.editOnCancel }
+			);
+		}
+		
+		var colwidth = 12 / this.props.canvasses.length;
+		var canvasses = this.props.canvasses.map(
+			function (c, index, arr) {
+				return e(
+					'div',
+					{ key: c.sys_id, className: 'col-md-' + colwidth },
+					e(
+						DashboardCanvasItem,
+						{
+							canvas: c,
+							nrofcolumns: that.props.canvasses.length,
+							widgettypes: that.props.widgettypes,
+							entities: that.props.entities,
+							timeseries: that.props.timeseries,
+							spotlight_installed: that.props.spotlight_installed,
+							allowmoveleft: index > 0,
+							allowmoveright: index < arr.length - 1,
+							onDashboardTabRowCanvasSaveTitle: that.props.onDashboardTabRowCanvasSaveTitle ? that.dashboardTabRowCanvasSaveTitle : null,
+							onDashboardTabRowCanvasEdit: that.props.onDashboardTabRowCanvasEdit ? that.dashboardTabRowCanvasEdit : null,
+							onDashboardTabRowCanvasEntityDelete: that.props.onDashboardTabRowCanvasEntityDelete ? that.dashboardTabRowCanvasEntityDelete : null,
+							onDashboardTabRowCanvasEntityInsert: that.props.onDashboardTabRowCanvasEntityInsert ? that.dashboardTabRowCanvasEntityInsert : null,
+							onDashboardTabRowCanvasSaveWidgetVisualisation: that.props.onDashboardTabRowCanvasSaveWidgetVisualisation ? that.dashboardTabRowCanvasSaveWidgetVisualisation : null,
+							onDashboardTabRowCanvasMoveTo: that.props.onDashboardTabRowCanvasMoveTo ? that.dashboardTabRowCanvasMoveTo : null
+						}
+					)
+				);
+			}
+		);
+		
+
+		var buttonscontainer = null;
+		if (this.props.onDashboardTabRowMoveTo && this.props.onDashboardTabRowDelete) {
+			var buttons = null;
+			if (this.state.hover === true) {
+				buttons = e(
+					'div',
+					{ className: 'icon-contain' },
+					e(
+						'span',
+						{ className: 'icon arrow icon-arrow-up ' + (this.props.allowmoveup ? 'enabled' : 'disabled'), title: getMessage("Move up"), onClick: this.props.allowmoveup ? this.onMoveToUpClick : null}
+					),
+					e(
+						'span',
+						{ className: 'icon arrow icon-arrow-down ' + (this.props.allowmovedown ? 'enabled' : 'disabled'), title: getMessage("Move down"), onClick: this.props.allowmovedown ? this.onMoveToDownClick : null}
+					),
+					e(
+						'span',
+						{ className: 'icon icon-edit sn-tooltip-basic', title: getMessage("Edit row"), onClick: this.onEditClick}
+					),
+					e(
+						'span',
+						{ className: 'icon icon-delete sn-tooltip-basic', title: getMessage("Delete row"), onClick: this.onDeleteClick}
+					)
+				);
+			}
+
+			buttonscontainer =  e(
+				'div',
+				{ key: 'buttons', className: 'col-md-12 tabrowbuttons' },
+				buttons
+			);
+		}
+		
+		return [
+			e(
+				'div',
+				{ key: 'buttons', className: 'row', onMouseEnter: this.onMouseEnter, onMouseLeave: this.onMouseLeave },
+				buttonscontainer
+			),
+			e(
+				'div',
+				{ key: 'canvasses', className: 'row  tabrow row-eq-height', onMouseEnter: this.onMouseEnter, onMouseLeave: this.onMouseLeave },
+				canvasses
+				
+			),
+			confirmremoval,
+			roweditmodal
+		];
+	}
+});]]></script>
+        <script_name>DashboardRowDetail</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-21 12:17:39</sys_created_on>
+        <sys_id>3e0fc9971bdf330019e8ed7b2f4bcbaa</sys_id>
+        <sys_mod_count>42</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardRowDetail</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_3e0fc9971bdf330019e8ed7b2f4bcbaa</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-17 12:19:52</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

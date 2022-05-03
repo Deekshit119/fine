@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl">
+    <sys_security_acl action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <admin_overrides>true</admin_overrides>
+        <advanced>true</advanced>
+        <condition/>
+        <description/>
+        <name>sn_kpi_composer_task</name>
+        <operation display_value="read">read</operation>
+        <script><![CDATA[var ac = new sn_kpi_composer.AccessControl();
+answer = ac.task_read(current.sys_id) || current.isNewRecord() || current.sys_created_by == gs.getUserName();
+]]></script>
+        <sys_class_name>sys_security_acl</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-09-09 10:13:40</sys_created_on>
+        <sys_id>e0aa0724db2a7410317f6a5f059619d8</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>sn_kpi_composer_task</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_security_acl_e0aa0724db2a7410317f6a5f059619d8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 10:13:40</sys_updated_on>
+        <type display_value="record">record</type>
+    </sys_security_acl>
+</record_update>

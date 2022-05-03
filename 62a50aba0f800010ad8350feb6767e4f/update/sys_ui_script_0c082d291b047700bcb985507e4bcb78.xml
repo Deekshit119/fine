@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubTitle</name>
+        <script><![CDATA[var NavHubTitle = createReactClass({
+	goBack: function() {
+		if (!this.props.returnUrl) {
+			g_navigation.open('sn_kpi_composer_projects.do');
+		} else {
+			g_navigation.open(this.props.returnUrl);
+		}
+	},
+	
+	render: function() {
+		var title;
+		if (!this.props.returnUrl) {
+			title = getMessage('Show all projects');
+		} else {
+			title = getMessage('Go back');
+		}
+
+		var islibraryicon = null;
+		if (this.props.project_library) {
+			islibraryicon = e(
+				'img',
+				{src: "wb-bookmark-icon.svg", width: 18, height: 18, style: { marginRight: 5 }}
+			);
+		}
+
+		return e(
+			'div',
+			{ className: 'sn-navhub-content' + (this.props.showSeparator ? ' sn-navhub-content_separator' : '') },
+			e(
+				'div',
+				{ className: 'sn-navhub-content sn-navhub-content_static sn-navhub-content_separator'},
+				e(
+					'button',
+					{ className: 'btn btn-icon icon-chevron-left sn-navhub-btn sn-navhub-btn_alt', type: 'button', title: title, 'aria-hidden': 'false', 'aria-label': title, onClick: this.goBack }
+				)
+			),
+			e(
+				'div',
+				{ className: 'sn-navhub-content sn-navhub-content_row' },
+				e(
+					'label',
+					{ className: 'sn-navhub-title' },
+					islibraryicon,
+					this.props.title
+				)
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubTitle</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-07 14:13:00</sys_created_on>
+        <sys_id>0c082d291b047700bcb985507e4bcb78</sys_id>
+        <sys_mod_count>15</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubTitle</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_0c082d291b047700bcb985507e4bcb78</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 13:43:46</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

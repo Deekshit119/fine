@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubInfo</name>
+        <script><![CDATA[var NavHubInfo = createReactClass({
+	getInitialState: function() {
+		return {
+			project_name: this.props.project_name, saving_project_name: false,
+			project_description: this.props.project_description, saving_project_description: false,
+			project_objective: this.props.project_objective, saving_project_objective: false,
+			project_library_public: this.props.project_library_public, saving_project_library_public: false
+		};
+	},
+
+	handleInputChange: function(event) {
+		var that = this;
+		var target = event.target;
+		var value = target.type === 'checkbox' ? target.checked : target.value;
+		var name = target.name;
+
+		if (name === 'project_library_public') {
+			value = value === "true";
+		}
+
+		var partialState = {};
+		partialState[name] = value;
+		this.setState(partialState, function() {
+			if (name === 'project_library_public') {
+				that.handleLibraryPublicSubmit(null);
+			}
+		});		
+	},
+	
+	handleInputBlur: function(event) {
+		this.savePropertyIfNeeded(event.target.name);
+	},
+	
+	handleNameSubmit: function(event) {
+		event.preventDefault();
+		this.savePropertyIfNeeded('project_name');
+	},
+	
+	handleDescriptionSubmit: function(event) {
+		event.preventDefault();
+		this.savePropertyIfNeeded('project_description');
+	},
+	
+	handleObjectiveSubmit: function(event) {
+		event.preventDefault();
+		this.savePropertyIfNeeded('project_objective');
+	},
+
+	handleLibraryPublicSubmit: function(event) {
+		if (event) event.preventDefault();
+		this.savePropertyIfNeeded('project_library_public');
+	},
+	
+	savePropertyIfNeeded: function(name) {
+		if (this.state[name] !== this.props[name] && this.state['saving_' + name] !== true) {
+			var partialState = {};
+			partialState['saving_' + name] = true;
+			this.setState(partialState);
+			var that = this;
+			this.props.onProjectPropertySave(name, this.state[name], function(error) {
+				partialState['saving_' + name] = false;
+				that.setState(partialState);
+			});
+		}
+	},
+	
+	ownerOnAdd: function(user, callback) {
+		this.props.onProjectOwnerAdd(user, function(error) {
+			callback(error);
+		});
+	},
+	
+	ownerOnDelete: function(sys_id) {
+		this.props.onProjectOwnerDelete(sys_id, function (error){
+			//todo: show error
+		});
+	},
+	
+	contactOnAdd: function(user, callback) {
+		this.props.onProjectContactAdd(user, function(error) {
+			callback(error);
+		});
+	},
+	
+	contactOnDelete: function(sys_id) {
+		this.props.onProjectContactDelete(sys_id, function (error){
+			//todo: show error
+		});
+	},
+	
+	knowledgeArticleOnAdd: function(knowledgearticle, callback) {
+		this.props.onProjectKnowledgeArticleAdd(knowledgearticle, function(error) {
+			callback(error);
+		});
+	},
+	
+	knowledgeArticleOnDelete: function(sys_id) {
+		this.props.onProjectKnowledgeArticleDelete(sys_id, function (error){
+			//todo: show error
+		});
+	},
+		
+	render: function() {
+		var that = this;
+
+		var namectrl;
+		if (this.props.readonly) {
+			namectrl = e(
+				'div',
+				{className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+				e(
+					'label',
+					{ className: "bold" },
+					getMessage('Name')
+				),
+				e(
+					'p',
+					{ className: 'form-control-static' },
+					this.state.project_name
+				)
+			);
+		} else {
+			namectrl = e(
+				'form',
+				{className: 'sn-widget sn-widget_border-bottom sn-widget-form', onSubmit: this.handleNameSubmit},
+				e(
+					'label',
+					null,
+					getMessage('Name')
+				),
+				e(
+					'input',
+					{ type: 'text', 'aria-label': getMessage('Name'), placeholder: getMessage('Give a unique, meaningful name.'), className: 'form-control', name: 'project_name', disabled: this.state.saving_project_name, value: this.state.project_name, onChange: this.handleInputChange, onBlur: this.handleInputBlur }
+				)
+			);
+		}
+
+		var descriptionctrl;
+		if (this.props.readonly) {
+			if (this.state.project_description) {
+				descriptionctrl = e(
+					'div',
+					{className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+					e(
+						'label',
+						{ className: "bold" },
+						getMessage('Description')
+					),
+					e(
+						'p',
+						{ className: 'form-control-static newlines' },
+						this.state.project_description
+					)
+				);
+			} else {
+				descriptionctrl = null;
+			}
+		} else {
+			descriptionctrl = e(
+				'form',
+				{className: 'sn-widget sn-widget_border-bottom sn-widget-form', onSubmit: this.handleDescriptionSubmit},
+				e(
+					'label',
+					null,
+					getMessage('Description')
+				),
+				e(
+					'textarea',
+					{ placeholder: getMessage('Add a detailed description to help others understand the subject of the project and to prevent redundancy.'), 'aria-label': getMessage('Description'), className: 'form-control', name: 'project_description', disabled: this.state.saving_project_description, value: this.state.project_description, onChange: this.handleInputChange, onBlur: this.handleInputBlur }
+				)
+			);
+		}
+
+		var objectivectrl;
+		if (this.props.readonly) {
+			if (this.state.project_objective) {
+				objectivectrl = e(
+					'div',
+					{className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+					e(
+						'label',
+						{ className: "bold" },
+						getMessage('Objective')
+					),
+					e(
+						'p',
+						{ className: 'form-control-static newlines' },
+						this.state.project_objective
+					)
+				);
+			} else {
+				objectivectrl = null;
+			}
+		} else {
+			objectivectrl = e(
+				'form',
+				{className: 'sn-widget sn-widget_border-bottom sn-widget-form', onSubmit: this.handleObjectiveSubmit},
+				e(
+					'label',
+					null,
+					getMessage('Objective')
+				),
+				e(
+					'textarea',
+					{ className: 'form-control', placeholder: getMessage('Say what you hope to accomplish with this project.'), 'aria-label': getMessage('Objective'), name: 'project_objective', disabled: this.state.saving_project_objective, value: this.state.project_objective, onChange: this.handleInputChange, onBlur: this.handleInputBlur }
+				)
+			);
+		}
+
+		var librarypublicctrl = null;
+		if (this.props.project_library) {
+			if (this.props.readonly) {
+				librarypublicctrl = e(
+					'div',
+					{className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+					e(
+						'label',
+						{ className: "bold" },
+						getMessage('Global')
+					),
+					e(
+						'p',
+						{ className: 'form-control-static newlines' },
+						this.state.project_library_public === true ? getMessage("Yes") : getMessage("No")
+					)
+				);
+			} else {
+				librarypublicctrl = e(
+					'form',
+					{className: 'sn-widget sn-widget_border-bottom sn-widget-form', onSubmit: this.handleLibraryPublicSubmit},
+					e(
+						'label',
+						null,
+						getMessage('Global')
+					),
+					e(
+						'div',
+						null,
+						e(
+							'label',
+							{ className: "radio-inline" },
+							e(
+								'input',
+								{ type: 'radio', disabled: this.state.saving_project_library_public, value: "true", onChange: this.handleInputChange, checked: this.state.project_library_public === true, name: 'project_library_public' }
+							),
+							getMessage("Yes")
+						),
+						e(
+							'label',
+							{ className: "radio-inline" },
+							e(
+								'input',
+								{ type: 'radio', disabled: this.state.saving_project_library_public, value: "false", onChange: this.handleInputChange, checked: this.state.project_library_public === false, name: 'project_library_public' }
+							),
+							getMessage("No")
+						)
+					)
+				);
+			}
+		}
+		
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+				{className: 'sn-aside-header'},
+				e(
+					'span',
+					null,
+					this.props.project_library === true ?  getMessage('Library properties') : getMessage('Project properties')
+				),
+				e(
+					'div',
+					{className : 'sn-aside-btn icon-cross', 'aria-label': getMessage('Close Info Panel'), role: 'button', tabIndex: '0', onClick: this.props.onCloseActiveAside}
+				)
+			),
+			e(
+				'div',
+				{className: 'sn-aside-body wb-pa-aside-body'},
+				namectrl,
+				descriptionctrl,
+				objectivectrl,
+				librarypublicctrl,
+				e(
+					KnowledgeArticleList,
+					{
+						knowledgearticles: this.props.project_knowledgearticles,
+						title: getMessage('Knowledge Articles'),
+						addPlaceholder: getMessage('Add Knowledge Article'),
+						onKnowledgeArticleAdd: this.props.readonly ? null : this.knowledgeArticleOnAdd,
+						onKnowledgeArticleDelete: this.props.readonly ? null : this.knowledgeArticleOnDelete
+					}
+				),
+				e(
+					UserList,
+					{
+						users: this.props.project_owners,
+						title: getMessage('Responsible'),
+						addPlaceholder: getMessage('Add Responsible'),
+						onUserAdd: this.props.readonly ? null : this.ownerOnAdd,
+						onUserDelete: this.props.readonly ? null : this.ownerOnDelete
+					}
+				),
+				e(
+					UserList,
+					{
+						users: this.props.project_contacts,
+						title: getMessage('Contacts'),
+						addPlaceholder: getMessage('Add Contact'),
+						onUserAdd: this.props.readonly ? null : this.contactOnAdd,
+						onUserDelete: this.props.readonly ? null : this.contactOnDelete
+					}
+				),
+				e(
+					'div',
+					{style: {marginBottom : 300}},
+					' '
+				)
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubInfo</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-29 12:40:47</sys_created_on>
+        <sys_id>bacf62e51b5b6b0019e8ed7b2f4bcbf5</sys_id>
+        <sys_mod_count>104</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubInfo</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_bacf62e51b5b6b0019e8ed7b2f4bcbf5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-03-26 11:02:37</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

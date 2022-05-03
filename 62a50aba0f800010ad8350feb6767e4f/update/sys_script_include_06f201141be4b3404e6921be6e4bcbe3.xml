@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTask</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description>Creates tasks (todo's) for a project; Based on the BaseTask class</description>
+        <name>ProjectTask</name>
+        <script><![CDATA[var ProjectTask = Class.create();
+ProjectTask.prototype = Object.extendsObject(sn_kpi_composer.BaseTask, {
+ 
+	/*
+	* Read the number of TaskDefinition records and breaks it down by type and state
+	*/
+	taskDefsResults: function(input) {
+		var response = {};
+		response.success = false;
+		
+		response.taskDef = {};
+		response.taskDef.counts = [];
+		
+		// Read input param
+		input = this._getInputParam(input);
+
+		var that = this;
+		
+		try {
+
+			if (this.trace) this._debug.push("Calculating summery of tasks for project: " + this._projectApi.project(input).sys_id);
+
+			/*
+			AllTasks: 
+			
+		var pv = new GlideRecord('sn_kpi_composer_task_definition');
+		// Project filter
+		var queryStr = "projectsLIKE" + this._projectApi.project(input).sys_id;
+
+		// Add filter
+		pv.addEncodedQuery(queryStr);
+
+		// Run query
+		pv.query();
+
+		// Count records
+		var cnt = pv.getRowCount();
+
+
+		// Create result object
+		var result = {};
+		result.count = cnt;
+		result.description = "Tasks";
+		result.url = "/sn_kpi_composer_task_definition_list.do?sysparm_query=" + encodeURIComponent(queryStr);
+		result.type = 0; // Backwardscomp
+		response.taskDef.counts.push(result);
+*/
+
+			/*
+				AvtiveTasks: Status Created OR update and not waiting on dep
+			*/
+
+			var pv = new GlideRecord('sn_kpi_composer_task_definition');
+			// Project filter
+			var queryStr = "projectsLIKE" + this._projectApi.project(input).sys_id;
+			// TaskDef filter
+			queryStr += "^statusIN3,4^waiting_on_dependencies=false"
+
+			// Add filter
+			pv.addEncodedQuery(queryStr);
+			
+			// Run query
+			pv.query();
+
+			// Count records
+			var cnt = pv.getRowCount();
+
+			
+			// Create result object
+			var result = {};
+			result.count = cnt;
+			result.description = gs.getMessage("Active Tasks");
+			result.url = "/sn_kpi_composer_task_definition_list.do?sysparm_query=" + encodeURIComponent(queryStr);
+			result.type = 0; // Backwardscomp
+			response.taskDef.counts.push(result);
+
+
+			/*
+			TaskOnHold: Status Created OR update and waiting on dep
+			*/
+			var pv = new GlideRecord('sn_kpi_composer_task_definition');
+			// Project filter
+			var queryStr = "projectsLIKE" + this._projectApi.project(input).sys_id;
+			// TaskDef filter
+			queryStr += "^statusIN3,4^waiting_on_dependencies=true"
+
+			// Add filter
+			pv.addEncodedQuery(queryStr);
+			
+			// Run query
+			pv.query();
+
+			// Count records
+			var cnt = pv.getRowCount();
+
+			
+			// Create result object
+			var result = {};
+			result.count = cnt;
+			result.description = gs.getMessage("Tasks on Hold");
+			result.url = "/sn_kpi_composer_task_definition_list.do?sysparm_query=" + encodeURIComponent(queryStr);
+			result.type = 0; // Backwardscomp
+			response.taskDef.counts.push(result);
+
+
+
+
+			/*
+			Completed: Status OK
+			*/
+			var pv = new GlideRecord('sn_kpi_composer_task_definition');
+			// Project filter
+			var queryStr = "projectsLIKE" + this._projectApi.project(input).sys_id;
+			// TaskDef filter
+			queryStr += "^status=0"
+
+			// Add filter
+			pv.addEncodedQuery(queryStr);
+			
+			// Run query
+			pv.query();
+
+			// Count records
+			var cnt = pv.getRowCount();
+
+			
+			// Create result object
+			var result = {};
+			result.count = cnt;
+			result.description = gs.getMessage("Completed Tasks");
+			result.url = "/sn_kpi_composer_task_definition_list.do?sysparm_query=" + encodeURIComponent(queryStr);
+			result.type = 0; // Backwardscomp
+			response.taskDef.counts.push(result);
+
+
+			// Read assignmentgroup from settings 
+			response.taskDef.assignmentgroup = gs.getProperty('sn_kpi_composer.task_assignment_group');
+			response.taskDef.assignmentgroup_dv = "Unknown";
+
+			// Read the display value
+			var gr_usergroup = new GlideRecord("sys_user_group");
+			if (gr_usergroup.get(response.taskDef.assignmentgroup)) {
+				response.taskDef.assignmentgroup_dv = gr_usergroup.getValue("name");
+			}
+			
+
+			response.success = true;
+			
+			if (this.trace)
+				response.debug = this._debug;
+			
+			return response;
+		} catch (err) {
+			gs.error(err);
+			this._debug.push(err);
+			response.debug = this._debug;
+			response.exception = err;
+			response.success = false;
+		}
+		return response;			
+	},	
+	
+	taskResultsJSON: function(input) {
+		var taskdefs = this.taskDefsResults(input);
+		if (taskdefs.success) {
+			var result = {};
+			result.success = true;
+			result.tasks = taskdefs.taskDef.counts;
+			return JSON.stringify(result);
+		} 
+		return JSON.stringify(taskdefs);	
+	},
+			
+	createProjectTasksJSON: function(input) {
+		var response = {};
+		response.success = false;
+		
+		// Read input param
+		input = this._getInputParam(input);
+		
+		try {
+			// First check if user has write access to the project
+			var project_sys_id = this._projectApi.project(input).sys_id;
+			var project = new GlideRecord("sn_kpi_composer_project");
+			project.get(project_sys_id);
+
+			if (!project.canWrite())
+				throw 'No write access for the project: ' + project_sys_id;
+
+			// Then run the validation
+			var projectValidationApi = new sn_kpi_composer.ProjectValidation();
+			var validationResponse = projectValidationApi.createValidateJSON(input);
+			
+			// Create object to load data
+			var entityApi = new sn_kpi_composer.EntityApi();
+			
+			// Load the data
+			var data = entityApi.getData(input);
+			
+			if (data) {
+				if (data.success) {
+					// Start validation
+					if (this.trace) this._debug.push("Creating tasks for project");
+
+					// Create breakdowns
+					var projectTaskCreateBreakdown = new ProjectTaskCreateBreakdown();
+					projectTaskCreateBreakdown.trace = this.trace;
+					projectTaskCreateBreakdown.createtasks(data);
+		
+					// Sort the table
+					// Order: automated > maual > formula
+					/* 	
+						_indicatorDefinitionTypeAutomated: 1,
+						_indicatorDefinitionTypeFormula: 2,
+						_indicatorDefinitionTypeManual: 3,
+					*/
+					if (this.trace) this._debug.push("Sort indicator definitions");
+					
+					data.indicatordefinitions.sort(function(a, b) {
+						if (a.indicator_type == this._indicatorDefinitionTypeFormula && b.indicator_type == this._indicatorDefinitionTypeManual) return -1;
+						if (a.indicator_type == this._indicatorDefinitionTypeFormula && b.indicator_type == this._indicatorDefinitionTypeAutomated) return -1;
+						if (a.indicator_type == this._indicatorDefinitionTypeManual && b.indicator_type == this._indicatorDefinitionTypeAutomated) return -1;
+						return 1;
+					});
+					
+					var projectTaskCreateIndicator = new ProjectTaskCreateIndicator();
+					projectTaskCreateIndicator.trace = this.trace;
+					projectTaskCreateIndicator.createtasks(data);
+
+					
+					var projectTaskCreateWidget = new ProjectTaskCreateWidget();
+					projectTaskCreateWidget.trace = this.trace;					
+					projectTaskCreateWidget.createtasks(data);
+
+		
+					var projectTaskCreateReport = new ProjectTaskCreateReport();
+					projectTaskCreateReport.trace = this.trace;
+					projectTaskCreateReport.createtasks(data);
+
+					var projectTaskCreateInteractiveFilter = new ProjectTaskCreateInteractiveFilter();
+					projectTaskCreateInteractiveFilter.trace = this.trace;
+					projectTaskCreateInteractiveFilter.createtasks(data);
+
+					var projectTaskCreateSpotlight = new ProjectTaskCreateSpotlight();
+					projectTaskCreateSpotlight.trace = this.trace;
+					projectTaskCreateSpotlight.createtasks(data);
+					
+					var projectTaskCreateContentBlock = new ProjectTaskCreateContentBlock();
+					projectTaskCreateContentBlock.trace = this.trace;
+					projectTaskCreateContentBlock.createtasks(data);
+
+					var projectTaskCreateDashboard = new ProjectTaskCreateDashboard();
+					projectTaskCreateDashboard.trace = this.trace;
+					projectTaskCreateDashboard.createtasks(data);
+
+
+					// -- Calculate dependencies between tasks(defs) in this project
+					var projectTaskCreateTaskDefDependencies = new ProjectTaskCreateTaskDefDependencies();
+					projectTaskCreateTaskDefDependencies.trace = this.trace;
+					projectTaskCreateTaskDefDependencies.createdependencies(data);			
+
+					// -- Remove/validate references
+					var projectTaskValidateTaskDefReference = new ProjectTaskValidateTaskDefReference();
+					projectTaskValidateTaskDefReference.trace = this.trace;
+					projectTaskValidateTaskDefReference.validatetasks(data);			
+
+					// -- Clear dependencies between all tasks(defs) in this project
+					var projectTaskClearTaskDefDependencies = new ProjectTaskClearTaskDefDependencies();
+					projectTaskClearTaskDefDependencies.trace = this.trace;
+					projectTaskClearTaskDefDependencies.cleardependencies(data);			
+
+					// -- Remove orphans
+					var projectTaskValidateTaskDefOrphans = new ProjectTaskValidateTaskDefOrphans();
+					projectTaskValidateTaskDefOrphans.trace = this.trace;
+					projectTaskValidateTaskDefOrphans.validatetasks(data);
+					
+					
+					
+				} else {
+					throw "Could not read data for this project";
+				}
+			} else {
+				throw "Data has no value";
+			}
+		
+			response.tasks = [];
+
+			if (this.trace) this._debug.push("Reading project taskdef results");
+			var taskdefs = this.taskDefsResults(input);
+			if (taskdefs.success) {
+				// place counts in tasks (backward compatible)
+				response.tasks = taskdefs.taskDef.counts;
+			} else {
+				data.taskdefs = taskdefs;
+			}
+
+			response.validation = JSON.parse(validationResponse);
+
+			response.success = true;
+			
+			if (this._debug) response.debug = this._debug;
+			
+			return JSON.stringify(response);
+		} catch (err) {
+			gs.error("ERR:" + JSON.stringify(err));
+			this._debug.push("ERR: " + err);
+			response.debug = this._debug;
+			response.exception = err;
+			response.success = false;
+		}
+		return JSON.stringify(response);
+	},
+	
+	addProjectUsedInTaskDef: function(taskdef_record, project_sys_id) {
+		// Take the project array
+		var projects = taskdef_record.getValue("projects").split(",");
+		// Get the index of the current project
+		var projectIdx = projects.indexOf(project_sys_id);
+		// When in the list, remove it
+		if (projectIdx<0) {
+			projects.push(project_sys_id);
+			var newProjects = projects.join(",");
+			newProjects = newProjects.replace(" ", "");
+			taskdef_record.setValue("projects", newProjects);
+			//taskdef_record.update();
+		}
+	},
+
+	removeProjectUsedInTaskDef: function(taskdef_record, project_sys_id) {
+		// Take the project array
+		var projects = taskdef_record.getValue("projects").split(",");
+		// Get the index of the current project
+		var projectIdx = projects.indexOf(project_sys_id);
+		// When in the list, remove it
+		if (projectIdx>-1) {
+			projects.splice(projectIdx, 1);
+			var newProjects = projects.join(",");
+			newProjects = newProjects.replace(" ", "");
+			taskdef_record.setValue("projects", newProjects);
+			//taskdef_record.update();
+		}
+	},
+
+
+	
+    type: 'ProjectTask'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-28 10:52:46</sys_created_on>
+        <sys_id>06f201141be4b3404e6921be6e4bcbe3</sys_id>
+        <sys_mod_count>196</sys_mod_count>
+        <sys_name>ProjectTask</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_06f201141be4b3404e6921be6e4bcbe3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-10 14:07:24</sys_updated_on>
+    </sys_script_include>
+</record_update>

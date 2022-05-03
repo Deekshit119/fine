@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubContainer</name>
+        <script><![CDATA[var NavHubContainer = createReactClass({
+	render: function() {
+		var activeAsideClassName = '';
+		var activeAsideComponent = null;
+		
+		if (this.props.activeAside == null) {
+			activeAsideClassName = ' sn-aside-hide';
+		} else {
+			if (this.props.activeAside === 'info') {
+				activeAsideComponent =
+					e(
+					NavHubInfo,
+					this.props
+				);
+			} else if (this.props.activeAside === 'journal') {
+				activeAsideComponent =
+					e(
+					NavHubJournal,
+					this.props
+				);
+			} else if (this.props.activeAside === 'library') {
+				activeAsideComponent =
+					e(
+					NavHubLibrary,
+					this.props
+				);
+			} else if (this.props.activeAside === 'share') {
+				activeAsideComponent =
+					e(
+					NavHubShareContainer,
+					this.props
+				);
+			} else if (this.props.activeAside === 'personas') {
+				activeAsideComponent =
+					e(
+					NavHubPersonas,
+					this.props
+				);
+			} else if (this.props.activeAside === 'breakdowns') {
+				activeAsideComponent =
+					e(
+					NavHubBreakdowns,
+					this.props
+				);
+			} else if (this.props.activeAside === 'addwidget') {
+				activeAsideComponent =
+					e(
+					NavHubAddWidget,
+					this.props
+				);
+			} else if (this.props.activeAside === 'canvasentities') {
+				activeAsideComponent =
+					e(
+					NavHubCanvasEntities,
+					this.props
+				);
+			}
+		}
+		
+		return e(
+					'div',
+					{className: 'sn-aside sn-aside_right sn-aside_header sn-connect-aside right am-fade-and-slide-right sn-aside_open' + activeAsideClassName, style: { width: '320px', display: 'block' }}, 
+					e(
+						'div',
+						{className: 'aside-dialog', style: {minWidth: '320px'}},
+						e(
+							'div',
+							{className: 'aside-content'},
+							e(
+								'div',
+								null,
+								activeAsideComponent
+							)
+						)
+					)
+				);
+	}
+});]]></script>
+        <script_name>NavHubContainer</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-29 12:41:26</sys_created_on>
+        <sys_id>9530f22d1b1b6b0019e8ed7b2f4bcbea</sys_id>
+        <sys_mod_count>22</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubContainer</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_9530f22d1b1b6b0019e8ed7b2f4bcbea</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-01-22 11:36:05</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardTabList</name>
+        <script><![CDATA[var DashboardTabList = createReactClass({
+	getInitialState: function() {
+		return { add: false };
+	},
+
+	onAddClick: function() {
+		this.setState({ add: true });
+	},
+	
+	addOnCancel: function() {
+		this.setState({ add: false });
+	},
+
+	addOnAdd: function(data) {
+		var that = this;
+		this.props.onDashboardTabAdd(data, function(error, newone) {
+			that.setState({ add: false });
+			if (newone) {
+				that.props.onDashboardTabSelect(newone, true);
+			}
+		});
+	},
+	
+	render: function() {
+		var that = this;
+
+		var addmodal = null;
+		if (this.state.add) {
+			addmodal = e(
+				DashboardTabAddModal,
+				{ key: 'addmodal', getPossibleDashboardTabTemplates: this.props.getPossibleDashboardTabTemplates, onCancel: this.addOnCancel, onAdd: this.addOnAdd, currenttabcount: this.props.dashboardtabs.length }
+			);
+		}
+		
+		var listitems = this.props.dashboardtabs.map(
+			function (dashboardtab, index, arr) {
+				return e(
+					DashboardTabListItem,
+					{
+						ref: dashboardtab.sys_id,
+						key: dashboardtab.sys_id,
+						dashboardtab: dashboardtab,
+						isselected: dashboardtab.sys_id === that.props.selecteddashboardtabid,
+						allowmoveleft: index > 0,
+						allowmoveright: index < arr.length - 1,
+						onDashboardTabSelect: that.props.onDashboardTabSelect,
+						onDashboardTabDelete: that.props.onDashboardTabDelete,
+						onDashboardTabAddAsTemplate: that.props.onDashboardTabAddAsTemplate,
+						onDashboardTabMoveTo: that.props.onDashboardTabMoveTo,
+						onDashboardTabSaveName: that.props.onDashboardTabSaveName
+					}
+				);
+			}
+		);
+		
+		if (this.props.onDashboardTabAdd) {
+			listitems.push(
+				e(
+					'li',
+					{
+						key: 'add',
+						className: 'tabs2_tab'
+					},
+					e(
+						'div',
+						{ className: 'tab_caption_text' },
+						e(
+							'button',
+							{
+								className: 'btn wb-pa-dashboard-add-btn', onClick: this.onAddClick,
+								'aria-label': getMessage('Add Tab')
+							},
+							e(
+								'span',
+								{
+									className: 'icon-add'
+								}
+							)
+						)
+					)
+				)
+			);
+		}
+		
+		return [
+			e(
+				'ul',
+				{
+					key: 'itemcontainer',
+					className: 'tabs2_strip',
+					style: { overflow: 'visible' }
+				},
+				listitems
+			),
+			e(
+				'div',
+				{className: 'clearfix', key: 'clearfix'}
+			),
+			addmodal
+		];
+	}
+});]]></script>
+        <script_name>DashboardTabList</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-08 11:29:15</sys_created_on>
+        <sys_id>e2570e4b1b43370019e8ed7b2f4bcb97</sys_id>
+        <sys_mod_count>21</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardTabList</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_e2570e4b1b43370019e8ed7b2f4bcb97</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 15:50:46</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

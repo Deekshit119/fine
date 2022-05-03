@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardModal</name>
+        <script><![CDATA[var DashboardModal = createReactClass({	
+	getInitialState: function() {
+		return {
+			name: this.props.dashboard.name, saving_name: false,
+			description: this.props.dashboard.description, saving_description: false,
+			activeAside: this.props.pa_dashboards ? 'padashboard' : 'personas',
+			delete: false
+		};
+	},
+	
+	close: function() {
+		this.props.onClose();
+	},
+	
+	handleInputNameChange: function(event) {
+		this.setState({ name: event.target.value });
+	},
+	
+	handleInputNameBlur: function(event) {
+		this.saveNameIfNeeded();
+	},
+	
+	handleNameSubmit: function(event) {
+		event.preventDefault();
+		this.saveNameIfNeeded();
+	},
+	
+	saveNameIfNeeded: function() {
+		if (this.state.name !== this.props.dashboard.name && this.state.saving_name !== true) {
+			this.setState({saving_name: true});
+			var that = this;
+			this.props.onNameSave(this.state.name, function(error) {
+				that.setState({saving_name: false});
+			});
+		}
+	},
+	
+	handleInputDescriptionChange: function(event) {
+		this.setState({ description: event.target.value });
+	},
+	
+	handleInputDescriptionBlur: function(event) {
+		this.saveDescriptionIfNeeded();
+	},
+	
+	handleDescriptionSubmit: function(event) {
+		event.preventDefault();
+		this.saveDescriptionIfNeeded();
+	},
+	
+	saveDescriptionIfNeeded: function() {
+		if (this.state.description !== this.props.dashboard.description && this.state.saving_description !== true) {
+			this.setState({saving_description: true});
+			var that = this;
+			this.props.onDescriptionSave(this.state.description, function(error) {
+				that.setState({saving_description: false});
+			});
+		}
+	},
+	
+	handleActiveAsideChange: function(activeAside) {
+		if (this.state.activeAside === activeAside) {
+			return;
+		} else {
+			this.setState({activeAside: activeAside});
+		}
+	},
+	
+	onPersonaCheckedChange: function(sys_id, checked, callback) {
+		this.props.onPersonaCheckedChange(sys_id, checked, function (error){
+			//todo: show error
+			callback(error);
+		});
+	},
+	
+	onBreakdownCheckedChange: function(sys_id, checked, callback) {
+		this.props.onBreakdownCheckedChange(sys_id, checked, function (error){
+			//todo: show error
+			callback(error);
+		});
+	},
+	
+	paDashboardOnSave: function(pa_dashboard, callback) {
+		this.props.onPaDashboardSave(pa_dashboard, function(error) {
+			callback(error);
+		});
+	},
+	
+	onOpened: function() {
+		if (this.refs.nameinput) {
+			this.refs.nameinput.focus();
+			this.refs.nameinput.select();
+		}
+	},
+	
+	delete: function() {
+		this.setState({delete: true});
+	},
+	
+	onDeleteNo: function() {
+		this.setState({ delete: false });
+	},
+	
+	onDeleteYes: function() {
+		this.props.onDelete();
+	},
+	
+	render: function() {
+		var that = this;
+		//console.log(this.props.dashboard);
+		var confirmremoval = null;
+		var deletebutton = null;
+		if (this.props.onDelete != null) {
+			if (this.state.delete == true) {
+				confirmremoval = e(
+					ConfirmRemoval,
+					{ key: 'confirmremove', onYes: this.onDeleteYes, onNo: this.onDeleteNo }
+				);
+			}
+			deletebutton = e(
+				'button',
+				{type: 'button', className: 'btn btn-danger', onClick: this.delete },
+				getMessage('Delete')
+			);
+		}
+		
+		var buttonsRight = e(
+			'div',
+			{ className: 'buttonsright' },
+			deletebutton,
+			e(
+				'button',
+				{type: 'button', className: 'btn btn-secundary', style: { marginLeft: '5px' }, onClick: this.close },
+				getMessage('Close')
+			)
+		);
+		
+		var activeAsideComponent = null;
+		if (this.state.activeAside === 'padashboard') {
+			activeAsideComponent =
+				e(
+					DashboardPaDashboard,
+					{
+						dashboard: this.props.dashboard,
+						pa_dashboards: this.props.pa_dashboards,
+						onPaDashboardSave: (this.props.onPaDashboardSave ? this.paDashboardOnSave : null)
+					}
+				);
+		} else if (this.state.activeAside === 'personas') {
+			activeAsideComponent =
+				e(
+					ModalPersonas,
+					{
+						personas: this.props.personas,
+						selectedpersonas: this.props.dashboard.personas.map(function (pers) {return pers.sys_id;}),
+						onCheckedChange: this.props.onPersonaCheckedChange != null ? this.onPersonaCheckedChange : null
+					}
+				);
+		} else if (this.state.activeAside === 'breakdowns') {
+			activeAsideComponent =
+				e(
+					ModalBreakdowns,
+					{
+						breakdowns: this.props.breakdowns,
+						selectedbreakdowns: this.props.dashboard.breakdowns.map(function (pers) {return pers.sys_id;}),
+						onCheckedChange: this.props.onBreakdownCheckedChange != null ? this.onBreakdownCheckedChange : null
+					}
+				);
+		}
+		
+		var namecomponent = null;
+		if (this.props.onNameSave != null) {
+			namecomponent = e(
+				'form',
+				{className: 'sn-widget sn-widget-form form-horizontal', onSubmit: this.handleNameSubmit},
+				e(
+					'div',
+					{ className: "row"},
+					e(
+						'label',
+						{ className: "col-md-3 control-label"},
+						getMessage("Name")
+					),
+					e(
+						'div',
+						{className: "col-md-9"},
+						e(
+							'input',
+							{ type: 'text', ref: 'nameinput', 'aria-label': getMessage('Name'), placeholder: getMessage('Name'), className: 'form-control', disabled: this.state.saving_name, value: this.state.name, onChange: this.handleInputNameChange, onBlur: this.handleInputNameBlur, maxLength: 80 }
+						)
+					)
+				)
+			);
+		} else {
+			namecomponent = e(
+				'div',
+				{className: 'sn-widget sn-widget-form form-horizontal'},
+				e(
+					'div',
+					{ className: "row"},
+					e(
+						'label',
+						{ className: "col-md-3 control-label"},
+						getMessage("Name")
+					),
+					e(
+						'div',
+						{className: "col-md-9 form-control-static"},
+						this.state.name
+					)
+				)
+			);		
+		}
+		var descriptioncomponent = null;
+		if (this.props.onDescriptionSave != null) {
+			descriptioncomponent = e(
+				'form',
+				{className: 'sn-widget sn-widget_border-bottom sn-widget-form form-horizontal', onSubmit: this.handleDescriptionSubmit},
+				e(
+					'div',
+					{ className: "row"},
+					e(
+						'label',
+						{ className: "col-md-3 control-label"},
+						getMessage("Description")
+					),
+					e(
+						'div',
+						{className: "col-md-9"},
+						e(
+							'textarea',
+							{ placeholder: getMessage('Description'), rows: 5, 'aria-label': getMessage('Description'), className: 'form-control', disabled: this.state.saving_description, value: this.state.description, onChange: this.handleInputDescriptionChange, onBlur: this.handleInputDescriptionBlur, maxLength: 4000 }
+						)
+					)
+				)
+			);
+		} else {
+			if (this.state.description != null && this.state.description !== '') {
+				descriptioncomponent = e(
+					'div',
+					{className: 'sn-widget sn-widget_border-bottom sn-widget-form newlines form-horizontal'},
+					e(
+						'div',
+						{ className: "row"},
+						e(
+							'label',
+							{ className: "col-md-3 control-label"},
+							getMessage("Description")
+						),
+						e(
+							'div',
+							{className: "col-md-9 form-control-static"},
+							this.state.description
+						)
+					)
+				);	
+			}
+		}
+		
+		var navhubbuttons = [];
+		if (this.props.pa_dashboards) {
+			navhubbuttons.push(
+				e(
+					NavHubButton,
+					{
+						key: 'padashboard',
+						id: 'padashboard',
+						iconClass: 'icon-link',
+						title: getMessage('PA Dashboard'),
+						isActive: this.state.activeAside === 'padashboard',
+						onActiveAsideChange: this.handleActiveAsideChange
+					}
+				)
+			);
+		}
+		navhubbuttons.push(
+			e(
+				NavHubButton,
+				{
+					key: 'personas',
+					id: 'personas',
+					iconClass: 'icon-user',
+					title: getMessage('Persona'),
+					isActive: this.state.activeAside === 'personas',
+					onActiveAsideChange: this.handleActiveAsideChange
+				}
+			),
+			e(
+				NavHubButton,
+				{
+					key: 'breakdowns',
+					id: 'breakdowns',
+					iconClass: 'icon-sub-elements',
+					title: getMessage('Group by'),
+					isActive: this.state.activeAside === 'breakdowns',
+					onActiveAsideChange: this.handleActiveAsideChange
+				}
+			)
+		);
+		
+		return [
+			e(
+				Reactstrap.Modal, 
+				{ key:'entitydetail', 'isOpen': true, size: 'lg', backdrop: 'static', className: 'entitydetail', onOpened: this.onOpened, toggle: this.close, zIndex: 'auto' }, //auto is needed for IE zoom 150%..
+				e(
+					Reactstrap.ModalBody,
+					{},
+					e(
+						'div',
+						{ },
+						e(
+							'div',
+							{ className: 'sn-navhub' },
+							e(
+								'div',
+								{ className: 'sn-navhub-content' },
+								e(
+									'h3',
+									null,
+									getMessage("Dashboard detail")
+								)
+							)
+						),
+						e(
+							'div',
+							{className: 'sn-aside sn-aside_right sn-aside_header sn-connect-aside right am-fade-and-slide-right sn-aside_open', style: { width: '100%', display: 'block' }},
+							e(
+								'div',
+								{className: 'aside-dialog', style: {minWidth: '100%'}},
+								e(
+									'div',
+									{className: 'aside-content'},
+									e(
+										'div',
+										null,
+										e(
+											'div',
+											null,
+											e(
+												'div',
+												{
+													className: 'sn-aside-body wb-pa-aside-body'
+												},
+												namecomponent,
+												descriptioncomponent
+											)
+										)
+									)
+								)
+							)
+						)
+					),
+					e(
+						'div',
+						{ style: { 'borderLeft': '1px solid #e6e8ea' } },
+						e(
+							'div',
+							{ className: 'sn-navhub' },
+							e(
+								'div',
+								{ className: 'sn-navhub-content' },
+								navhubbuttons,
+								buttonsRight
+							)
+						),
+						e(
+							'div',
+							{
+								className: 'sn-aside sn-aside_right sn-aside_header sn-connect-aside right am-fade-and-slide-right sn-aside_open',
+								style: { width: '100%', display: 'block' }
+							},
+							e(
+								'div',
+								{
+									className: 'aside-dialog',
+									style: {minWidth: '100%'}
+								},
+								e(
+									'div',
+									{
+										className: 'aside-content'
+									},
+									e(
+										'div',
+										null,
+										activeAsideComponent
+									)
+								)
+							)
+						)
+					)
+				)
+			),
+			confirmremoval
+		];
+	}
+});]]></script>
+        <script_name>DashboardModal</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-09-19 12:36:20</sys_created_on>
+        <sys_id>9b79e6a0db000c10b841ba103996191c</sys_id>
+        <sys_mod_count>23</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardModal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_9b79e6a0db000c10b841ba103996191c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 14:12:30</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

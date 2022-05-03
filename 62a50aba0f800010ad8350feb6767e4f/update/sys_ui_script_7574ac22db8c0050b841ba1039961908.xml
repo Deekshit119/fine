@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.DashboardPaDash</name>
+        <script><![CDATA[var DashboardPaDashboard = createReactClass({
+	render: function() {
+		var pa_dashboard = null;
+		if (this.props.dashboard.pa_dashboard != null) {
+			var dashboard = this.props.dashboard;
+			var pa_dashboards = this.props.pa_dashboards.filter(function (d) { return d.sys_id === dashboard.pa_dashboard; });
+			if (pa_dashboards.length == 1) {
+				pa_dashboard = pa_dashboards[0];
+			}
+		}
+			
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+				{className: 'sn-aside-header'},
+				e(
+					'span',
+					null,
+					'PA Dashboard'
+				)
+			),
+			e(
+				'div',
+				{className: 'sn-aside-body wb-pa-aside-body'},
+				e(
+					PaDashboardList,
+					{
+						pa_dashboard: pa_dashboard,
+						addPlaceholder: getMessage('Select Item'),
+						onPaDashboardSave: this.props.onPaDashboardSave
+					}
+				)
+			)
+		);
+	}
+});]]></script>
+        <script_name>DashboardPaDash</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-09-25 08:03:12</sys_created_on>
+        <sys_id>7574ac22db8c0050b841ba1039961908</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>sn_kpi_composer.DashboardPaDash</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_7574ac22db8c0050b841ba1039961908</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-09-25 08:20:50</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

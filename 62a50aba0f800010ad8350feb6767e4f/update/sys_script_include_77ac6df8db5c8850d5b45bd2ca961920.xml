@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationEntityNotUsedAnyDashboard</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationEntityNotUsedAnyDashboard</name>
+        <script><![CDATA[var ProjectValidationEntityNotUsedAnyDashboard = Class.create();
+ProjectValidationEntityNotUsedAnyDashboard.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationEntityNotUsedAnyDashboard");
+		
+		var all_entity_sys_ids = [];
+				
+		this._apply_on_dashboards(data.dashboards, 
+			function(dashboard) { 
+				// All entities on this dashboards
+				var entity_sys_ids = that._all_used_entities_in_dashboard(dashboard);
+				all_entity_sys_ids = all_entity_sys_ids.concat(entity_sys_ids);
+			});		
+		
+		// We got all used entities now: all_used_entities
+		// Check if there are any entities that are not set in any dashboard
+		for(var ei =0, em = data.entities.length; ei<em; ei++) {
+			var entity = data.entities[ei];
+			// Check if this entity is used
+			if (all_entity_sys_ids.filter(function(e) { return e == entity.sys_id }).length == 0) {
+				// Not used!								
+				//----------------
+				// Measurement "#M_NAME#" is not included in any dashboard
+				//----------------
+				that._addProjectValidationWarning(
+					{ 																		
+						description:  gs.getMessage("Entity '{0}' is not included in any dashboard", entity.name),
+						table: "sn_kpi_composer_entity",
+						record: entity.sys_id,
+					}, { project: { sys_id: data.project.sys_id } });									
+			}
+		}		
+		
+	},
+
+    type: 'ProjectValidationEntityNotUsedAnyDashboard'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-02 13:09:06</sys_created_on>
+        <sys_id>77ac6df8db5c8850d5b45bd2ca961920</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>ProjectValidationEntityNotUsedAnyDashboard</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_77ac6df8db5c8850d5b45bd2ca961920</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 15:05:33</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Tarea de proyecto" max_length="40" name="sn_kpi_composer_project_task" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="8000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Implemented" mandatory="true" max_length="40" name="implemented" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Order" max_length="40" name="order" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" dependent="pa_table" dependent_on_field="pa_table" label="PA Record" max_length="32" name="pa_record" type="document_id"/>
+        <element attributes="base_start=true,edge_encryption_enabled=true" label="PA Table" max_length="80" name="pa_table" type="table_name"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Project" max_length="32" name="project" reference="sn_kpi_composer_project" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" dependent="table" dependent_on_field="table" label="Record" max_length="32" name="record" type="document_id"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <element attributes="base_start=true,edge_encryption_enabled=true" label="Table" max_length="80" name="table" type="table_name"/>
+        <element attributes="edge_encryption_enabled=true" label="Title" max_length="200" name="title" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="3" label="Type" max_length="40" name="type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Create breakdown" value="1"/>
+                <element inactive_on_update="false" label="Create content block" value="9"/>
+                <element inactive_on_update="false" label="Create indicator" value="2"/>
+                <element inactive_on_update="false" label="Create interactive filter" value="7"/>
+                <element inactive_on_update="false" label="Create report" value="6"/>
+                <element inactive_on_update="false" label="Create spotlight" value="8"/>
+                <element inactive_on_update="false" label="Create widget" value="5"/>
+                <element inactive_on_update="false" label="Generic" value="0"/>
+                <element inactive_on_update="false" label="Validate breakdown" value="3"/>
+                <element inactive_on_update="false" label="Validate indicator" value="4"/>
+                <element inactive_on_update="false" label="Crear bloque de contenido" language="es" sequence="0" value="9"/>
+                <element inactive_on_update="false" label="Crear desglose" language="es" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="Crear filtro interactivo" language="es" sequence="0" value="7"/>
+                <element inactive_on_update="false" label="Crear foco de atención" language="es" sequence="0" value="8"/>
+                <element inactive_on_update="false" label="Crear indicador" language="es" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="Crear informe" language="es" sequence="0" value="6"/>
+                <element inactive_on_update="false" label="Crear widget" language="es" sequence="0" value="5"/>
+                <element inactive_on_update="false" label="Genérico" language="es" sequence="0" value="0"/>
+                <element inactive_on_update="false" label="Validar desglose" language="es" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="Validar indicador" language="es" sequence="0" value="4"/>
+                <element inactive_on_update="false" label="אמת מחוון" language="he" sequence="0" value="4"/>
+                <element inactive_on_update="false" label="אמת פירוט" language="he" sequence="0" value="3"/>
+                <element inactive_on_update="false" label="כללי" language="he" sequence="0" value="0"/>
+                <element inactive_on_update="false" label="צור וידג'ט" language="he" sequence="0" value="5"/>
+                <element inactive_on_update="false" label="צור מחוון" language="he" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="צור פירוט" language="he" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="创建小工具" language="zh" sequence="0" value="5"/>
+                <element inactive_on_update="false" label="创建指示器" language="zh" sequence="0" value="2"/>
+                <element inactive_on_update="false" label="创建细项" language="zh" sequence="0" value="1"/>
+                <element inactive_on_update="false" label="通用" language="zh" sequence="0" value="0"/>
+                <element inactive_on_update="false" label="验证指示器" language="zh" sequence="0" value="4"/>
+                <element inactive_on_update="false" label="验证细项" language="zh" sequence="0" value="3"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="pa_record"/>
+        </index>
+        <index name="index2">
+            <element name="record"/>
+        </index>
+        <index name="index3">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index4">
+            <element name="project"/>
+        </index>
+    </element>
+</database>

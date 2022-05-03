@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.IndDefModal</name>
+        <script><![CDATA[var IndicatorDefinitionModal = createReactClass({	
+	getInitialState: function() {
+		return {
+			loading: true,
+			processing: false,
+			sys_id: null
+		};
+	},
+	
+	close: function() {
+		this.props.onClose(null);
+	},
+	
+	onOpened: function() {
+	
+	},
+	
+	onLocationChanged: function() {
+		if (this.refs.iframe != null && this.refs.iframe.contentWindow != null) {
+			var iframelocationpath = this.refs.iframe.contentWindow.location.pathname;
+			if (iframelocationpath.indexOf("/$wb_pa_close_dialog") == 0) {
+				this.setState({ processing: true });
+				this.props.onClose({ refresh: true, sys_id: this.state.sys_id });
+			}
+		}
+	},
+	
+	onUnload: function () {
+		var that = this;
+		setTimeout(function () {
+			that.onLocationChanged();
+		}, 0);
+	},
+	
+	onLoad: function () {
+		if (this.state.processing) return;
+		
+		if (this.refs.iframe != null && this.refs.iframe.contentWindow != null && this.refs.iframe.contentWindow.document != null) {
+			this.refs.iframe.contentWindow.removeEventListener("unload", this.onUnload);
+			this.refs.iframe.contentWindow.addEventListener("unload", this.onUnload);
+			var header = this.refs.iframe.contentWindow.document.getElementById('sn_kpi_composer_indicator_definition.form_header');
+			if (header != null) {
+				var navbarrights = header.getElementsByClassName('navbar-right');
+				if (navbarrights.length > 0) {
+					navbarrights[0].style.paddingRight = '25px';
+				}
+			}
+			var newState = { loading: false }; 
+			if (this.props.indicatordefinition == null && this.props.entity != null) {
+				//https://docs.servicenow.com/bundle/geneva-servicenow-platform/page/administer/table_administration/task/t_GetTheSysIdFromAScript.html
+				//g_form.isNewRecord()
+				//https://docs.servicenow.com/bundle/jakarta-application-development/page/app-store/dev_portal/API_reference/GlideForm/concept/c_GlideFormAPI.html
+				//g_form.setValue("short_description",'testing');
+				this.refs.iframe.contentWindow.g_form.setValue("name", this.props.entity.name);
+				this.refs.iframe.contentWindow.g_form.setValue("description", this.props.entity.description);
+				this.refs.iframe.contentWindow.g_form.setValue("target", this.props.entity.target);
+				newState.sys_id = this.refs.iframe.contentWindow.g_form.getUniqueValue();
+			}
+			this.setState(newState);
+		}
+	},
+	
+	componentDidMount: function() {
+		if (this.refs.iframe != null) this.refs.iframe.addEventListener('load', this.onLoad);
+	},
+	
+	render: function() {
+		var that = this;
+		
+		var closeButton = null;
+		var overlaycontrol = null;
+		if (this.state.loading == true) {
+			overlaycontrol =  e(
+				'h3',
+				{},
+				getMessage("Loading...")
+			);
+		} else if (this.state.processing == true) {
+			overlaycontrol =  e(
+				'h3',
+				{},
+				getMessage("Processing...")
+			);
+		} else {
+			closeButton = e(
+				'button',
+				{type: 'button', className: 'btn-icon close icon-cross iframe-close', onClick: this.close },
+				e(
+					'span',
+					{ className: 'sr-only' },
+					getMessage("Close")
+				)
+			);
+		}
+		
+		var src = "";
+		if (this.props.indicatordefinition != null) {
+			src = "sn_kpi_composer_indicator_definition.do?sys_id=" + this.props.indicatordefinition.sys_id;
+		} else {
+			src = "sn_kpi_composer_indicator_definition.do?sys_id=-1";
+		}
+		src = src + "&sysparm_goto_url=$wb_pa_close_dialog.do";
+		
+		var iframe = e(
+			'iframe',
+			{
+				ref: "iframe",
+				src: src,
+				style: { display: this.state.loading || this.state.processing ? 'none' : 'block' }
+			}
+		);
+		
+		return [
+			e(
+				Reactstrap.Modal, 
+				{ key:'indicatordefinition', 'isOpen': true, size: 'lg', className: 'indicatordefinition iframecontent', onOpened: this.onOpened, toggle: this.close },
+				e(
+					Reactstrap.ModalBody,
+					{},
+					overlaycontrol,
+					closeButton,
+					iframe
+				)
+			)
+		];
+	}
+});]]></script>
+        <script_name>IndDefModal</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-12 09:57:41</sys_created_on>
+        <sys_id>986d1a831bc43b00bcb985507e4bcb21</sys_id>
+        <sys_mod_count>56</sys_mod_count>
+        <sys_name>sn_kpi_composer.IndDefModal</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_986d1a831bc43b00bcb985507e4bcb21</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-11-20 12:42:56</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

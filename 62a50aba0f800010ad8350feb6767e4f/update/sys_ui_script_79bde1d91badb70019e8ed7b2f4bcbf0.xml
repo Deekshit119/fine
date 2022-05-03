@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.OverviewTabsAndFilter</name>
+        <script><![CDATA[var OverviewTabsAndFilter = createReactClass({
+	getInitialState: function() {
+		return {
+			filter_text: this.props.filter_text
+		};
+	},
+	
+	handleFilterTextChange: function(event) {
+		this.setState({ filter_text: event.target.value });
+	},
+	
+	handleFilterTextBlur: function(event) {
+		this.handleFilterTextChanged();
+	},
+	
+	handleFilterTextSubmit: function(event) {
+		event.preventDefault();
+		this.handleFilterTextChanged();
+	},
+	
+	handleFilterTextChanged: function() {
+		this.props.onFilterTextChange(this.state.filter_text);
+	},
+	
+	componentDidUpdate: function (prevProps) {
+		if (this.props.filter_text !== prevProps.filter_text && this.props.filter_text !== this.state.filter_text) {
+			this.setState({ filter_text: this.props.filter_text });
+		}
+	},
+	
+	render: function() {
+		var that = this;
+		return e(
+				'div',
+				{ className: "row pa-overview-tabs-and-filters" },
+				e(
+					'div',
+					{ className: 'pa-overview-tabs', "arrow-keys-accessibility": 'leftRight', role: 'tablist' },
+					ALLTABS.map(function (tab) {
+						return e(
+							OverviewTab,
+							{ key: tab.id, selected: that.props.currentTab === tab.id, tab: tab, onTabChanged: that.props.onTabChanged }
+						);
+					})
+					
+				),
+				e(
+					'div',
+					{ className: "pa-overview-filters-container", role: 'search' },
+					e(
+						'div',
+						{ className: "pa-overview-search-box-container" },
+						e(
+							'div',
+							{ className: "pa-overview-search-box icon-search", role: 'search' },
+							e(
+								'form',
+								{ onSubmit: this.handleFilterTextSubmit },
+								e(
+									'input',
+									{
+										className: "pa-overview-search-input",
+										type: "search",
+										"aria-label": getMessage("Search projects overview"),
+										placeholder: getMessage("Search by name"),
+										value: this.state.filter_text,
+										onChange: this.handleFilterTextChange, onBlur: this.handleFilterTextBlur
+									}
+								)
+							),
+							e(
+								'button',
+								{ className: "btn btn-icon icon-cross-circle clear-search-container sn-tooltip-basic", title: getMessage("Clear"), "aria-label": getMessage("Clear search"), onClick: this.props.onClearFilter}
+							)
+						)
+					)
+				)
+			);
+	}
+});]]></script>
+        <script_name>OverviewTabsAndFilter</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-05-20 09:33:25</sys_created_on>
+        <sys_id>79bde1d91badb70019e8ed7b2f4bcbf0</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>sn_kpi_composer.OverviewTabsAndFilter</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_79bde1d91badb70019e8ed7b2f4bcbf0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-17 14:35:55</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.AnalysisContent</name>
+        <script><![CDATA[var AnalysisContent = createReactClass({
+	onDragStart: function(event) {
+		if (this.refs.AnalysisTree != null) {
+			this.refs.AnalysisTree.onDragStart(event);
+		}
+	},
+	
+	onDragEnd: function(event) {
+		if (this.refs.AnalysisTree != null) {
+			this.refs.AnalysisTree.onDragEnd(event);
+		}
+	},
+	
+	requestUpdateForDiagram: function(event) {
+		if (this.refs.AnalysisTree != null) {
+			this.refs.AnalysisTree.requestUpdateForDiagram();
+		}
+	},
+	
+	render: function() {
+		var entitytypectrl;
+		if (this.props.readonly) {
+			entitytypectrl = null;
+		} else {
+			entitytypectrl = e(
+				DraggableContainer,
+				{datalist: this.props.entitytypes, type: 'entitytype', category: 'EntityType', displaytype: 'entitytype'}
+			);
+		}
+
+		return [
+			e(
+				'div',
+				{ key: 'top', className: 'wb-pa-quick-panel' },
+				e(
+					'div',
+					{className:'wb-pa-quick-panel-content clearfix'},
+					e(
+						'div',
+						{className: 'wb-pa-quick-panel-separator', style: { width: '50%'}},
+						e(
+							DraggableContainer,
+							{datalist: this.props.personas, selectedids: this.props.selected_personas, onSelectedChange: this.props.onPersonaSelected, type: 'persona', category: 'Persona', displaytype: 'abbreviation', disableDragging: this.props.readonly}
+						)
+					),
+					e(
+						'div',
+						{style: { width: '50%', paddingLeft: '10px'}},
+						e(
+							DraggableContainer,
+							{datalist: this.props.breakdowns.filter(function(br) { return br.show; }), selectedids: this.props.selected_breakdowns, onSelectedChange: this.props.onBreakdownSelected, type: 'breakdown', category: 'Breakdown', displaytype: 'color', disableDragging: this.props.readonly}
+						)
+					)
+				)
+			),
+			e(
+				'div',
+				{ key: 'middle', className: 'wb-pa-lanes wb-pa-lanes-scroll wb-pa-board-color-1' },
+				e(
+					AnalysisTree,
+					{ 
+						ref: 'AnalysisTree',
+						entities: this.props.entities,
+						relations: this.props.relations,
+						personas: this.props.personas,
+						breakdowns: this.props.breakdowns,
+						entitytypes: this.props.entitytypes,
+						rules: this.props.rules,
+						defaultentityrelationtype: this.props.defaultentityrelationtype,
+						selected_personas: this.props.selected_personas,
+						selected_breakdowns: this.props.selected_breakdowns,
+						filter_text: this.props.filter_text,
+						onInsertBreakdownEntities: this.props.onInsertBreakdownEntities,
+						onDeleteBreakdownEntities: this.props.onDeleteBreakdownEntities,
+						onInsertPersonaEntities: this.props.onInsertPersonaEntities,
+						onDeletePersonaEntities: this.props.onDeletePersonaEntities,
+						onUpdateEntityName: this.props.onUpdateEntityName,
+						onSaveEntitiesCollapsed: this.props.onSaveEntitiesCollapsed,
+						onUpdateEntityDescription: this.props.onUpdateEntityDescription,
+						onUpdateEntityTarget: this.props.onUpdateEntityTarget,
+						onUpdateEntityFromEntity: this.props.onUpdateEntityFromEntity,
+						onInsertEntityEntity: this.props.onInsertEntityEntity,
+						onInsertEntity: this.props.onInsertEntity,
+						onDeleteEntities: this.props.onDeleteEntities,
+						onInsertEntityKnowledgeArticle: this.props.onInsertEntityKnowledgeArticle,
+						onDeleteEntityKnowledgeArticle: this.props.onDeleteEntityKnowledgeArticle,
+						onInsertEntityOwner: this.props.onInsertEntityOwner,
+						onDeleteEntityOwner: this.props.onDeleteEntityOwner,
+						onInsertEntityContact: this.props.onInsertEntityContact,
+						onDeleteEntityContact: this.props.onDeleteEntityContact,
+						onSaveOrderForEntities: this.props.onSaveOrderForEntities,
+						onCreateLibraryProjectFromEntity: this.props.onCreateLibraryProjectFromEntity,
+						onCopyLibraryEntitiesToProject: this.props.onCopyLibraryEntitiesToProject,
+						onAddLibraryToProject: this.props.onAddLibraryToProject,
+						readonly: this.props.readonly,
+						project_library: this.props.project_library
+					}
+				)
+			),
+			e(
+				'div',
+				{ key: 'bottom', className: 'wb-pa-quick-panel entitytype' },
+				e(
+					'div',
+					{className:'wb-pa-quick-panel-content clearfix'},
+					entitytypectrl,
+					e(
+						"button",
+						{ type: "button", className: "btn btn-primary icon-refresh bottom-refresh-button", onClick: this.props.onRefresh }
+					)
+				)
+			)
+		];
+	}
+});]]></script>
+        <script_name>AnalysisContent</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-07 14:45:55</sys_created_on>
+        <sys_id>c99f21ed1b047700bcb985507e4bcb84</sys_id>
+        <sys_mod_count>24</sys_mod_count>
+        <sys_name>sn_kpi_composer.AnalysisContent</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_c99f21ed1b047700bcb985507e4bcb84</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-03-12 13:06:11</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

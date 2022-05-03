@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.AccessControl</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Used to check access rights for users who have projects shared with them </description>
+        <name>AccessControl</name>
+        <script><![CDATA[var AccessControl = Class.create();
+AccessControl.prototype = {
+    initialize: function() {
+    },
+
+
+    _getProjectPermissions: function(project_sys_id) {
+        var rApi = new sn_kpi_composer.RecordApi();
+        var result = [];
+        var pp = new GlideRecord('sn_kpi_composer_project_permissions');
+        pp.addQuery("project", project_sys_id);
+        pp.query();
+        while(pp.next()) {
+            result.push(rApi._project_permission_record(pp));
+        }
+        return result;
+    },
+
+    _getProjectOwners: function(project_sys_id) {
+        var result = [];
+        var p = new GlideRecord('sn_kpi_composer_project');
+        if (p.get(project_sys_id)) {
+			var owners = p.getValue("owners");
+			if (owners != null){
+				result = owners.split(',');
+			}
+        }
+        return result;
+    },
+
+    // check if the current user is owner of the project 
+    _project_owner: function(project_sys_id) {
+
+        // Get the user info
+        var userId = gs.getUserID();
+
+        // If you are the owner you can read (and write)
+        var owners = this._getProjectOwners(project_sys_id);
+        if (owners && owners.indexOf(userId)>-1) {
+            return true;
+        }
+
+        return false;
+    },
+
+    // check if the current user is creator of the project 
+    _project_creator: function(project_sys_id) {
+        // Get the user info
+        var userId = gs.getUserName();
+        var p = new GlideRecord('sn_kpi_composer_project');
+        if (p.get(project_sys_id)) {
+            return (p.getValue("sys_created_by") == userId);
+        }
+        return false;
+    },
+
+
+    // check if the current user is owner of the project
+    _project_library_public: function(project_sys_id) {
+
+        var gr_p = new GlideRecord('sn_kpi_composer_project');
+        if (gr_p.get(project_sys_id)) {
+            if (gr_p.getValue("library") == 1 && gr_p.getValue("library_public") == 1)
+                return true;
+        }
+        return false;
+    },    
+
+    _project_share_read: function(project_sys_id) {
+
+        var result = false;
+
+        // Get the user info
+        var user = gs.getUser();
+        var userId = gs.getUserID();
+
+        // Get project permissions
+        var permissions = this._getProjectPermissions(project_sys_id);
+
+        // Check all permissions if the user
+        permissions.forEach(function(permission) {
+            // Any kind of permission is ok
+
+            // User permission?
+            if (permission.permissiontype == "User" && permission.user_sys_id == userId) {
+                result = true;
+                return;
+            } 
+
+            // Group permission?
+            if (permission.permissiontype == "Group" && user.isMemberOf(permission.group_sys_id)) {
+                result = true;
+                return;
+            }
+        });  
+        
+        return result;
+    },
+
+    _project_share_write: function(project_sys_id) {
+
+        var result = false;
+
+        // Get the user info
+        var user = gs.getUser();
+        var userId = gs.getUserID();
+
+        // Get project permissions
+        var permissions = this._getProjectPermissions(project_sys_id);
+
+        // Check all permissions if the user
+        permissions.forEach(function(permission) {
+            // Must be write permissions
+            if (permission.write) {
+                // User permission?
+                if (permission.permissiontype == "User" && permission.user_sys_id == userId) {
+                    result = true;
+                    return;
+                }
+                
+                // Group permission?
+                if (permission.permissiontype == "Group" && user.isMemberOf(permission.group_sys_id)) {
+                    result = true;
+                    return;
+                }
+            }
+        });
+
+        return result;
+    },
+    
+	project_read: function(project_sys_id) {
+
+        // If you are the creator of the project you can read and write
+        if (this._project_creator(project_sys_id))
+            return true;        
+
+        // If you are the owner you can read (and write)
+        if (this._project_owner(project_sys_id))
+            return true;
+
+        if (this._project_library_public(project_sys_id))
+            return true;
+
+        if (this._project_share_read(project_sys_id))
+            return true;
+
+        return false;
+    },
+    
+    project_write: function(project_sys_id) {
+
+        // If you are the creator of the project you can write
+        if (this._project_creator(project_sys_id))
+            return true;        
+
+        // If you are the owner you can read (and write)
+        if (this._project_owner(project_sys_id))
+            return true;
+
+        if (this._project_share_write(project_sys_id))
+            return true;
+
+        return false;
+    },
+
+    // ----
+    // Check if a user can create a new record in the project table
+    // ----
+    project_create: function() {
+        var gr_p = new GlideRecord('sn_kpi_composer_project');
+        return gr_p.canCreate();
+    },
+
+    // ----
+    // Check if a user can delete a new record in the project table
+    // ----
+    project_delete: function() {
+        var gr_p = new GlideRecord('sn_kpi_composer_project');
+        return gr_p.canDelete();
+    },
+
+    // -----
+    // Check if a user has the the right (bij ACL) to any of the projects
+    // -----
+    project_any_read: function() {
+        // Use GliderRecord secure?
+        var gr_p = new GlideRecord('sn_kpi_composer_project');
+        gr_p.query();
+        while(gr_p.next()) {
+            if (gr_p.canRead())
+                return true;
+        }
+        return false;
+    },
+
+    // -----
+    // Check if a user has the the right (bij ACL) to any of the projects
+    // -----
+    project_any_write: function() {
+        // Use GliderRecord secure?
+        var gr_p = new GlideRecord('sn_kpi_composer_project');
+        gr_p.query();
+        while(gr_p.next()) {
+            if (gr_p.canWrite())
+                return true;
+        }
+        return false;
+    },
+
+    
+    entity_read: function(entity_id) {
+        var gre = new GlideRecord('sn_kpi_composer_entity');
+        if (gre.get(entity_id)) {
+            return this.project_read(gre.getValue("project"));
+        }
+        return false;
+    },
+
+    entity_write: function(entity_id) {
+        var gre = new GlideRecord('sn_kpi_composer_entity');
+        if (gre.get(entity_id)) {
+            return this.project_write(gre.getValue("project"));            
+        }
+        return false;
+    },    
+
+    persona_read: function(persona_id) {
+        var gre = new GlideRecord('sn_kpi_composer_persona');
+        if (gre.get(persona_id)) {
+            return this.project_read(gre.getValue("project"));
+        }
+        return false;
+    },
+
+    persona_write: function(entity_id) {
+        var gre = new GlideRecord('sn_kpi_composer_persona');
+        if (gre.get(persona_id)) {
+            return this.project_write(gre.getValue("project"));            
+        }
+        return false;
+    },    
+
+    project_task_read: function(project_task_id) {
+        var gre = new GlideRecord('sn_kpi_composer_project_task');
+        if (gre.get(project_task_id)) {
+            return this.project_read(gre.getValue("project"));
+        }
+        return false;
+    },
+
+    project_task_write: function(project_task_id) {
+        var gre = new GlideRecord('sn_kpi_composer_project_task');
+        if (gre.get(project_task_id)) {
+            return this.project_write(gre.getValue("project"));            
+        }
+        return false;
+    },    
+
+    project_validation_read: function(project_validation_id) {
+        var gre = new GlideRecord('sn_kpi_composer_project_validation');
+        if (gre.get(project_validation_id)) {
+            return this.project_read(gre.getValue("project"));
+        }
+        return false;
+    },
+
+    project_validation_write: function(project_validation_id) {
+        var gre = new GlideRecord('sn_kpi_composer_project_validation');
+        if (gre.get(project_validation_id)) {
+            return this.project_write(gre.getValue("project"));            
+        }
+        return false;
+    },    
+
+    indicator_definition_read: function(indicator_definition_id) {
+        var qre = new GlideRecord('sn_kpi_composer_entity');
+        qre.addQuery("indicator_definition", indicator_definition_id);
+        qre.query();
+        while(qre.next()) {
+            if (this.entity_read(qre.getValue("sys_id")))
+                return true;
+        }
+        var grs = new GlideRecord('sn_kpi_composer_indicator_def_indicator_def_m2m');
+        grs.addQuery("sup_indicator_definition", indicator_definition_id);
+        grs.query();
+        while(grs.next()) {
+            if (this.indicator_definition_read(grs.getValue("main_indicator_definition")))
+                return true;            
+        }
+        return false;
+    },
+
+    indicator_definition_write: function(indicator_definition_id) {
+        var qre = new GlideRecord('sn_kpi_composer_entity');
+        qre.addQuery("indicator_definition", indicator_definition_id);
+        qre.query();
+        while(qre.next()) {
+            if (this.entity_write(qre.getValue("sys_id")))
+                return true;
+        }
+        var grs = new GlideRecord('sn_kpi_composer_indicator_def_indicator_def_m2m');
+        grs.addQuery("sup_indicator_definition", indicator_definition_id);
+        grs.query();
+        while(grs.next()) {
+            if (this.indicator_definition_write(grs.getValue("main_indicator_definition")))
+                return true;            
+        }
+        return false;
+    },
+
+    indicator_definition_m2m_read: function(indicator_definition_m2m_id) {
+        var gre = new GlideRecord('sn_kpi_composer_indicator_def_indicator_def_m2m');
+        if (gre.get(indicator_definition_m2m_id)) {
+            if (this.indicator_definition_read(gre.getValue("sup_indicator_definition")))
+                return true;
+            if (this.indicator_definition_read(gre.getValue("main_indicator_definition")))
+                return true;
+            return false;
+        }
+        return false;
+    },   
+    
+    indicator_definition_m2m_write: function(indicator_definition_m2m_id) {
+        var gre = new GlideRecord('sn_kpi_composer_indicator_def_indicator_def_m2m');
+        if (gre.get(indicator_definition_m2m_id)) {
+            if (this.indicator_definition_write(gre.getValue("sup_indicator_definition")))
+                return true;
+            if (this.indicator_definition_write(gre.getValue("main_indicator_definition")))
+                return true;
+            return false;
+        }
+    },      
+        
+    report_definition_read: function(report_definition_id) {
+        var qre = new GlideRecord('sn_kpi_composer_entity');
+        qre.addQuery("report_definition", report_definition_id);
+        qre.query();
+        while(qre.next()) {
+            if (this.entity_read(qre.getValue("sys_id")))
+                return true;
+        }
+        return false;
+    },
+
+    report_definition_write: function(report_definition_id) {
+        var qre = new GlideRecord('sn_kpi_composer_entity');
+        qre.addQuery("report_definition", report_definition_id);
+        qre.query();
+        while(qre.next()) {
+            if (this.entity_write(qre.getValue("sys_id")))
+                return true;
+        }
+        return false;
+    },    
+
+    breakdown_definition_read: function(breakdown_definition_id) {
+        var qre = new GlideRecord('sn_kpi_composer_entity_breakdown_m2m');
+        qre.addQuery("breakdown", breakdown_definition_id);
+        qre.query();
+        while(qre.next()) {
+            if (this.entity_read(qre.getValue("entity")))
+                return true;
+        }
+        return false;
+    },
+
+    breakdown_definition_write: function(breakdown_definition_id) {
+        var qre = new GlideRecord('sn_kpi_composer_entity');
+        qre.addQuery("breakdown", breakdown_definition_id);
+        qre.query();
+        while(qre.next()) {
+            if (this.entity_write(qre.getValue("entity")))
+                return true;
+        }
+        return false;
+    },      
+
+    task_definition_read: function(project_sys_ids) {
+
+        // Is there a value?
+        if (global.JSUtil.nil(project_sys_ids))
+            return false;
+
+        // Split the project to a array
+        var projects = project_sys_ids.split(",");
+        
+        // If you have read rights on one of the project, it's ok!
+        for(var i = 0; i<projects.length; i++) {
+            var project_sys_id = projects[i];
+            if (this.project_read(project_sys_id)) {
+                return true;
+            }
+        };
+
+        // No project found with read rights
+        return false;
+    },
+
+    task_definition_write: function(project_sys_ids) {
+
+        // For now same as read
+        return this.task_definition_read(project_sys_ids);
+    },    
+
+    task_read: function(task_sys_id) {
+
+        // gs.info("task_read: " + task_sys_id);
+
+        // Get all taskdefinitions for this task
+        var qry = new GlideRecord('sn_kpi_composer_task_definition');
+        qry.addQuery("task", task_sys_id);
+        qry.query();
+
+        while(qry.next()) {
+            // Check the projects that are used in this taskdef
+            var project_sys_ids = qry.getValue("projects");
+
+            // Check if we have reading rights
+            if (this.task_definition_read(project_sys_ids)) {
+                return true;
+            }
+        }
+
+        // No taskDef/projects found
+        return false;
+    },
+
+    task_write: function(task_sys_id) {
+        // write access is the same as read access
+        return this.task_read(task_sys_id);
+    },
+
+
+
+    type: 'AccessControl'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-12-03 13:10:52</sys_created_on>
+        <sys_id>76c57966dbb02410b7ce2b24ca96195c</sys_id>
+        <sys_mod_count>96</sys_mod_count>
+        <sys_name>AccessControl</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_76c57966dbb02410b7ce2b24ca96195c</sys_update_name>
+        <sys_updated_by>arjan.vanvugt</sys_updated_by>
+        <sys_updated_on>2022-01-14 10:16:45</sys_updated_on>
+    </sys_script_include>
+</record_update>

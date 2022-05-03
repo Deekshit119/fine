@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubLibrary</name>
+        <script><![CDATA[var LIBRARYPOSSIBLETABS = [{key: "", value: getMessage('All')}, {key: "public", value: getMessage('Global')}, {key: "owner", value: getMessage('Personal')}];
+
+var NavHubLibrary = createReactClass({
+    getInitialState: function() {
+		return {
+            filter_type: "",
+            searchtext: this.props.library_searchtext || ""
+		};
+    },
+
+    filterTypeChanged: function(value) {
+        this.setState({filter_type: value});
+    },
+
+    handleInputChange: function(event) {
+		var newstate = {};
+		newstate[event.target.name] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+
+		this.setState(newstate);
+    },
+    
+    handleSearchChanged: function(event) {
+        if (event && event.preventDefault) {
+            event.preventDefault();
+        }
+        
+		if (this.state.searchtext !== this.props.library_searchtext && this.props.library_searching !== true) {
+			this.doLibraySearch();
+		}
+    },
+    
+    doLibraySearch: function() {
+        this.props.onLibrarySearch(this.state.searchtext, function(error) {
+            
+        });
+    },
+
+    doInit: function() {
+        if (this.props.library_searchresults == null && !this.props.library_searching) {
+            this.doLibraySearch();
+        }
+    },
+
+    componentDidMount: function() {
+        this.doInit();
+    },
+
+    componentDidUpdate: function(prevProps) {
+        this.doInit();
+    },
+
+	render: function() {
+        var that = this;
+        
+        var maincontent = null;
+        if (this.props.library_searching === true) {
+            maincontent = e(
+                'div',
+                {className: 'sn-dashboard-library-no-data'},
+                e(
+                    'div',
+                    { className: 'icon-loading' }
+                ),
+                getMessage("Loading")
+            );
+        } else {
+            var listitems = [];
+            if (this.props.library_searchresults) {
+                listitems = this.props.library_searchresults.filter(function(libproj) {
+                    if (that.state.filter_type) {
+                        if (that.state.filter_type === "public") {
+                            return libproj.library_public === true;
+                        } else if (that.state.filter_type === "owner") {
+                            return libproj.library_owner === true;
+                        } else {
+                            return true; //impossible
+                        }
+                    } else {
+                        return true;
+                    }
+                }).map(
+                    function (libproj) {
+                        return e(
+                            NavHubLibraryItem,
+                            { key: libproj.sys_id, libraryproject: libproj, readonly: that.props.readonly }
+                        );
+                    }
+                );
+            }
+            
+            if (listitems.length > 0) {
+                maincontent = e(
+                    'div',
+                    {className: 'libraryitemcontainer'},
+                    listitems
+                );
+            } else {
+                maincontent = e(
+                    'div',
+                    {className: 'sn-dashboard-library-no-data'},
+                    getMessage("No items to show")
+                );
+            }
+        }
+		
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+				{className: 'sn-aside-header'},
+				e(
+					'span',
+					null,
+					getMessage('Library Elements')
+				),
+                e(
+					'div',
+					{className : 'sn-aside-btn icon-refresh', 'aria-label': getMessage('Refresh Library Elements'), role: 'button', tabIndex: '0', onClick: this.doLibraySearch, disabled: this.props.library_searching}
+				),
+				e(
+					'div',
+					{className : 'sn-aside-btn icon-cross', 'aria-label': getMessage('Close Library Elements Panel'), role: 'button', tabIndex: '0', onClick: this.props.onCloseActiveAside}
+				)
+			),
+			e(
+				'div',
+                {className: 'sn-aside-body wb-pa-aside-body'},
+                e(
+                    'form',
+                    {className: 'sn-widget sn-widget_border-bottom sn-widget-form input-group-transparent', onSubmit: this.handleSearchChanged},
+                    e(
+                        'span',
+                        {className: "input-group-addon-transparent icon-filter"}
+                    ),
+                    e(
+                        'input',
+                        { type: 'search', 'aria-label': getMessage('Search'), placeholder: getMessage('Search'), className: 'form-control form-control-search', disabled: this.props.library_searching, name: 'searchtext', value: this.state.searchtext, onChange: this.handleInputChange, onBlur: this.handleSearchChanged }
+                    )
+                ),
+                e(
+                    'div',
+                    { className: 'sn-dashboard-library-nav-buttons', role: 'tablist' },
+                    LIBRARYPOSSIBLETABS.map(function (tab, i) {
+                        return e(
+                            NavHubLibraryTypeTab,
+                            { key: i, tab: tab, selected: tab.key === that.state.filter_type, onClick: that.filterTypeChanged }
+                        );
+                    })
+                ),
+				maincontent
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubLibrary</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-01-22 11:36:43</sys_created_on>
+        <sys_id>f77003eadbf5e490317f6a5f059619c5</sys_id>
+        <sys_mod_count>22</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubLibrary</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_f77003eadbf5e490317f6a5f059619c5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 09:10:55</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

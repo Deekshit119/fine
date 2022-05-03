@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Diseño de filas" max_length="40" name="sn_kpi_composer_row" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="NrOfCanvasses" max_length="40" name="nrofcanvasses" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" label="Order" max_length="40" name="order" type="integer"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" read_only="true" type="domain_id"/>
+        <element attributes="edge_encryption_enabled=true,encode_utf8=false" label="Tab" max_length="32" name="tab" reference="sn_kpi_composer_tab" reference_cascade_rule="cascade" type="reference"/>
+        <index name="index">
+            <element name="tab"/>
+        </index>
+        <index name="index2">
+            <element name="sys_domain"/>
+        </index>
+    </element>
+</database>

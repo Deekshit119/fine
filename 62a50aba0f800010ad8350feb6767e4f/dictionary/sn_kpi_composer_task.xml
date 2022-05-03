@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element extends="analytics_task" label="Task" max_length="40" name="sn_kpi_composer_task" type="collection">
+        <element choice="1" label="Artifact Action" max_length="40" name="artifact_action" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Create" sequence="1" value="10"/>
+                <element inactive_on_update="false" label="Update" sequence="2" value="20"/>
+                <element inactive_on_update="false" label="Delete" sequence="3" value="30"/>
+            </choice>
+        </element>
+        <element dependent="artifact_table" dependent_on_field="artifact_table" label="Artifact Record" max_length="32" name="artifact_record" type="document_id"/>
+        <element attributes="base_start=true" label="Artifact Table" max_length="80" name="artifact_table" type="table_name"/>
+        <index name="index">
+            <element name="artifact_record"/>
+        </index>
+    </element>
+</database>

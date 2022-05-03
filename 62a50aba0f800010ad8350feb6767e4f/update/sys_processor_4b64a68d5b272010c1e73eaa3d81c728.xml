@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_processor">
+    <sys_processor action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <class_name/>
+        <description>Downloads the json file for KPI Composer Project</description>
+        <interactive>false</interactive>
+        <name>downloadProjectJson</name>
+        <parameters/>
+        <params_endpoint/>
+        <path>download_project_json</path>
+        <path_endpoint>sn_kpi_composer_download_project_json</path_endpoint>
+        <require_csrf>true</require_csrf>
+        <roles>snc_internal</roles>
+        <script><![CDATA[(function process(g_request, g_response, g_processor) {
+	try{
+    var projectID = g_request.getParameter("sys_id");
+    var fileName = 'sn_kpi_composer_project'+ projectID + '.json';
+    var contentType = 'application/json';
+    var jsonObj = new sn_kpi_composer.ProjectExport().getJsonForProject(projectID);
+
+    var projectNm= jsonObj.sn_kpi_composer_project[0].name;
+
+    var dt = new GlideDateTime();
+
+    if (projectNm && projectNm.length>0) {    
+        // Format file format and replace spaces
+        fileName = ("ProjectExport." + projectNm + "." + dt.toString() + ".json").replace(/\s+/g, '_');
+    }
+
+	var parser = new global.JSON();
+	var fileContent = parser.encode(jsonObj);
+    g_response.setHeader('Content-Disposition', 'attachment;filename=' + fileName);
+    g_processor.writeOutput(contentType,fileContent);
+    } catch(error){
+        g_processor.writeOutput('text/html',error);
+    }
+})(g_request, g_response, g_processor);]]></script>
+        <sys_class_name>sys_processor</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-04-15 07:10:39</sys_created_on>
+        <sys_id>4b64a68d5b272010c1e73eaa3d81c728</sys_id>
+        <sys_mod_count>33</sys_mod_count>
+        <sys_name>downloadProjectJson</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_processor_4b64a68d5b272010c1e73eaa3d81c728</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-18 11:00:49</sys_updated_on>
+        <type>script</type>
+        <xframe_sameorigin>true</xframe_sameorigin>
+    </sys_processor>
+</record_update>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskCreateDashboard</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskCreateDashboard</name>
+        <script><![CDATA[var ProjectTaskCreateDashboard = Class.create();
+ProjectTaskCreateDashboard.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	createtasks: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectTaskCreateDashboard");	
+
+		var globals_x = sn_kpi_composer.globalFunctions();
+
+        data.dashboards.forEach(function(d) {
+			
+
+			var defRecId = d.sys_id;
+			var defTableNm = 'sn_kpi_composer_dashboard';
+		
+			// Fetch the taskDefinition record (or create one)
+			var taskDefRec = that._addOrGetTaskDefinitionRecord(defTableNm, defRecId, data.project.sys_id);
+			if (that.trace) that._debug.push("Lookup DefRecId 3: " + defRecId + " for DefRecTableNm: " + defTableNm + " => " + JSON.stringify(taskDefRec));
+					
+
+			// Generic update of the status
+			that._updateTaskDefinitionStatus(taskDefRec, d, d.pa_dashboard, data);
+
+			// Set artifact source table
+			taskDefRec.artifact_table = 'pa_dashboards';
+
+			// Set the artifact target record
+			taskDefRec.artifact_record = d.pa_dashboard;
+
+
+			var desc =  gs.getMessage("{0}Dashboard name: '{1}'", [taskDefRec.validationerrors, d.name]);
+
+			// Persona
+			if (d.persona) {
+				// Get list of persona
+				var personas = data.personas.filter(function(p) { return (d.persona.indexOf(p.sys_id)>-1); })
+				// Add to description
+				desc += gs.getMessage("\nCreated for personas: {0}", personas.map(function(persona) { return persona.name; }).join(", "));
+			}
+			
+
+			// Breakdowns
+			if (d.breakdowns) {
+				// Get list of breakdowns
+				var breakdowns = data.breakdowns.filter(function(b) { return (d.breakdowns.indexOf(b.sys_id)>-1); });
+				// Add to description
+				desc += gs.getMessage("\nDashboard breakdowns: {0}", breakdowns.map(function(breakdown) { return breakdown.name; }).join(", "));
+			}
+
+			// Tabs and widgets
+			if (d.tabs) {
+				d.tabs.forEach(function(tab) {
+					// Add to description
+					desc += gs.getMessage("\nTab: {0}", tab.caption);
+
+					var canvas_titles = [];
+					// Add widgets
+					tab.rows.forEach(function(row) {
+						canvas_titles = canvas_titles.concat(row.canvasses.map(function(canvas) { return canvas.title; }) )
+					});
+					// Add to description
+					desc += gs.getMessage("\nWidgets: {0}", canvas_titles.join(", "));
+				});
+			}
+
+			taskDefRec.description = desc;
+
+			var result = that._updateTaskDefinitionRecord(taskDefRec);
+
+		});
+
+	},
+
+    type: 'ProjectTaskCreateDashboard'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-08-26 11:19:46</sys_created_on>
+        <sys_id>e6e31b8c1b1a34507e0d52c8624bcbf3</sys_id>
+        <sys_mod_count>25</sys_mod_count>
+        <sys_name>ProjectTaskCreateDashboard</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_e6e31b8c1b1a34507e0d52c8624bcbf3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-19 14:44:37</sys_updated_on>
+    </sys_script_include>
+</record_update>

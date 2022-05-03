@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskValidateTaskDefOrphans</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskValidateTaskDefOrphans</name>
+        <script><![CDATA[var ProjectTaskValidateTaskDefOrphans = Class.create();
+ProjectTaskValidateTaskDefOrphans.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+  
+    /*
+
+        Remove all task definition record that have empty projects list reference
+
+    */
+
+
+	validatetasks: function(data) {
+		var that = this;
+
+		if (this.trace) this._debug.push("ProjectTaskValidateTaskDefOrphans, Active project: " + data.project.sys_id + " (" + data.project.name + ")");
+
+        // Take all task-def record for the active project
+        var gr_taskDef = new GlideRecord('sn_kpi_composer_task_definition');
+        gr_taskDef.addQuery("projects", "");
+        gr_taskDef.addQuery("status", '!=', 5);
+        gr_taskDef.query();
+        
+        while(gr_taskDef.next()) {
+            if (this.trace) this._debug.push("Found taskdef " + gr_taskDef.getValue("sys_id") + " with no projects, setting status to 5");
+            gr_taskDef.setValue("status", "5");
+            gr_taskDef.update();
+        }
+		
+	},
+    type: 'ProjectTaskValidateTaskDefOrphans'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-08-26 07:43:59</sys_created_on>
+        <sys_id>e49226801bd634507e0d52c8624bcb46</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>ProjectTaskValidateTaskDefOrphans</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_e49226801bd634507e0d52c8624bcb46</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-18 15:56:00</sys_updated_on>
+    </sys_script_include>
+</record_update>

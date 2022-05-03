@@ -1,0 +1,2016 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.AnalysisTree</name>
+        <script><![CDATA[var iconPencil = "M13.5 0c1.381 0 2.5 1.119 2.5 2.5 0 0.563-0.186 1.082-0.5 1.5l-1 1-3.5-3.5 1-1c0.418-0.314 0.937-0.5 1.5-0.5zM1 11.5l-1 4.5 4.5-1 9.25-9.25-3.5-3.5-9.25 9.25zM11.181 5.681l-7 7-0.862-0.862 7-7 0.862 0.862z";
+var iconTrash = "M8 0c-4.418 0-8 3.582-8 8s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8zM8 14.5c-3.59 0-6.5-2.91-6.5-6.5s2.91-6.5 6.5-6.5 6.5 2.91 6.5 6.5-2.91 6.5-6.5 6.5zM10.5 4l-2.5 2.5-2.5-2.5-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1.5 2.5-2.5 2.5 2.5 1.5-1.5-2.5-2.5 2.5-2.5z";
+var iconExpand = "M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 13h-5v5h-2v-5h-5v-2h5v-5h2v5h5v2z";
+var iconCollapse = "M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 13h-12v-2h12v2z";
+//var iconBook = "M14 2v13h-10.5c-0.829 0-1.5-0.672-1.5-1.5s0.671-1.5 1.5-1.5h9.5v-12h-10c-1.1 0-2 0.9-2 2v12c0 1.1 0.9 2 2 2h12v-14h-1zM3.501 13v0c-0 0-0.001 0-0.001 0-0.276 0-0.5 0.224-0.5 0.5s0.224 0.5 0.5 0.5c0 0 0.001-0 0.001-0v0h9.498v-1h-9.498z";
+var iconBook = "M416.667,0H95.334c-8.284,0-15,6.716-15,15v482c0,6.067,3.655,11.536,9.26,13.858c1.856,0.769,3.805,1.142,5.737,1.142 c3.903,0,7.74-1.523,10.609-4.394l150.063-150.062L406.06,507.606c4.29,4.291,10.741,5.573,16.347,3.252 c5.605-2.322,9.26-7.791,9.26-13.858V15C431.667,6.716,424.952,0,416.667,0z";
+
+
+var AnalysisTree = createReactClass({
+	theModel: null,
+	theDiagram: null,
+	PIXELRATIO: null,
+	dragged: null,
+	draggedOnNode: null,
+	
+	getInitialState: function() {
+		return { entitydetail: null, deleteentity: null, deletekeys: null };
+	},
+	
+	getDataFromDragDrop : function (diagram) {
+		//window.log("getDataFromDragDrop()");
+		if (diagram) {
+			if (diagram.toolManager) {
+				if (diagram.toolManager.draggingTool) {
+					// Get the tool
+					var tool = diagram.toolManager.draggingTool;
+					// Get the map (key value pair)
+					var map = tool.draggedParts || tool.copiedParts; // this is a Map
+					var it = map.iterator;
+
+					if (it.next()) {
+						// window.console.dir(it.key.data);
+						// The key should be the node!
+						return it.key;
+					}
+				}
+			}
+		}
+		return null;
+	},
+	
+	getPersonasView : function(personas) {
+		personas.sort(function(a,b){return a.name.localeCompare(b.name);});
+		var personasView = [];
+		for (p = 0; p < personas.length; p++) {
+			//max 3
+			if (personasView.length == 3) {
+				var nodepersona = personasView[2];
+				nodepersona.text = "+" + (personas.length - 2);
+				//nodepersona.description = nodepersona.description + ', ' + personas[p].name;
+			} else {
+				personasView.push({
+					opacity: 1,
+					text: personas[p].abbreviation,
+					//description: personas[p].name
+				});	
+			}
+		}
+		//to the right
+		// while (personasView.length != 3) {
+			// personasView.unshift({ opacity: 0 });
+		// }
+		return personasView;
+	},
+	
+	getBreakdownsView: function(breakdowns) {
+		breakdowns.sort(function(a,b){return a.name.localeCompare(b.name);});
+		var breakdownsView = [];
+		for (p = 0; p < breakdowns.length; p++) {
+			//max 6
+			if (breakdownsView.length == 6) {
+				var nodebreakdown = breakdownsView[5];
+				nodebreakdown.text = '+';
+				nodebreakdown.color = '#bdbec2';
+				//nodebreakdown.description = nodebreakdown.description + ', ' + breakdowns[p].name;
+			} else {
+				breakdownsView.push({
+					text: '',
+					color: breakdowns[p].color,
+					//description: breakdowns[p].name
+				});	
+			}
+		}
+		//to the right
+		while (breakdownsView.length != 6) {
+			breakdownsView.unshift({ opacity: 0 });
+		}
+		return breakdownsView;
+	},
+	
+	getNodeFilterOk: function(node) {
+		var that = this;
+		var toreturn = true;
+		if (toreturn && this.props.selected_personas.length > 0) {
+			toreturn = node.personas.filter(function (p) { return that.props.selected_personas.indexOf(p.sys_id) > -1; }).length > 0;
+		}
+		if (toreturn && this.props.selected_breakdowns.length > 0) {
+			toreturn = node.breakdowns.filter(function (b) { return that.props.selected_breakdowns.indexOf(b.sys_id) > -1; }).length > 0;
+		}
+		if (toreturn && this.props.filter_text !== "") {
+			var regex = new RegExp(sn_kpi_composer.ClientHelper.escapeRegex(this.props.filter_text), "i");
+			toreturn = node.name.search(regex) > -1;
+		}
+		return toreturn;
+	},
+	
+	filteringIsOn: function() {
+		return this.props.selected_personas.length > 0 || this.props.selected_breakdowns.length > 0 || this.props.filter_text !== "";
+	},
+	
+	fillListWithAllChildren: function(sys_id, list) {
+		if (list.indexOf(sys_id) < 0) {
+			list.push(sys_id);
+			var directchildren = this.props.relations.filter(function (r) { return r.from === sys_id; });
+			for (var i = 0; i < directchildren.length; i++) {
+				this.fillListWithAllChildren(directchildren[i].to, list);
+			}
+		}
+	},
+
+	childrenHaveFilterOk: function(nodes, sys_id) {
+		var directchildren = this.props.relations.filter(function (r) { return r.from === sys_id; });
+		for (var i = 0; i < directchildren.length; i++) {
+			var childnode = nodes.filter(function (n) { return n.key === directchildren[i].to;});
+			if (childnode.length === 1 && childnode[0].filterok === true) {
+				return true;
+			}
+			if (this.childrenHaveFilterOk(nodes, directchildren[i].to)) {
+				return true;
+			}
+		}
+		return false;
+	},
+
+	hasChildren: function(sys_id) {
+		return this.props.relations.filter(function (r) { return r.from === sys_id; }).length > 0;
+	},
+
+	hasParent: function(sys_id) {
+		return this.props.relations.filter(function (r) { return r.to === sys_id; }).length > 0;
+	},
+
+	fillListWithAllParents: function(sys_id, list) {
+		list.push(sys_id);
+		var parent = this.props.relations.filter(function (r) { return r.to === sys_id; });
+		for (var i = 0; i < parent.length; i++) {
+			this.fillListWithAllParents(parent[i].from, list);
+		}
+	},
+
+	newParentIsNotCircular : function(newparent_sysid, newchild_sysid) {
+		var allparents = [];
+		this.fillListWithAllParents(newparent_sysid, allparents);
+		return allparents.indexOf(newchild_sysid) < 0;
+	},
+
+	nodeIsVisible: function(sys_id, solutionDiagram) {
+		var parent = this.props.relations.filter(function (r) { return r.to === sys_id; });
+		for (var i = 0; i < parent.length; i++) {
+			if (parent[i].from) {
+				if (this.nodeIsVisible(parent[i].from, solutionDiagram)) {
+					var parentnode = solutionDiagram.model.findNodeDataForKey(parent[i].from);
+					if (parentnode && parentnode.expanded === false) {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+		return true;
+	},
+
+	expandOrCollapseNode: function(solutionDiagram, node, all) {
+		//escape double click on nodes without children
+		if (node.data.hasChildren === false) return;
+
+		var newexpanded = !node.data.expanded;
+
+		var entitiestoupdate = [];
+		solutionDiagram.startTransaction("Toggle");
+		solutionDiagram.model.setDataProperty(node.data, "expanded", newexpanded);
+		if (all) {
+			var children = [];
+			this.fillListWithAllChildren(node.data.key, children);
+			children = children.filter(function (sys_id) { return sys_id !== node.data.key; });
+			for (var c=0;c < children.length;c++) {
+				var childsys_id = children[c];
+				//only the ones with children
+				if (this.props.relations.filter(function (rel) { return rel.from === childsys_id; }).length > 0) {
+					solutionDiagram.model.setDataProperty(solutionDiagram.model.findNodeDataForKey(childsys_id), "expanded", newexpanded);
+					var updatedchildentity = this.props.entities.filter(function(ent) { return ent.sys_id === childsys_id;});
+					if (updatedchildentity.length === 1) {
+						updatedchildentity[0].collapsed = !newexpanded;
+						entitiestoupdate.push(updatedchildentity[0]);
+					}
+				}
+				//start bugfix, because we set the visible property in the beginning to match the parents expanded state, we need to reset it to visible once the parent gets expanded
+				if (newexpanded) {
+					solutionDiagram.findNodeForKey(childsys_id).visible = true;
+				}
+				//end bugfix
+			}
+		} else {
+			//start bugfix, because we set the visible property in the beginning to match the parents expanded state, we need to reset it to visible once the parent gets expanded
+			if (newexpanded) {
+				var directchildren = this.props.relations.filter(function (r) { return r.from === node.data.key; }).map(function (rel) { return rel.to; });
+				for (var dc=0;dc < directchildren.length;dc++) {
+					solutionDiagram.findNodeForKey(directchildren[dc]).visible = true;
+				}
+			}
+			//end bugfix
+		}
+
+		if (!newexpanded) {
+			if (all) {
+				node.collapseTree(10000);
+			} else {
+				node.collapseTree();
+			}
+		} else {
+			if (all) {
+				node.expandTree(10000);
+			} else {
+				node.expandTree();
+			}
+		}
+
+		//mouseLeave is triggerd, so set opacity back
+		var btns = node.findObject('TheButtons');
+		var libic = null;
+		if (node.data.removable) {
+			libic = node.findObject('LibraryIcon');
+		}
+		setTimeout(function() {
+			btns.opacity = 1;
+			if (libic) libic.opacity = 0;
+		}, 100);
+
+		//this makes the "visible" binding to update, so children of children are rendered when needed
+		solutionDiagram.updateAllTargetBindings();
+
+		solutionDiagram.commitTransaction("Toggle");
+
+		var updatedentity = this.props.entities.filter(function(ent) { return ent.sys_id === node.data.key;});
+		if (updatedentity.length === 1) {
+			updatedentity[0].collapsed = !newexpanded;
+			entitiestoupdate.push(updatedentity[0]);
+		}
+		if (this.props.readonly !== true) {
+			this.props.onSaveEntitiesCollapsed(entitiestoupdate);
+		}
+	},
+
+	compareNodes: function(va, vb) {
+		var da = va.node.data;
+		var db = vb.node.data;
+
+		return da.order - db.order;
+	},
+		
+	renderCanvas: function (nodes, relations) {
+		var that = this;
+		var $ = go.GraphObject.make;
+		
+		var isRTL = document.dir === 'rtl';
+		
+		var solutionDiagram = $(go.Diagram, this.refs.goJsDiv, // create a Diagram for the DIV HTML element
+		  {
+			initialContentAlignment: go.Spot.TopCenter, // center the content
+			//validCycle: go.Diagram.CycleDestinationTree, //werkt niet
+			"undoManager.isEnabled": false, // enable undo & redo -> als dit disabled staat dan werken die transactions niet meer..
+			"animationManager.isEnabled": true,
+			allowUndo: false, //dit disabled al de undo, maar de animations werken niet
+			"draggingTool.isCopyEnabled": false,
+			"toolManager.hoverDelay": 500,
+			"toolManager.positionToolTip": function(tooltip, obj) {
+				go.ToolManager.prototype.positionToolTip.call(solutionDiagram.toolManager, tooltip, obj);
+				tooltip.position = new go.Point(tooltip.position.x - tooltip.measuredBounds.centerX, tooltip.position.y);
+ 			},
+			"commandHandler.deleteSelection": function() {
+				if (that.props.readonly !== true) {
+					var deletekeys = [];
+					solutionDiagram.selection.each(function (p) {
+						if (p.data.category === 'Entity' && p.data.removable) {
+							deletekeys.push(p.data.key);	
+						}
+					});
+					if (deletekeys.length > 0) {
+						that.setState({ deletekeys: deletekeys });
+					}
+				}
+			 },
+			//  'SelectionMoved': function() {
+			// 	solutionDiagram.selection.each(function(n) { n.invalidateLayout();});
+			// },
+			allowDrop: (that.props.readonly ? false : true),
+			allowClipboard: false,
+			allowMove: (that.props.readonly ? false : true),
+			maxSelectionCount: 1,
+			layout: $(
+				go.TreeLayout, // specify a Diagram.layout that arranges trees
+				{
+					treeStyle: go.TreeLayout.StyleLastParents,
+					arrangement: go.TreeLayout.ArrangementHorizontal,
+					arrangementSpacing: new go.Size(15,15),
+					sorting: go.TreeLayout.SortingAscending,
+					comparer: that.compareNodes,
+					angle: 90,
+					layerSpacing: 35,
+					// properties for the "last parents":
+					alternateAngle: 0,
+					alternateAlignment: go.TreeLayout.AlignmentStart,
+					alternateNodeIndent: 20,
+					alternateNodeIndentPastParent: 1,
+					alternateNodeSpacing: 20,
+					alternateLayerSpacing: 40,
+					alternateLayerSpacingParentOverlap: 1,
+					alternatePortSpot: new go.Spot(0.001, 1, 20, 0),
+					alternateChildPortSpot: go.Spot.Left,
+					alternateSorting: go.TreeLayout.SortingAscending,
+					alternateComparer: that.compareNodes
+				}
+			)
+		});
+		
+		var pencilGeo = go.Geometry.parse(iconPencil, true);
+		var trashGeo = go.Geometry.parse(iconTrash, true);
+		var expandGeo = go.Geometry.parse(iconExpand, true);
+		var collapseGeo = go.Geometry.parse(iconCollapse, true);
+		var bookGeo = go.Geometry.parse(iconBook, true);
+		
+		var breakdownTemplate = 
+			$(
+				go.Panel, "Auto",
+				$(
+					go.Shape,
+					"Circle",
+					{
+						width: 10,
+						height: 10,
+						margin: go.Margin.parse('0 0 0 4'),
+						strokeWidth: 0
+					},
+					new go.Binding("fill", "color")
+				),
+				$(
+					go.TextBlock,
+					{
+						font: "bold 11px sans-serif",
+						textAlign: "center",
+						stroke: "#ffffff",
+						spacingAbove: 1.5
+					},
+					new go.Binding("text", "text")
+				),
+				new go.Binding("opacity", "opacity")
+			);
+		
+		var personaTemplate = 
+			$(
+				go.Panel, "Auto",
+				{ },
+				$(
+					go.Shape,
+					"Circle",
+					{
+						width: 25,
+						height: 25,
+						margin: go.Margin.parse('0 4 0 0'),
+						strokeWidth: 0,
+						fill: "#bdbec2"
+					}
+				),
+				$(
+					go.TextBlock,
+					{
+						font: "12px sans-serif",
+						textAlign: "center",
+						stroke: "#ffffff",
+						spacingAbove: 2
+					},
+					new go.Binding("text", "text")
+				),
+				new go.Binding("opacity", "opacity")
+			);
+
+		var thebuttons = [
+			$(
+				go.Panel,
+				{
+					background: '#ffffff',
+					position: new go.Point(0, 0),
+					isActionable: true,
+					cursor: 'pointer',
+					click: function (e, obj) {
+						e.handled = true;
+						
+						that.expandOrCollapseNode(solutionDiagram, obj.part, e.control);
+					},
+					mouseEnter: function(e, obj) {
+						var btn = obj.findObject('TheExpander');
+						btn.fill = obj.part.data.filterok ? '#343d47' : '#fff';
+					},
+					mouseLeave: function(e, obj) {
+						var btn = obj.findObject('TheExpander');
+						btn.fill = obj.part.data.filterok ? '#777777' : '#ddd';
+					}
+				},
+				$(
+					go.Shape,
+					{
+						name: 'TheExpander',
+						fill: '#777777',
+						strokeWidth: 0.3,
+						stroke: '#ffffff',
+						width: 12,
+						height: 12
+					},
+					new go.Binding("geometry", "expanded", function(expanded) { return expanded ? collapseGeo : expandGeo; }),
+					new go.Binding("visible", "hasChildren"),
+					new go.Binding("fill", "filterok", function(filterok) { return filterok ? '#777777' : '#ddd'; }),
+					new go.Binding("strokeWidth", "filterok", function(filterok) { return filterok ? 0.3 : 0.05; })
+				),
+				new go.Binding("background", "filterok", function(filterok) { return filterok ? '#ffffff' : '#A9AAAD'; }),
+				new go.Binding("position", "", function(nodedata) { return nodedata.removable || nodedata.library ? new go.Point(0, 0) : new go.Point(15, 0); })
+			),
+		];
+
+		if (that.props.readonly !== true) {
+			thebuttons.push(
+				$(
+					go.Panel,
+					{
+						background: '#ffffff',
+						position: new go.Point(15, 0),
+						isActionable: true,
+						cursor: 'pointer',
+						click: function (e, obj) {
+							e.handled = true;
+							that.setState({ deleteentity: obj.part.data });
+						},
+						mouseEnter: function(e, obj) {
+							var btn = obj.findObject('TheBin');
+							btn.fill = obj.part.data.filterok ? '#343d47' : '#fff';
+						},
+						mouseLeave: function(e, obj) {
+							var btn = obj.findObject('TheBin');
+							btn.fill = obj.part.data.filterok ? '#777777' : '#ddd';
+						}
+					},
+					$(
+						go.Shape,
+						{
+							name: 'TheBin',
+							fill: '#777777',
+							strokeWidth: 0.3,
+							stroke: '#ffffff',
+							geometry: trashGeo,
+							width: 12,
+							height: 12
+						},
+						new go.Binding("fill", "filterok", function(filterok) { return filterok ? '#777777' : '#ddd'; }),
+						new go.Binding("strokeWidth", "filterok", function(filterok) { return filterok ? 0.3 : 0.05; })
+					),
+					new go.Binding("background", "filterok", function(filterok) { return filterok ? '#ffffff' : '#A9AAAD'; }),
+					new go.Binding("visible", "removable")
+				)
+			);
+		}
+
+		solutionDiagram.nodeTemplate = 
+			$(
+			go.Node,
+			"Auto",
+			{
+				layerName: "Background",
+				isShadowed: true,
+				shadowColor: "#ddd",
+				shadowBlur: 0,
+				shadowOffset: new go.Point(10, 10),
+				wasTreeExpanded: false,
+				cursor: "pointer"
+				/*, selectionAdorned: false*/
+			},
+			$(
+				go.Panel,
+				"Horizontal",
+				{
+					mouseEnter: function(e, obj) {
+						var btns = obj.findObject('TheButtons');
+						btns.opacity = 1;
+						if (obj.part.data.removable) {
+							var libic = obj.findObject('LibraryIcon');
+							libic.opacity = 0;
+						}
+					},
+					mouseLeave: function(e, obj) {
+						var btns = obj.findObject('TheButtons');
+						btns.opacity = 0;
+						var libic = obj.findObject('LibraryIcon');
+						libic.opacity = 1;
+					},
+					//padding: 1,
+					padding: 0,
+					background: "#8c8d92"
+				},
+				$(
+					go.Shape,
+					"Rectangle",
+					{
+						strokeWidth: 0,
+						width: 5,
+						height: 85
+					},
+					new go.Binding("fill", "color"),
+					new go.Binding("opacity", "filterok", function(filterok) { return filterok ? 1 : 0.5; })
+				),
+				$(
+					go.Panel,
+					{
+						name: "entity",
+						background: '#ffffff',
+						width: 200,
+						height: 85
+					},
+					$(
+						go.TextBlock,
+						{
+							cursor: 'pointer',
+							spacingAbove: -1,
+							spacingBelow: -1,
+							overflow: go.TextBlock.OverflowEllipsis,
+							maxLines: 2,
+							margin: 10,
+							width: thebuttons.length === 2 ? 155 : 170,
+							stroke: "#343d47",
+							textAlign: isRTL ? 'right' : 'left',
+							font: 'bold 15px "SourceSansProSemibold", "SourceSansPro", "Helvetica Neue", "Helvetica", Arial, sans-serif',
+							toolTip:
+							$(
+								go.Adornment,
+								"Vertical",
+								$(
+									go.Shape,
+									"TriangleUp",
+									{
+										width: 28,
+										height: 14,
+										fill: "#000000"
+									}
+								),
+								$(
+									go.Panel,
+									"Auto",
+									$(
+										go.Shape,
+										"RoundedRectangle",
+										{
+											fill: "#000000"
+										}
+									),
+									$(
+										go.TextBlock,
+										{
+											margin: 8,
+											stroke: "#ffffff"
+										},
+										new go.Binding("text", "name")
+									)
+								)
+							)
+						},
+						new go.Binding("text", "name"),
+						new go.Binding("stroke", "filterok", function(filterok) { return filterok ? '#343d47' : '#8F9298'; })
+					),
+					$(
+						go.Panel,
+						{
+							name: 'LibraryIcon',
+							position: new go.Point(180, 10),
+							opacity: 1
+						},
+						$(
+							go.Panel,
+							{
+								background: '#ffffff',
+								position: new go.Point(0, 0),
+							},
+							$(
+								go.Shape,
+								{
+									name: 'TheLibraryIcon',
+									fill: '#777777',
+									strokeWidth: 0.3,
+									stroke: '#ffffff',
+									geometry: bookGeo,
+									width: 12,
+									height: 12
+								},
+								new go.Binding("fill", "filterok", function(filterok) { return filterok ? '#777777' : '#ddd'; }),
+								new go.Binding("strokeWidth", "filterok", function(filterok) { return filterok ? 0.3 : 0.05; })
+							),
+							new go.Binding("background", "filterok", function(filterok) { return filterok ? '#ffffff' : '#A9AAAD'; })
+						),
+						new go.Binding("visible", "library")
+					),
+					$(
+						go.Panel,
+						{
+							name: 'TheButtons',
+							position: new go.Point(thebuttons.length === 2 ? 165 : 180, 10),
+							opacity: 0
+						},
+						thebuttons
+					),
+					$(
+						go.Panel,
+						"Horizontal",
+						{
+							name: 'TheBreakdowns', //width 95 - 2x5 margin
+							position: new go.Point(100, 60), //0, 35 is midden, dan is height ook 35. we zeuren hier een beetje
+							width: 85,
+							height: 22,
+							margin: 5,
+							itemTemplate: breakdownTemplate,
+							defaultAlignment: go.Spot.Top
+						},
+						{
+							toolTip:
+							$(
+								go.Adornment,
+								"Vertical",
+								$(
+									go.Shape,
+									"TriangleUp",
+									{
+										width: 28,
+										height: 14,
+										fill: "#000000"
+									}
+								),
+								$(
+									go.Panel,
+									"Auto",
+									$(
+										go.Shape,
+										"RoundedRectangle",
+										{
+											fill: "#000000"
+										}
+									),
+									$(
+										go.TextBlock,
+										{
+											margin: 8,
+											stroke: "#ffffff"
+										},
+										new go.Binding("text", "", function(entity) { return entity.breakdowns.map(function (p) { return p.name;}).join(", "); })
+									)
+								)
+							)	
+						},
+						new go.Binding("itemArray", "breakdownsView"),
+						new go.Binding("opacity", "filterok", function(filterok) { return filterok ? 1 : 0.25; })
+					),
+					$(
+						go.Panel,
+						"Horizontal",
+						{
+							name: 'ThePersonas', //width 95
+							position: new go.Point(0, 40),
+							// background: '#00ff00',
+							width: 85,
+							height: 25,
+							margin: 10,
+							itemTemplate: personaTemplate,
+							defaultAlignment: go.Spot.Center
+						},
+						{
+							toolTip:
+							$(
+								go.Adornment,
+								"Vertical",
+								$(
+									go.Shape,
+									"TriangleUp",
+									{
+										width: 28,
+										height: 14,
+										fill: "#000000"
+									}
+								),
+								$(
+									go.Panel,
+									"Auto",
+									$(
+										go.Shape,
+										"RoundedRectangle",
+										{
+											fill: "#000000"
+										}
+									),
+									$(
+										go.TextBlock,
+										{
+											margin: 8,
+											stroke: "#ffffff"
+										},
+										new go.Binding("text", "", function(entity) { return entity.personas.map(function (p) { return p.name;}).join(", "); })
+									)
+								),
+								new go.Binding("visible", "", function(entity) { return entity.personas.length > 0; })
+							)	
+						},
+						new go.Binding("itemArray", "personasView"),
+						new go.Binding("opacity", "filterok", function(filterok) { return filterok ? 1 : 0.25; })
+					),
+					new go.Binding("background", "filterok", sn_kpi_composer.ClientGlobalUI.getEntityBackgroundColorByFilterOk)
+				)
+			),
+			{
+				mouseDragEnter: function (e, node, prev) {
+					if (that.props.readonly) return;
+
+					var diagram = node.diagram;
+					selnode = that.getDataFromDragDrop(diagram);
+					sn_kpi_composer.ClientGlobalUI.dragOverNode(node, sn_kpi_composer.ClientProjectUI.allowRelation(true, that.props.rules, that.props.entitytypes, selnode, node, that.newParentIsNotCircular));
+				},
+				mouseDragLeave: function (e, node, next) {
+					if (that.props.readonly) return;
+
+					sn_kpi_composer.ClientGlobalUI.dragLeaveNode(node);
+				},
+				mouseDrop: function (e, node) {
+					if (that.props.readonly) return;
+
+					var diagram = node.diagram;
+					var selnode = that.getDataFromDragDrop(diagram);
+					if (sn_kpi_composer.ClientProjectUI.allowRelation(true, that.props.rules, that.props.entitytypes, selnode, node, that.newParentIsNotCircular)) {
+						// Is this node on node (entity on entity)
+						if ((selnode.data.category === "Entity" || selnode.data.category === "Source") && node.data.category === "Entity") {
+							// find any existing link into the selected node
+							var link = selnode.findTreeParentLink();
+							var parentchildrelations = that.props.relations.filter(function (rel) { return rel.from === node.data.key; }).map(function (rel) { return rel.to; });
+
+							if (link !== null) {
+								if (link.fromNode !== node) {
+									var previousnode = link.fromNode;
+
+									//was: node.data.key, we need the get the relation sys_id of the previous from node to get the relations sysid 
+									var previousFromKey = null;
+									if (previousnode) {
+										previousFromKey = previousnode.data.key;
+									}
+									var therelations = that.props.relations.filter(function (rel) { return rel.from === previousFromKey && rel.to === link.data.to; });
+									var relation_sys_id = "";
+									if (therelations.length == 1) {
+										relation_sys_id = therelations[0].sys_id;
+									}
+									if (relation_sys_id === "") {
+										alert("Relation sys_id not found!");
+									}
+
+									//put at end
+									var entitytomovearr = that.props.entities.filter(function (ent) { return ent.sys_id === link.data.to; });
+									if (entitytomovearr.length > 0) {
+										var currentorders = that.props.entities.filter(function (ent) { return parentchildrelations.indexOf(ent.sys_id) >= 0; }).map(function (ent) { return ent.order; });
+										if (currentorders.length > 0) {
+											entitytomovearr[0].order = currentorders.reduce(function(a, b) { return Math.max(a, b); }) + 1;
+										} else {
+											entitytomovearr[0].order = 1;
+										}
+										diagram.startTransaction("OrderAndLink");
+										diagram.model.setDataProperty(diagram.model.findNodeDataForKey(link.data.to), "order", entitytomovearr[0].order);
+										diagram.model.setFromKeyForLinkData(link.data, node.data.key); //this doesn't edit the props relations anymore, because we give gojs a filtered array now
+										//update parent, has children now
+										var parentnode = diagram.model.findNodeDataForKey(link.data.from);
+										diagram.model.setDataProperty(parentnode, "hasChildren", true);
+										diagram.commitTransaction("OrderAndLink");
+										
+										//was: link.data.to, link.data.relationtype, previousnode.data.key, node.data.key, entitytomovearr[0]
+										//moet worden: link (relation) sys_id, node.data.key, entitytomovearr[0]
+
+										var callbackparentnodeexpanded = parentnode.expanded;
+										var callbackfromkey = link.data.from;
+										var callbackpreviousnodekey = null;
+										if (previousnode) {
+											callbackpreviousnodekey = previousnode.data.key;
+										}
+										var callback = function() {
+											//if parent isn't visible, clear the selection, otherwise there's a strange blue selectionbox visible, also set all children hidden
+											if (callbackparentnodeexpanded === false) {
+												diagram.clearSelection();
+												var children = [];
+												that.fillListWithAllChildren(callbackfromkey, children);
+												children = children.filter(function (sys_id) { return sys_id !== callbackfromkey; });
+												for (var c=0;c < children.length;c++) {
+													var childsys_id = children[c];
+													diagram.findNodeForKey(childsys_id).visible = false;
+												}
+											}
+											if (callbackpreviousnodekey) {
+												diagram.startTransaction("HasChildrenOnDrop");
+												//check to see if prev parent had children
+												diagram.model.setDataProperty(diagram.model.findNodeDataForKey(callbackpreviousnodekey), "hasChildren", that.hasChildren(callbackpreviousnodekey));
+												diagram.commitTransaction("HasChildrenOnDrop");
+											}
+										};
+										that.props.onUpdateEntityFromEntity(relation_sys_id, node.data.key, entitytomovearr[0], callback);
+									}
+								} else {
+									//same parent, change orders
+									//link.data.to = to sys_id
+									//node.data.key = from sys_id
+									var samelevelentities = that.props.entities.filter(function (ent) { return parentchildrelations.indexOf(ent.sys_id) > -1; });
+									samelevelentities.sort(function (a,b) { return a.order - b.order;});
+									var indexOfEntityToMove = samelevelentities.map(function (ent) { return ent.sys_id;}).indexOf(link.data.to);
+									if (indexOfEntityToMove > 0) {
+										diagram.startTransaction("Orders");
+										var removedelements = samelevelentities.splice(indexOfEntityToMove, 1);
+										samelevelentities.splice(0,0,removedelements[0]);
+										for (var i = 0; i < samelevelentities.length; i++) {
+											samelevelentities[i].order = i + 1;
+											diagram.model.setDataProperty(diagram.model.findNodeDataForKey(samelevelentities[i].sys_id), "order", samelevelentities[i].order);
+										}
+										//orders are changed in object, save and update nodes
+										diagram.commitTransaction("Orders");
+										selnode.invalidateLayout();
+										that.props.onSaveOrderForEntities(samelevelentities);
+									} else {
+										//no reorder, as element is already in the beginning
+										//revert positions
+										selnode.invalidateLayout();
+									}
+								}
+							} else { // else create a new link
+								//console.log("Creating link!");
+								var newlinkentitytomovearr = that.props.entities.filter(function (ent) { return ent.sys_id === selnode.data.key; });
+								if (newlinkentitytomovearr.length > 0) {
+									var newlinkcurrentorders = that.props.entities.filter(function (ent) { return parentchildrelations.indexOf(ent.sys_id) >= 0; }).map(function (ent) { return ent.order; });
+									if (newlinkcurrentorders.length > 0) {
+										newlinkentitytomovearr[0].order = newlinkcurrentorders.reduce(function(a, b) { return Math.max(a, b); }) + 1;
+									} else {
+										newlinkentitytomovearr[0].order = 1;
+									}
+	
+									var newlink = {from: node.data.key, to: selnode.data.key, relationtype: that.props.defaultentityrelationtype};
+
+									diagram.startTransaction("OrderAndLink");
+									diagram.model.setDataProperty(diagram.model.findNodeDataForKey(newlink.to), "order", newlinkentitytomovearr[0].order);
+									diagram.model.addLinkData(newlink);
+									var newparentnode = diagram.model.findNodeDataForKey(newlink.from);
+									diagram.model.setDataProperty(newparentnode, "hasChildren", true);
+									diagram.commitTransaction("OrderAndLink");
+
+									// :PV: Bart, we zoeken de org_sys_id 
+									// newlinkentitytomovearr heeft altijd een element, maar is het het eerste
+									that.props.onInsertEntityEntity(newlink.from, newlinkentitytomovearr[0].org_sys_id, newlink.relationtype, newlinkentitytomovearr[0]);
+	
+									//if parent isn't visible, clear the selection, otherwise there's a strange blue selectionbox visible, also set all children hidden
+									if (newparentnode.expanded === false) {
+										diagram.clearSelection();
+										var newchildren = [];
+										that.fillListWithAllChildren(newlink.from, newchildren);
+										newchildren = newchildren.filter(function (sys_id) { return sys_id !== newlink.from; });
+										for (var newc=0;newc < newchildren.length;newc++) {
+											var newchildsys_id = newchildren[newc];
+											diagram.findNodeForKey(newchildsys_id).visible = false;
+										}
+									}
+								}
+								
+							}
+						}
+					}
+				},
+				selectionChanged: function(p) {
+					p.layerName = (p.isSelected ? "Foreground" : "Background");
+				},
+				click: function(e, node) {
+					var entitydetail = that.props.entities.filter(function (ent) { return ent.sys_id === node.data.key; });
+					if (entitydetail.length == 1) {
+						that.setState({ entitydetail: entitydetail[0] });
+					}
+				}
+			},
+			//new go.Binding("opacity", "filterok", function(filterok) { return filterok ? 1 : 0.25; }),
+			new go.Binding("shadowColor", "", function(nodedata) { return that.filteringIsOn() ? (that.childrenHaveFilterOk(nodes, nodedata.key) ? '#eee' : '#999') : '#ddd'; }),
+			new go.Binding("isTreeExpanded", "expanded"),
+			new go.Binding("wasTreeExpanded", "", function(data) { return false; }),
+			new go.Binding("visible", "", function(nodedata) { return that.nodeIsVisible(nodedata.key, solutionDiagram); }), //bugfix, we set the visible property in the beginning to match the parents expanded state, otherwise the children of the children are shown as orphans
+			new go.Binding("isShadowed", "expanded", function(expanded) { return !expanded; })
+		);
+
+		
+		solutionDiagram.linkTemplate = $(
+			go.Link,
+			{
+				toShortLength: 2,
+				relinkableFrom: false,
+				relinkableTo: false,
+				routing: go.Link.Orthogonal,
+				corner: 8
+			},
+			$(
+				go.Shape,
+				{
+					strokeWidth: 3,
+					stroke: "#555"
+				}
+			)
+		);
+
+		var therelations = relations.filter(function (r) { return r.from; });
+		//console.log(therelations);
+		
+		var model = $(go.GraphLinksModel, {
+			nodeDataArray: nodes,
+			linkDataArray: therelations,
+			makeUniqueKeyFunction: sn_kpi_composer.ClientHelper.keyGenerator
+		});
+		
+		solutionDiagram.model = model;
+
+		//nodeIsVisible checks on the existance of theDiagram
+		this.theModel = model;
+		this.theDiagram = solutionDiagram;
+	},
+	
+	getNodes: function() {
+		var i;
+		var p;
+		var entitytypesDic = {};
+		for (i = 0; i < this.props.entitytypes.length; i++) {
+			entitytypesDic[this.props.entitytypes[i].sys_id] = this.props.entitytypes[i];
+		}
+		var personasDic = {};
+		for (i = 0; i < this.props.personas.length; i++) {
+			personasDic[this.props.personas[i].sys_id] = this.props.personas[i];
+		}
+		var breakdownsDic = {};
+		for (i = 0; i < this.props.breakdowns.length; i++) {
+			breakdownsDic[this.props.breakdowns[i].sys_id] = this.props.breakdowns[i];
+		}
+		
+		var filteringIsOn = this.filteringIsOn();
+	
+		var nodes = [];
+		for (i = 0; i < this.props.entities.length; i++) {
+			var entity = this.props.entities[i];
+			var node = { category: entity.category, entitytype: entity.entitytype, key: entity.sys_id, name: entity.name, description: entity.description, order: entity.order, expanded: !entity.collapsed, hasChildren: this.hasChildren(entity.sys_id), library: entity.library, library_root: entity.library_root, removable: !entity.library || entity.library_root, org_sys_id: entity.org_sys_id };
+			if (node.removable === true && this.props.project_library === true) {
+				//in case of a library project, the root element can't be removed, so we need to check that
+				if (this.hasParent(entity.sys_id) === false) {
+					node.removable = false;
+				}
+			}
+			if (entitytypesDic[entity.entitytype]) {
+				node.color = entitytypesDic[entity.entitytype].color;
+			}
+			node.personas = [];
+			for (p = 0; p < entity.personas.length; p++) {
+				if (personasDic[entity.personas[p]]) {
+					node.personas.push(personasDic[entity.personas[p]]);
+				}
+			}
+			node.personasView = this.getPersonasView(node.personas);
+			
+			node.breakdowns = [];
+			for (p = 0; p < entity.breakdowns.length; p++) {
+				if (breakdownsDic[entity.breakdowns[p]]) {
+					node.breakdowns.push(breakdownsDic[entity.breakdowns[p]]);
+				}
+			}
+			node.breakdownsView = this.getBreakdownsView(node.breakdowns);
+			node.breakdowns_from_library = entity.breakdowns_from_library;
+			
+			node.filterok = filteringIsOn ? this.getNodeFilterOk(node) : true;
+			
+			nodes.push(node);
+		}
+		
+		return nodes;
+	},
+	
+	renderDiagramIfNeeded: function() {
+		if (this.theDiagram == null && this.props.entities != null) {
+			this.renderCanvas(this.getNodes(), this.props.relations);
+			return true;
+		}
+		return false;
+	},
+	
+	componentDidMount: function() {
+		this.renderDiagramIfNeeded();
+	},
+	
+	componentDidUpdate: function (prevProps) {
+		var rendered = this.renderDiagramIfNeeded();
+		if (!rendered) {
+			
+			var personachanged = false;
+			var breakdownschanged = false;
+			var filterchanged = false;
+			var entitiesorrelationschanged = false;
+			
+			if (this.props.personas !== prevProps.personas) {
+				personachanged = true;
+			}
+			if (this.props.breakdowns !== prevProps.breakdowns) {
+				breakdownschanged = true;
+			}
+			if (this.props.selected_personas !== prevProps.selected_personas || this.props.selected_breakdowns !== prevProps.selected_breakdowns || this.props.filter_text !== prevProps.filter_text) {
+				filterchanged = true;
+			}
+			if (this.props.entities !== prevProps.entities || this.props.relations !== prevProps.relations) {
+				entitiesorrelationschanged = true;
+			}
+			
+			if (personachanged || breakdownschanged || filterchanged || entitiesorrelationschanged) {
+				//disable animations when there's at least one new entity with disableanimations = true
+				var disableanimationsentities = this.props.entities.filter(function (ent) { return ent.disableanimations === true;}).map(function (ent) { return ent.sys_id; });
+				if (disableanimationsentities.length > 0 && this.theModel.nodeDataArray.filter(function (n) { return disableanimationsentities.indexOf(n.key) < 0; }).length > 0) {
+					this.theDiagram.animationManager.isEnabled = false;
+				}
+				this.theDiagram.startTransaction();
+				var i = 0;
+				var nodes = this.getNodes();
+				for (i = 0; i < nodes.length; i++) {
+					var node = nodes[i];
+					var nodeDataArr = this.theModel.nodeDataArray.filter(function (n) { return n.key === node.key; });
+					if (nodeDataArr.length == 1) {
+						var nodeData = nodeDataArr[0];
+						if (personachanged) {
+							nodeData.personas = node.personas;
+							nodeData.personasView = node.personasView;
+						}
+						if (breakdownschanged) {
+							nodeData.breakdowns = node.breakdowns;
+							nodeData.breakdowns_from_library = node.breakdowns_from_library;
+							nodeData.breakdownsView = node.breakdownsView;
+						}
+						if (filterchanged) {
+							nodeData.filterok = node.filterok;
+						}
+					} else if (entitiesorrelationschanged) {
+						//insert the node
+						//console.log("adding node from react change: " + node.key);
+						this.theModel.addNodeData(node);
+					}
+				}
+
+				if (entitiesorrelationschanged) {
+					//remove old entities
+					for (i = this.theModel.nodeDataArray.length-1; i >= 0; i--) {
+						var node = this.theModel.nodeDataArray[i];
+						if (this.props.entities.filter(function (ent) { return ent.sys_id === node.key; }).length === 0) {
+							var keyremoved = node.key;
+							var parents = this.props.relations.filter(function (rel) { return rel.to === keyremoved; }).map(function (rel) { return rel.from; });
+							var children = this.props.relations.filter(function (rel) { return rel.from === keyremoved; }).map(function (rel) { return rel.to; });
+
+							//console.log("removing node from react change: " + keyremoved);
+							this.theDiagram.remove(this.theDiagram.findNodeForKey(keyremoved)); //this also deletes the relations
+
+							if (parents.length > 0 && parents[0]) {
+								var parent = this.theDiagram.model.findNodeDataForKey(parents[0]);
+								if (parent) {
+									this.theDiagram.model.setDataProperty(parent, "hasChildren", this.hasChildren(parents[0]));
+								}
+							}
+							//show the children of a removed node (they can be hidden when parent was collapsed)
+							for (var c=0;c < children.length;c++) {
+								var childsys_id = children[c];
+								var childnode = this.theDiagram.findNodeForKey(childsys_id);
+								if (childnode) {
+									childnode.visible = true;
+								}
+							}
+							//console.log("removing node from react change done");
+						}
+					}
+
+					//remove old relations
+					for (i = this.theModel.linkDataArray.length-1; i >= 0; i--) {
+						var relation = this.theModel.linkDataArray[i];
+						if (this.props.relations.filter(function (rel) { return rel.from === relation.from && rel.to === relation.to; }).length === 0) {
+							//console.log("removing relation from react change: " + relation.sys_id);
+							this.theModel.removeLinkData(relation);
+						}
+					}
+
+					//add new relations
+					for (i = 0; i < this.props.relations.length; i++) {
+						var relation = this.props.relations[i];
+						if (relation.from) {
+							if (this.theModel.linkDataArray.filter(function (r) { return r.from === relation.from && r.to === relation.to; }).length === 0) {
+								//console.log("adding relation from react change: " + relation.sys_id);
+								this.theModel.addLinkData(relation);
+								//update parent so hasChildren is true
+								var parent = this.theDiagram.model.findNodeDataForKey(relation.from);
+								if (parent) {
+									this.theDiagram.model.setDataProperty(parent, "hasChildren", true);
+								}
+							}
+						}
+					}
+				}
+				
+				//this.theModel.nodeDataArray = this.getNodes();
+				
+				if (personachanged)	this.theDiagram.updateAllTargetBindings("personasView");
+				if (breakdownschanged)	this.theDiagram.updateAllTargetBindings("breakdownsView");
+				if (filterchanged)	this.theDiagram.updateAllTargetBindings("filterok");
+				//if (orderschanged) this.theDiagram.selection.each(function(n) { n.invalidateLayout(); });
+				//if (entitieschanged) this.theDiagram.layoutDiagram(false);
+				
+				this.theDiagram.commitTransaction("ReactPropertiesChanged");
+				this.theDiagram.animationManager.isEnabled = true;
+			}
+		}
+	},
+	
+	//wordt vanuit de MainApp opgeroepen
+	onDragStart: function(event) {
+		var solutionDiagram = this.theDiagram;
+
+		this.PIXELRATIO = solutionDiagram.computePixelRatio();
+
+		if (!event.target.classList.contains("draggable"))
+			return;
+		// Some data must be set to allow drag
+		event.dataTransfer.setData("text", event.target.textContent);
+
+		// store a reference to the dragged element and the offset of the mouse from the center of the element
+		this.dragged = event.target;
+		this.dragged.offsetX = event.offsetX - this.dragged.clientWidth / 2;
+		this.dragged.offsetY = event.offsetY - this.dragged.clientHeight / 2;
+		// Objects during drag will have a red border
+		//event.target.style.border = "2px solid red";
+
+		log("document.addEventListener(dragstart) [exit]");
+	},
+	
+	//wordt vanuit de MainApp opgeroepen
+	onDragEnd: function(event) {
+		log("document.addEventListener(dragend)");
+
+		if (this.dragged == null) return;
+		
+		// reset the border of the dragged element
+		//this.dragged.style.border = "";
+
+		if (this.draggedOnNode != null) {
+			var curNode = this.draggedOnNode;
+			
+			var solutionDiagram = this.theDiagram;
+
+			// Any hightlighted node deselect
+			sn_kpi_composer.ClientGlobalUI.skipUndoGoJs(
+				solutionDiagram,
+				function () { sn_kpi_composer.ClientGlobalUI.dragLeaveNode(curNode); }
+			);
+		}
+	},
+	
+	//wordt vanuit de MainApp opgeroepen
+	requestUpdateForDiagram: function() {
+		if (this.theDiagram != null) {
+			this.theDiagram.requestUpdate();
+		}
+	},
+	
+	onDragEnter: function(event) {
+		log("div.addEventListener(dragenter)");
+		// Here you could also set effects on the Diagram,
+		// such as changing the background color to indicate an acceptable drop zone
+
+		// Requirement in some browsers, such as Internet Explorer
+		event.preventDefault();
+	},
+	
+	onDragOver: function(event) {
+		if (this.props.readonly) return;
+
+		//log("div.addEventListener(onDragOver)");
+		var solutionDiagram = this.theDiagram;
+
+		// We call preventDefault to allow a drop
+		// But on divs that already contain an element,
+		// we want to disallow dropping
+
+		//if (this === solutionDiv) {
+			var can = event.target;
+			var pixelratio = this.PIXELRATIO;
+
+			// if the target is not the canvas, we may have trouble, so just quit:
+			if (!(can instanceof HTMLCanvasElement))
+				return;
+
+			var bbox = can.getBoundingClientRect();
+
+			var bbw = bbox.width;
+			if (bbw === 0)
+				bbw = 0.001;
+			var bbh = bbox.height;
+			if (bbh === 0)
+				bbh = 0.001;
+			var mx = event.clientX - bbox.left * ((can.width / pixelratio) / bbw);
+			var my = event.clientY - bbox.top * ((can.height / pixelratio) / bbh);
+		
+			var point = solutionDiagram.transformViewToDoc(new go.Point(mx, my));
+			var curNode = solutionDiagram.findPartAt(point, true);
+
+			if (curNode instanceof go.Node) {
+				if (this.dragged && this.dragged.dataset.category) {
+					this.draggedOnNode = curNode;
+					var allowed = sn_kpi_composer.ClientProjectUI.allowRelation(true, this.props.rules, this.props.entitytypes, this.dragged.dataset, curNode, null);
+					// Highlight the node (but disable undo)
+					sn_kpi_composer.ClientGlobalUI.skipUndoGoJs(
+						solutionDiagram,
+						function () { sn_kpi_composer.ClientGlobalUI.dragOverNode(curNode, allowed);}
+					);
+					if (allowed) {
+						event.preventDefault();
+					}
+				}
+				return;
+			} else if (this.dragged) {
+				// Remove highligth from node
+				if (this.draggedOnNode != null) {
+					var curNode = this.draggedOnNode;
+					// Bring the old colors back, skip the undo of gojs
+					sn_kpi_composer.ClientGlobalUI.skipUndoGoJs(
+						solutionDiagram, function () { sn_kpi_composer.ClientGlobalUI.dragLeaveNode(curNode);}
+					);
+					this.draggedOnNode = null;
+				}
+				
+				//allow new when project is not a library project or when there are no entities yet (new project)
+				var allowed = sn_kpi_composer.ClientProjectUI.allowRelation(this.props.project_library !== true || this.props.entities.length === 0, this.props.rules, this.props.entitytypes, this.dragged.dataset, null, null);
+				if (allowed) {
+					event.preventDefault();
+				}
+			}
+
+		//}
+		return;
+	},
+	
+	onDragLeave: function(event) {
+		if (this.props.readonly) return;
+
+		log("div.addEventListener(dragleave)");
+
+		if (this.draggedOnNode != null) {
+			var solutionDiagram = this.theDiagram;
+			var curNode = this.draggedOnNode;
+
+			// Remove highligth from node
+			sn_kpi_composer.ClientGlobalUI.skipUndoGoJs(
+				solutionDiagram,
+				function () { sn_kpi_composer.ClientGlobalUI.dragLeaveNode(curNode);}
+			);
+		}
+	},
+
+	getNextOrder: function(parentnode) {
+		if (parentnode) {
+			//set order
+			var otherrelations = this.props.relations.filter(function (rel) { return rel.from === parentnode.data.key;}).map(function(rel) { return rel.to; });
+			var currentorders = this.props.entities.filter(function (ent) { return otherrelations.indexOf(ent.sys_id) >= 0; }).map(function (ent) { return ent.order; });
+			if (currentorders.length > 0) {
+				return currentorders.reduce(function(a, b) { return Math.max(a, b); }) + 1;
+			} else {
+				return 1;
+			}
+		} else {
+			return this.props.entities.length + 1; //give the root element an unique order
+		}
+	},
+
+	updateUIAfterAddingNode: function(solutionDiagram, newnode_key) {
+		var diagramNode = newnode_key ? solutionDiagram.findNodeForKey(newnode_key) : null;
+		if (diagramNode && diagramNode.actualBounds.isReal()) { //when the parent is collapsed, the node isn't visible
+			solutionDiagram.select(diagramNode);
+			//solutionDiagram.commandHandler.scrollToPart(diagramNode); //since 1.6
+			solutionDiagram.scrollToRect(diagramNode.actualBounds);
+		}
+
+		if (this.props.entities.length === 0) {
+			//center on the first drop
+			var x = solutionDiagram.viewportBounds.width / 2;
+			//205 = breedte blokje
+			x = x - (205 / 2);
+
+			solutionDiagram.position = new go.Point(-1 * x, -5);
+		}
+	},
+	
+	onDrop: function(event) {
+		if (this.props.readonly) return;
+
+		//log("div.addEventListener(drop)");
+		var solutionDiagram = this.theDiagram;
+		
+		if (this.dragged == null) return;
+
+		if (this.dragged.dataset.category && (this.draggedOnNode instanceof go.Node || this.draggedOnNode == null)) {
+			var category = this.dragged.dataset.category;
+			var that = this;
+			
+			if (category === "Breakdown" || category === "Persona") {
+				var entitiestoupdate = null;
+				
+				if (event.ctrlKey == true) {
+					//check relations
+					var children_sys_ids = [];
+					this.fillListWithAllChildren(this.draggedOnNode.data.key, children_sys_ids);
+					entitiestoupdate = this.theModel.nodeDataArray.filter(function (node) { return children_sys_ids.indexOf(node.key) >= 0; });
+				} else {
+					entitiestoupdate = [this.draggedOnNode.data];
+				}
+				//console.log(entitiestoupdate);
+				
+				// Add breakdown to the entity
+				if (category === "Breakdown") {
+					var breakdown_sys_id = this.dragged.dataset.sys_id;
+					if (event.altKey == true) {
+						this.nodesBreakdownDelete(entitiestoupdate, breakdown_sys_id, function (error) {
+
+						});	
+					} else {
+						this.nodesBreakdownInsert(entitiestoupdate, breakdown_sys_id, function (error) {
+
+						});	
+					}
+				}
+				// Add persona to the entity
+				if (category === "Persona") {
+					var persona_sys_id = this.dragged.dataset.sys_id;
+					if (event.altKey == true) {
+						this.nodesPersonaDelete(entitiestoupdate, persona_sys_id, function (error) {
+
+						});
+					} else {
+						this.nodesPersonaInsert(entitiestoupdate, persona_sys_id, function (error) {
+
+						});
+					}
+				}
+			}
+			
+			if (category === "EntityType") {
+				var entitytypes = this.props.entitytypes.filter(function (et) { return et.sys_id === that.dragged.dataset.entitytype; });
+				if (entitytypes.length == 1) {
+					var entitytype = entitytypes[0];
+					var newNode = {
+						category: "Entity",
+						entitytype: entitytype.sys_id,
+						name: entitytype.name,
+						color: entitytype.color,
+						description: "",
+						expanded: true,
+						hasChildren: false,
+						filterok: true,
+						personas: [],
+						breakdowns: [],
+						breakdowns_from_library: [],
+						library: false,
+						library_root: false,
+						removable: true
+					};
+					
+					if (this.filteringIsOn()) {
+						newNode.filterok = this.getNodeFilterOk(newNode);
+					}
+					
+					solutionDiagram.model.startTransaction("alterNodes");
+					solutionDiagram.model.addNodeData(newNode);
+					newNode.org_sys_id = newNode.key;
+					
+					var newentity = {
+						breakdowns: [],
+						breakdowns_from_library: [],
+						category: "Entity",
+						contacts: [],
+						description: "",
+						target: "",
+						entitytype: newNode.entitytype,
+						knowledgearticles: [],
+						name: newNode.name,
+						owners: [],
+						personas: [],
+						sys_id: newNode.key,
+						org_sys_id: newNode.key,
+						collapsed: false,
+						library: false
+					};
+					
+					var newlink = null;
+					newNode.order = this.getNextOrder(this.draggedOnNode);
+					newentity.order = newNode.order;
+					
+					if (this.draggedOnNode != null) {
+						//add link
+						newlink = {from: this.draggedOnNode.data.key, to: newNode.key, relationtype: this.props.defaultentityrelationtype};
+						solutionDiagram.model.addLinkData(newlink);
+						solutionDiagram.model.setDataProperty(solutionDiagram.model.findNodeDataForKey(newlink.from), "hasChildren", true);
+					}
+					
+					solutionDiagram.model.commitTransaction("alterNodes");
+					
+					this.updateUIAfterAddingNode(solutionDiagram, newNode.key);
+					
+					this.props.onInsertEntity(newentity, newlink, function(error) {
+						if (error != null) {
+							log("Failed to insert.");
+							g_form.addErrorMessage(getMessage("Insert failed. Node will be removed"));
+							var node = solutionDiagram.findNodeForKey(newNode.key);
+							if (node) {
+								solutionDiagram.remove(node);
+							}
+						}
+					});
+					this.setState({ entitydetail: newentity });
+				}
+			}
+
+			if (category === "LibraryElement") {
+				var libraryelementsysid = this.dragged.dataset.sys_id;
+				var librarytopnodesysid = this.dragged.dataset.top_node_sys_id;
+
+				var fromsys_id = null;
+				if (this.draggedOnNode != null) {
+					fromsys_id = this.draggedOnNode.data.key;
+				}
+				this.props.onAddLibraryToProject(fromsys_id, libraryelementsysid, librarytopnodesysid, function(result) {
+					//result contains .error and/or .new root node sys id
+					if (!result.error) {
+						that.updateUIAfterAddingNode(solutionDiagram, result.new_root_entity_sys_id);
+					}
+				});
+			}
+		}
+
+		// prevent default action
+		event.preventDefault();
+	},
+	
+	entityDetailClose: function() {
+		this.setState({ entitydetail: null });
+	},
+	
+	entityDetailDelete: function() {
+		var that = this;
+		this.onDeleteWithKeyArray([this.state.entitydetail.sys_id], function (error) {
+			if (error == null) {
+				that.setState({ entitydetail: null });	
+			}
+		});
+	},
+	
+	entityDetailNameSave: function(name, callback) {
+		var that = this;
+		//save to model via bubble up + update gojs
+		this.props.onUpdateEntityName(this.state.entitydetail.sys_id, name, function(error) {
+			callback(error);
+		});
+		
+		this.theDiagram.startTransaction();
+		var nodes = this.theModel.nodeDataArray.filter(function (node) { return node.key === that.state.entitydetail.sys_id; });
+		if (nodes.length == 1) {
+			this.theModel.setDataProperty(nodes[0], "name", name);
+		}
+		
+		if (nodes.length == 1 && this.filteringIsOn()) {
+			this.nodeSetFilterOk(nodes[0]);
+
+			this.theDiagram.updateAllTargetBindings("filterok");
+		}
+		this.theDiagram.commitTransaction("EntityDetailModalNameChanged");
+	},
+	
+	entityDetailDescriptionSave: function(description, callback) {
+		this.props.onUpdateEntityDescription(this.state.entitydetail.sys_id, description, function(error) {
+			callback(error);
+		});
+	},
+
+	entityDetailTargetSave: function(target, callback) {
+		this.props.onUpdateEntityTarget(this.state.entitydetail.sys_id, target, function(error) {
+			callback(error);
+		});
+	},
+	
+	entityDetailOwnerAdd: function(user, callback) {
+		this.props.onInsertEntityOwner(this.state.entitydetail.sys_id, user, function(error) {
+			callback(error);
+		});
+	},
+	
+	entityDetailOwnerDelete: function(sys_id, callback) {
+		this.props.onDeleteEntityOwner(this.state.entitydetail.sys_id, sys_id, function(error) {
+			callback(error);
+		});
+	},
+	
+	entityDetailContactAdd: function(user, callback) {
+		this.props.onInsertEntityContact(this.state.entitydetail.sys_id, user, function(error) {
+			callback(error);
+		});
+	},
+	
+	entityDetailContactDelete: function(sys_id, callback) {
+		this.props.onDeleteEntityContact(this.state.entitydetail.sys_id, sys_id, function(error) {
+			callback(error);
+		});
+	},
+	
+	entityDetailKnowledgeArticleAdd: function(knowledgearticle, callback) {
+		this.props.onInsertEntityKnowledgeArticle(this.state.entitydetail.sys_id, knowledgearticle, function(error) {
+			callback(error);
+		});
+	},
+	
+	entityDetailKnowledgeArticleDelete: function(sys_id, callback) {
+		this.props.onDeleteEntityKnowledgeArticle(this.state.entitydetail.sys_id, sys_id, function(error) {
+			callback(error);
+		});
+	},
+
+	entityDetailCreateLibraryProjectFromEntity: function(name, description, callback) {
+		var that = this;
+
+		var entity_sys_id = this.state.entitydetail.sys_id;
+		var relation_sys_id = "";
+		var parents = this.props.relations.filter(function (rel) { return rel.to === entity_sys_id; });
+		if (parents.length > 0) {
+			relation_sys_id = parents[0].sys_id;
+		}
+		var entity_sys_ids_to_remove = [];
+		this.fillListWithAllChildren(entity_sys_id, entity_sys_ids_to_remove);
+
+		this.props.onCreateLibraryProjectFromEntity(entity_sys_id, relation_sys_id, entity_sys_ids_to_remove, name, description, function(result) {
+			if (result.new_root_entity_sys_id) {
+				var entitydetail = that.props.entities.filter(function (ent) { return ent.sys_id === result.new_root_entity_sys_id; });
+				if (entitydetail.length == 1) {
+					that.setState({ entitydetail: entitydetail[0] });
+				}
+			}
+			callback(result.error);
+		});
+	},
+	
+	entityDetailCopyLibraryEntitiesToProject: function(callback) {
+		var that = this;
+
+		var entity_sys_id = this.state.entitydetail.sys_id;
+		var relation_sys_id = "";
+		var parents = this.props.relations.filter(function (rel) { return rel.to === entity_sys_id; });
+		if (parents.length > 0) {
+			relation_sys_id = parents[0].sys_id;
+		}
+		var entity_sys_ids_to_remove = [];
+		this.fillListWithAllChildren(entity_sys_id, entity_sys_ids_to_remove);
+
+		this.props.onCopyLibraryEntitiesToProject(relation_sys_id, entity_sys_ids_to_remove, function(result) {
+			if (result.new_root_entity_sys_id) {
+				var entitydetail = that.props.entities.filter(function (ent) { return ent.sys_id === result.new_root_entity_sys_id; });
+				if (entitydetail.length == 1) {
+					that.setState({ entitydetail: entitydetail[0] });
+				}
+			}
+			callback(result.error);
+		});
+	},
+	
+	entityDetailPersonaCheckedChange: function(sys_id, checked, callback) {
+		var that = this;
+		var nodes = this.theModel.nodeDataArray.filter(function (node) { return node.key === that.state.entitydetail.sys_id; });
+		if (nodes.length == 1) {
+			if (checked) {
+				//link
+				this.nodesPersonaInsert(nodes, sys_id, callback);
+			} else {
+				//unlink
+				this.nodesPersonaDelete(nodes, sys_id, callback);
+			}
+		}
+	},
+	
+	nodeSetFilterOk: function(node) {
+		var newfilterok = this.getNodeFilterOk(node);
+		if (node.filterok !== newfilterok) {
+			this.theDiagram.model.setDataProperty(node, "filterok", newfilterok);
+		}
+	},
+
+	nodesPersonaInsertInDiagramAndReturnSysIds: function(nodes, persona, filteringIsOn) {
+		var entity_sys_ids = [];
+		
+		for (var i = 0; i < nodes.length; i++) {
+			var node = nodes[i];
+			if (node.personas.filter(function (curPers) { return curPers.sys_id === persona.sys_id; }).length == 0) {
+				var newpersonas = node.personas.concat([persona]);
+				var newpersonasview = this.getPersonasView(newpersonas);
+
+				this.theDiagram.model.setDataProperty(node, "personas", newpersonas);
+				this.theDiagram.model.setDataProperty(node, "personasView", newpersonasview);
+				if (filteringIsOn) {
+					this.nodeSetFilterOk(node);
+				}
+				
+				//in case of library elements, it's possible that you have multiple times node.org_sys_id when 1 library is used multiple times
+				if (entity_sys_ids.indexOf(node.org_sys_id) < 0) {
+					entity_sys_ids.push(node.org_sys_id);
+				}
+			} else {
+				//persona is al gekoppeld
+			}
+		}
+
+		return entity_sys_ids;
+	},
+	
+	nodesPersonaInsert: function(nodes, sys_id, callback) {
+		var personas = this.props.personas.filter(function (p) { return p.sys_id === sys_id; });
+		if (personas.length == 1) {
+			var filteringIsOn = this.filteringIsOn();
+			this.theDiagram.model.startTransaction("alterPersonas");
+
+			var entity_sys_ids = this.nodesPersonaInsertInDiagramAndReturnSysIds(nodes, personas[0], filteringIsOn);
+			//find all nodes where org_sys_id is equal and update those nodes too (in case of library elements)
+			var allnodekeys = nodes.map(function (n) { return n.key; });
+			var other_similar_library_nodes = this.theModel.nodeDataArray.filter(function (node) { return allnodekeys.indexOf(node.key) < 0 && entity_sys_ids.indexOf(node.org_sys_id) >= 0; });
+			if (other_similar_library_nodes.length) {
+				this.nodesPersonaInsertInDiagramAndReturnSysIds(other_similar_library_nodes, personas[0], filteringIsOn);
+			}
+
+			if (filteringIsOn) {
+				this.theDiagram.updateAllTargetBindings("filterok");
+			}
+	
+			this.theDiagram.model.commitTransaction("alterPersonas");
+
+			if (entity_sys_ids.length > 0) {
+				this.props.onInsertPersonaEntities(entity_sys_ids, sys_id, function(error) {
+					callback(error);
+				});
+			} else {
+				callback(null);
+			}
+		}
+	},
+
+	nodesPersonaDeleteFromDiagramAndReturnSysIds: function(nodes, sys_id, filteringIsOn) {
+		var entity_sys_ids = [];
+		
+		for (var i = 0; i < nodes.length; i++) {
+			var node = nodes[i];
+			
+			var newpersonas = node.personas.filter(function (p) { return p.sys_id !== sys_id; });
+			if (newpersonas.length != node.personas.length) {
+				var newpersonasview = this.getPersonasView(newpersonas);
+
+				this.theDiagram.model.setDataProperty(node, "personas", newpersonas);
+				this.theDiagram.model.setDataProperty(node, "personasView", newpersonasview);
+				if (filteringIsOn) {
+					this.nodeSetFilterOk(node);
+				}
+				
+				//in case of library elements, it's possible that you have multiple times node.org_sys_id when 1 library is used multiple times
+				if (entity_sys_ids.indexOf(node.org_sys_id) < 0) {
+					entity_sys_ids.push(node.org_sys_id);
+				}
+			}
+		}
+
+		return entity_sys_ids;
+	},
+	
+	nodesPersonaDelete: function(nodes, sys_id, callback) {
+		var filteringIsOn = this.filteringIsOn();
+		
+		this.theDiagram.model.startTransaction("alterPersonas");
+
+		var entity_sys_ids = this.nodesPersonaDeleteFromDiagramAndReturnSysIds(nodes, sys_id, filteringIsOn);
+		//find all nodes where org_sys_id is equal and update those nodes too (in case of library elements)
+		var allnodekeys = nodes.map(function (n) { return n.key; });
+		var other_similar_library_nodes = this.theModel.nodeDataArray.filter(function (node) { return allnodekeys.indexOf(node.key) < 0 && entity_sys_ids.indexOf(node.org_sys_id) >= 0; });
+		if (other_similar_library_nodes.length) {
+			this.nodesPersonaDeleteFromDiagramAndReturnSysIds(other_similar_library_nodes, sys_id, filteringIsOn);
+		}
+
+		if (filteringIsOn) {
+			this.theDiagram.updateAllTargetBindings("filterok");
+		}
+		this.theDiagram.model.commitTransaction("alterPersonas");
+		
+		if (entity_sys_ids.length > 0) {
+			this.props.onDeletePersonaEntities(entity_sys_ids, sys_id, function(error) {
+				callback(error);
+			});
+		} else {
+			callback(null);
+		}
+	},
+	
+	entityDetailBreakdownCheckedChange: function(sys_id, checked, callback) {
+		var that = this;
+		var nodes = this.theModel.nodeDataArray.filter(function (node) { return node.key === that.state.entitydetail.sys_id; });
+		if (nodes.length == 1) {
+			if (checked) {
+				//link
+				this.nodesBreakdownInsert(nodes, sys_id, callback);
+			} else {
+				//unlink
+				this.nodesBreakdownDelete(nodes, sys_id, callback);
+			}
+		}
+	},
+	
+	nodesBreakdownInsertInDiagramAndReturnSysIds: function(nodes, breakdown, filteringIsOn) {
+		var entity_sys_ids = [];
+
+		for (var i = 0; i < nodes.length; i++) {
+			var node = nodes[i];
+			if (node.breakdowns.filter(function (curBreak) { return curBreak.sys_id === breakdown.sys_id; }).length == 0) {
+				var newbreakdowns = node.breakdowns.concat([breakdown]);
+				var newbreakdownsview = this.getBreakdownsView(newbreakdowns);
+				
+				this.theDiagram.model.setDataProperty(node, "breakdowns", newbreakdowns);
+				this.theDiagram.model.setDataProperty(node, "breakdownsView", newbreakdownsview);
+				if (filteringIsOn) {
+					this.nodeSetFilterOk(node);
+				}
+				
+				//in case of library elements, it's possible that you have multiple times node.org_sys_id when 1 library is used multiple times
+				if (entity_sys_ids.indexOf(node.org_sys_id) < 0) {
+					entity_sys_ids.push(node.org_sys_id);
+				}
+			} else {
+				//breakdown is al gekoppeld
+			}
+		}
+
+		return entity_sys_ids;
+	},
+
+	nodesBreakdownInsert: function(nodes, sys_id, callback) {
+		var breakdowns = this.props.breakdowns.filter(function (p) { return p.sys_id === sys_id; });
+		if (breakdowns.length == 1) {
+			var filteringIsOn = this.filteringIsOn();
+
+			this.theDiagram.model.startTransaction("alterBreakdowns");
+
+			var entity_sys_ids = this.nodesBreakdownInsertInDiagramAndReturnSysIds(nodes, breakdowns[0], filteringIsOn);
+			//find all nodes where org_sys_id is equal and update those nodes too (in case of library elements)
+			var allnodekeys = nodes.map(function (n) { return n.key; });
+			var other_similar_library_nodes = this.theModel.nodeDataArray.filter(function (node) { return allnodekeys.indexOf(node.key) < 0 && entity_sys_ids.indexOf(node.org_sys_id) >= 0; });
+			if (other_similar_library_nodes.length) {
+				this.nodesBreakdownInsertInDiagramAndReturnSysIds(other_similar_library_nodes, breakdowns[0], filteringIsOn);
+			}
+
+			if (filteringIsOn) {
+				this.theDiagram.updateAllTargetBindings("filterok");
+			}
+			this.theDiagram.model.commitTransaction("alterBreakdowns");
+			
+			if (entity_sys_ids.length > 0) {
+				this.props.onInsertBreakdownEntities(entity_sys_ids, sys_id, function(error) {
+					callback(error);
+				});
+			} else {
+				callback(null);
+			}
+			
+		}
+	},
+
+	nodesBreakdownDeleteFromDiagramAndReturnSysIds: function(nodes, sys_id, filteringIsOn) {
+		var entity_sys_ids = [];
+
+		for (var i = 0; i < nodes.length; i++) {
+			var node = nodes[i];
+			
+			//check if its a breakdown from the library
+			if (node.breakdowns_from_library.indexOf(sys_id) < 0) {
+				var newbreakdowns = node.breakdowns.filter(function (p) { return p.sys_id !== sys_id; });
+				if (newbreakdowns.length != node.breakdowns.length) {
+					var newbreakdownsview = this.getBreakdownsView(newbreakdowns);
+					
+					this.theDiagram.model.setDataProperty(node, "breakdowns", newbreakdowns);
+					this.theDiagram.model.setDataProperty(node, "breakdownsView", newbreakdownsview);
+					if (filteringIsOn) {
+						this.nodeSetFilterOk(node);
+					}
+					
+					//in case of library elements, it's possible that you have multiple times node.org_sys_id when 1 library is used multiple times
+					if (entity_sys_ids.indexOf(node.org_sys_id) < 0) {
+						entity_sys_ids.push(node.org_sys_id);
+					}
+				}
+			}
+		}
+
+		return entity_sys_ids;
+	},
+	
+	nodesBreakdownDelete: function(nodes, sys_id, callback) {
+		var filteringIsOn = this.filteringIsOn();
+		
+		this.theDiagram.model.startTransaction("alterBreakdowns");
+
+		var entity_sys_ids = this.nodesBreakdownDeleteFromDiagramAndReturnSysIds(nodes, sys_id, filteringIsOn);
+		//find all nodes where org_sys_id is equal and update those nodes too (in case of library elements)
+		var allnodekeys = nodes.map(function (n) { return n.key; });
+		var other_similar_library_nodes = this.theModel.nodeDataArray.filter(function (node) { return allnodekeys.indexOf(node.key) < 0 && entity_sys_ids.indexOf(node.org_sys_id) >= 0; });
+		if (other_similar_library_nodes.length) {
+			this.nodesBreakdownDeleteFromDiagramAndReturnSysIds(other_similar_library_nodes, sys_id, filteringIsOn);
+		}
+
+		if (filteringIsOn) {
+			this.theDiagram.updateAllTargetBindings("filterok");
+		}
+		this.theDiagram.model.commitTransaction("alterBreakdowns");
+
+		if (entity_sys_ids.length > 0) {
+			this.props.onDeleteBreakdownEntities(entity_sys_ids, sys_id, function(error) {
+				callback(error);
+			});
+		} else {
+			callback(null);
+		}
+	},
+	
+	onDeleteNo: function() {
+		this.setState({ deleteentity: null, deletekeys: null });
+	},
+	
+	onDeleteYes: function() {
+		var that = this;
+		if (this.state.deleteentity != null) {
+			this.onDeleteWithKeyArray([this.state.deleteentity.key], function (error) {
+				if (error == null) {
+					
+				}
+				that.setState({ deleteentity: null });
+			});
+		} else if (this.state.deletekeys != null) {
+			this.onDeleteWithKeyArray(this.state.deletekeys, function (error) {
+				if (error == null) {
+					that.theDiagram.clearSelection();
+				}
+				that.setState({ deletekeys: null });
+			});
+		}
+	},
+	
+	onDeleteWithKeyArray: function(keys, callback) {
+		//assumes that removable property is already checked
+
+		//split keys by normal entities and library_root entities, the normal entities need to be removed, for the library_root elements the relation needs to be removed and the child nodes too
+		var deleteData = {
+			entities: this.props.entities.filter(function(ent) { return ent.library === false && keys.indexOf(ent.sys_id) >= 0; }),
+			library_entities: this.props.entities.filter(function(ent) { return ent.library_root === true && keys.indexOf(ent.sys_id) >= 0; }),
+			change_to_root: []
+		};
+
+		//loop thru the entities, for each entity that has a library as a direct child, we need to update that relation so the library has a from relation of null
+		var entities_sysids = deleteData.entities.map(function (ent) { return ent.sys_id; });
+		var directchildrelations = this.props.relations.filter(function (rel) { return rel.from && entities_sysids.indexOf(rel.from) >= 0; });
+		for (var dc = 0; dc < directchildrelations.length; dc++) {
+			var directchildrelation = directchildrelations[dc];
+			if (this.props.entities.filter(function(ent) { return ent.library_root === true && directchildrelation.to === ent.sys_id; }).length > 0) {
+				//relation to library, relation needs to be changed so the from is NULL
+				deleteData.change_to_root.push(directchildrelation);
+				//console.log(JSON.stringify(directchildrelation));
+			}
+		}
+
+		var that = this;
+		this.props.onDeleteEntities(deleteData, function(keysremoved, error) {
+			callback(error);
+			
+			if (error == null) {
+				//this is now fixed by the react properties changed event handler (componentDidUpdate)
+				// that.theDiagram.model.startTransaction("removeNodes");
+
+				// for (var i=0; i < keysremoved.length; i++) {
+				// 	var parents = that.props.relations.filter(function (rel) { return rel.to === keysremoved[i]; }).map(function (rel) { return rel.from; });
+				// 	var children = that.props.relations.filter(function (rel) { return rel.from === keysremoved[i]; }).map(function (rel) { return rel.to; });
+				// 	var node = that.theDiagram.findNodeForKey(keysremoved[i]);
+				// 	that.theDiagram.remove(node); //also removes the relations
+				//					
+				// 	if (parents.length > 0) {
+				// 		that.theDiagram.model.setDataProperty(that.theDiagram.model.findNodeDataForKey(parents[0]), "hasChildren", that.hasChildren(parents[0]));
+				// 	}
+				// 	//show the children of a removed node (they can be hidden when parent was collapsed)
+				// 	for (var c=0;c < children.length;c++) {
+				// 		var childsys_id = children[c];
+				// 		that.theDiagram.findNodeForKey(childsys_id).visible = true;
+				// 	}
+				// }
+
+				// that.theDiagram.model.commitTransaction("removeNodes");	
+			}
+		});
+	},
+	
+	render: function() {
+		var confirmremoval = null;
+		if (this.props.readonly !== true) {
+			if (this.state.deleteentity != null || this.state.deletekeys != null) {
+				confirmremoval = e(
+					ConfirmRemoval,
+					{ key: 'confirmremove', onYes: this.onDeleteYes, onNo: this.onDeleteNo }
+				);
+			}
+		}
+		
+		var entitydetailmodal = null;
+		if (this.state.entitydetail != null) {
+			var entitydetailmodalprops = {
+				key: 'detail',
+				entity: this.state.entitydetail,
+				personas: this.props.personas,
+				breakdowns: this.props.breakdowns,
+				entitytypes: this.props.entitytypes,
+				onClose: this.entityDetailClose
+			};
+
+			if (this.props.readonly !== true) {
+				if (this.state.entitydetail.library === false) {
+					entitydetailmodalprops.onDelete = this.entityDetailDelete;
+					entitydetailmodalprops.onNameSave = this.entityDetailNameSave;
+					entitydetailmodalprops.onDescriptionSave = this.entityDetailDescriptionSave;
+					entitydetailmodalprops.onTargetSave = this.entityDetailTargetSave;
+					entitydetailmodalprops.onOwnerAdd = this.entityDetailOwnerAdd;
+					entitydetailmodalprops.onOwnerDelete = this.entityDetailOwnerDelete;
+					entitydetailmodalprops.onContactAdd = this.entityDetailContactAdd;
+					entitydetailmodalprops.onContactDelete = this.entityDetailContactDelete;
+					entitydetailmodalprops.onKnowledgeArticleAdd = this.entityDetailKnowledgeArticleAdd;
+					entitydetailmodalprops.onKnowledgeArticleDelete = this.entityDetailKnowledgeArticleDelete;
+					if (this.props.project_library !== true || this.state.entitydetail.root !== true) {
+						entitydetailmodalprops.onCreateLibraryProjectFromEntity = this.entityDetailCreateLibraryProjectFromEntity;
+					}
+				} else {
+					entitydetailmodalprops.onCopyLibraryEntitiesToProject = this.entityDetailCopyLibraryEntitiesToProject;
+				}
+				entitydetailmodalprops.onPersonaCheckedChange = this.entityDetailPersonaCheckedChange;
+				entitydetailmodalprops.onBreakdownCheckedChange = this.entityDetailBreakdownCheckedChange;
+			}
+
+			entitydetailmodal = e(
+				EntityDetailModal,
+				entitydetailmodalprops
+			);
+		}
+
+		var infomessage = null;
+		if (this.props.entities.length === 0) {
+			infomessage = e(
+				'div',
+				{ key: 'infomessage', className: "analysis_infomessage" },
+				e(
+					'span',
+					null,
+					getMessage('Welcome to KPI Composer. Drag a Business Goal, Ciritical Succes Factor or Measurement onto this canvas to build your KPI tree.')
+				)
+			);
+		}
+		
+		return [
+			infomessage,
+			e(
+				'div',
+				{
+					key: 'tree',
+					ref: 'goJsDiv',
+					style: { 'width': '100%', 'height': '100%', 'overflow': 'hidden' },
+					onDragEnter: this.onDragEnter,
+					onDragOver: this.onDragOver,
+					onDragLeave: this.onDragLeave,
+					onDrop: this.onDrop
+				}
+			),
+			entitydetailmodal,
+			confirmremoval
+		];
+	}
+});]]></script>
+        <script_name>AnalysisTree</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-07 14:03:03</sys_created_on>
+        <sys_id>d2c529291b047700bcb985507e4bcbfb</sys_id>
+        <sys_mod_count>484</sys_mod_count>
+        <sys_name>sn_kpi_composer.AnalysisTree</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_d2c529291b047700bcb985507e4bcbfb</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-27 09:39:53</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

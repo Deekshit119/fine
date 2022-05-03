@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.BaseValidation</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>All validation implementation should be build on this class</description>
+        <name>BaseValidation</name>
+        <script><![CDATA[var BaseValidation = Class.create();
+BaseValidation.prototype = Object.extendsObject(sn_kpi_composer.RecordApi, {
+
+	_projectApi: new  sn_kpi_composer.ProjectApi(),
+	
+	_clearValidations: function(input) {		
+		// Delete all validation from a specific project
+		if (this.trace) this._debug.push("Delete all validation for project: " + this._projectApi.project(input).sys_id);
+		var pv = new GlideRecord('sn_kpi_composer_project_validation');
+		pv.addQuery("project", this._projectApi.project(input).sys_id);
+		pv.query();
+		pv.deleteMultiple();
+	},
+
+	_addProjectValidationOk: function(validation, input) {	
+		if (typeof validation === 'string') {
+			var data = {};		
+			data.description = validation;
+			data.severity = this._projectValidationSeverityOk;
+			return this._addProjectValidation(data, input);
+		} else {
+			validation.severity = this._projectValidationSeverityOk;
+			return this._addProjectValidation(validation, input);
+		}
+	},
+	
+	
+	_addProjectValidationInfo: function(validation, input) {	
+		if (typeof validation === 'string') {
+			var data = {};		
+			data.description = validation;
+			data.severity = this._projectValidationSeverityInfo;
+			return this._addProjectValidation(data, input);
+		} else {
+			validation.severity = this._projectValidationSeverityInfo;
+			return this._addProjectValidation(validation, input);
+		}	
+	},
+	
+	_addProjectValidationWarning: function(validation, input) {	
+		if (typeof validation === 'string') {
+			var data = {};		
+			data.description = validation;
+			data.severity = this._projectValidationSeverityWarning;
+			return this._addProjectValidation(data, input);
+		} else {
+			validation.severity = this._projectValidationSeverityWarning;
+			return this._addProjectValidation(validation, input);
+		}		
+	},
+
+	_addProjectValidationDefinitionError: function(validation, input) {	
+		if (typeof validation === 'string') {
+			var data = {};		
+			data.description = validation;
+			data.severity = this._projectValidationSeverityDefinitionError;
+			return this._addProjectValidation(data, input);
+		} else {
+			validation.severity = this._projectValidationSeverityDefinitionError;
+			return this._addProjectValidation(validation, input);
+		}		
+	},
+		
+	/*
+	* Add a validation record to the current project of the user
+	* validation can be object with properties like: description and type
+	* when the validation is a string a line will be added with a valiation type OK
+	* when no validation type is provided the validation type will be OK
+	* Count can not be set, will be filled automaticly
+	*/
+	_addProjectValidation: function(validation, input) {
+
+		var result = {};
+		result.success = false;
+		
+		if (this.trace) this._debug.push("Add validation: '" + JSON.stringify(validation) + "' to project (" + JSON.stringify(input) + "): " + this._projectApi.project(input).sys_id);
+		
+		// Insert values
+		var vt = new GlideAggregate('sn_kpi_composer_project_validation');
+		vt.addAggregate('COUNT')
+		vt.addQuery("project", this._projectApi.project(input).sys_id);
+		vt.query();
+		vt.next();
+		
+		var cnt = vt.getAggregate('COUNT') + 1;
+		
+		vt = new GlideRecord('sn_kpi_composer_project_validation');
+		vt.initialize();
+		if (typeof validation === 'string') {
+			vt.setValue("description",validation);
+			vt.setValue("severity", this._projectValidationSeverityOk);
+		} else {
+			
+			if (validation.description)
+				vt.setValue("description",validation.description);
+			
+			if (validation.record) {
+				vt.setValue("record", validation.record);
+			}
+
+			if (validation.table) 
+				vt.setValue("table", validation.table)
+			
+			if (validation.severity) 
+				vt.setValue("severity", validation.severity);						
+			else vt.setValue("severity", this._projectValidationSeverityOk);
+		}
+		
+		vt.setValue("project", this._projectApi.project(input).sys_id);
+		vt.setValue("order", cnt);
+		
+		vt.insert();					
+		
+		result.validation = this._projectvalidation_record(vt);
+		result.success = true;
+		
+	},
+	
+	clearValidations: function(input) {
+		
+		if (this.trace) this._debug.push("clearValidations: function()");
+		
+		var response = {};
+		response.success = false;
+		
+		if (this.trace) this._debug.push("Starting ClearValidations");
+		
+		this._clearValidations(input);
+		
+		if (this.trace) this._debug.push("ClearValidations done.");
+		
+		response.success = true;
+		if (this.trace)
+			response.debug = this._debug;
+		
+		return response;
+	},
+	
+    type: 'BaseValidation'
+});
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-27 08:46:51</sys_created_on>
+        <sys_id>f5acd3331bd873404e6921be6e4bcb0e</sys_id>
+        <sys_mod_count>57</sys_mod_count>
+        <sys_name>BaseValidation</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_f5acd3331bd873404e6921be6e4bcb0e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-10 08:52:07</sys_updated_on>
+    </sys_script_include>
+</record_update>

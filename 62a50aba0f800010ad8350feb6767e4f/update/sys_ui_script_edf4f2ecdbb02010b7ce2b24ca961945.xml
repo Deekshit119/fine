@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubShareAdd</name>
+        <script><![CDATA[var NavHubShareAdd = createReactClass({
+    getInitialState: function() {
+		return { users: [], groups: [], write: false, saving: false };
+	},
+
+    usersChanged: function(users) {
+        this.setState({users: users});
+    },
+
+    groupsChanged: function(groups) {
+        this.setState({groups: groups});
+    },
+
+    writeChanged: function(event) {
+        this.setState({write: (event.target.value === "yes")});
+    },
+
+    submit: function(evt) {
+        evt.preventDefault();
+        var that = this;
+        this.setState({saving: true}, function() {
+            var i;
+
+            //no dupes
+            var usersysids = [];
+            var users = [];
+            for (i = 0; i < that.state.users.length; i++) {
+                var user = that.state.users[i];
+                if (usersysids.indexOf(user.sys_id) < 0) {
+                    usersysids.push(user.sys_id);
+                    users.push(user);
+                }
+            }
+
+            //no dupes
+            var groupsysids = [];
+            var groups = [];
+            for (i = 0; i < that.state.groups.length; i++) {
+                var group = that.state.groups[i];
+                if (groupsysids.indexOf(group.sys_id) < 0) {
+                    groupsysids.push(group.sys_id);
+                    groups.push(group);
+                }
+            }
+
+            that.props.onSave({ users: users, groups: groups, write: that.state.write });
+        });
+    },
+
+	render: function() {
+		var that = this;
+		
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+                {className: 'sn-aside-header'},
+                e(
+                    'button',
+                    { className: "sn-aside-btn icon-chevron-left btn btn-icon", disabled: this.state.saving, onClick: this.props.onCancel }
+                ),
+				e(
+					'span',
+					null,
+					getMessage('Share')
+				),
+				e(
+					'div',
+					{className : 'sn-aside-btn icon-cross', 'aria-label': getMessage('Close Share Panel'), role: 'button', tabIndex: '0', onClick: this.props.onCloseActiveAside}
+				)
+			),
+			e(
+				'div',
+                {className: 'sn-aside-body wb-pa-aside-body'},
+                e(
+                    'form',
+                    { onSubmit: this.submit },
+                    e(
+                        'div',
+                        {className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+                        e(
+                            'label',
+                            null,
+                            getMessage('Users')
+                        ),
+                        e(
+                            UserSelector,
+                            { placeholder: getMessage('Add users'), disabled: this.state.saving, multiple: true, autoFocus: true, onChange: this.usersChanged }
+                        )
+                    ),
+                    e(
+                        'div',
+                        {className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+                        e(
+                            'label',
+                            null,
+							getMessage('Groups')
+                        ),
+                        e(
+                            GroupSelector,
+                            { placeholder: getMessage('Add groups'), disabled: this.state.saving, multiple: true, autoFocus: false, onChange: this.groupsChanged }
+                        )
+                    ),
+                    e(
+                        'div',
+                        {className: 'sn-widget sn-widget_border-bottom sn-widget-form'},
+                        e(
+                            'label',
+                            null,
+							getMessage('Access')
+                        ),
+                        e(
+                            'select',
+                            { className: "form-control", disabled: this.state.saving, value: this.state.write ? "yes" : "no", onChange: this.writeChanged },
+                            e(
+                                'option',
+                                { value: 'no' },
+								getMessage('Can view')
+                            ),
+                            e(
+                                'option',
+                                { value: 'yes' },
+								getMessage('Can edit')
+                            )
+                        )
+                    ),
+                    e(
+                        'div',
+                        {className: 'sn-widget sn-widget_border-bottom sn-widget-form', style: { display: 'flex'}},
+                        e(
+                            'button',
+                            {type: 'button', className: 'btn btn-default', disabled: this.state.saving, onClick: this.props.onCancel, style: {flex: 1, marginRight: 5}},
+                            getMessage('Cancel')
+                        ),
+                        e(
+                            'button',
+                            {type: 'submit', className: 'btn btn-primary', style: {flex: 1, marginLeft: 5}, disabled: this.state.saving || (this.state.users.length === 0 && this.state.groups.length === 0)},
+                            getMessage('Share')
+                        )
+                    )
+                )
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubShareAdd</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-11-27 12:35:43</sys_created_on>
+        <sys_id>edf4f2ecdbb02010b7ce2b24ca961945</sys_id>
+        <sys_mod_count>17</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubShareAdd</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_edf4f2ecdbb02010b7ce2b24ca961945</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-01-12 12:51:07</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

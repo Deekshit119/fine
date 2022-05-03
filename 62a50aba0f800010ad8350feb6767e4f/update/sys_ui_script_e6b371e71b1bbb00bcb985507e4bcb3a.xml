@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubAddWidgetType</name>
+        <script><![CDATA[var NavHubAddWidgetType = createReactClass({
+	getInitialState: function() {
+		return { open: false };
+	},
+	
+	toggle: function() {
+		this.setState({ open: !this.state.open });
+	},
+	
+	render: function() {
+		var that = this;
+			
+		var listitems = this.props.widgetvisualisations.map(
+			function (v) {
+				return e(
+					NavHubAddWidgetItem,
+					{ key: v.sys_id, widgetvisualisation: v, disableDragging: that.props.disableDragging }
+				);
+			}
+		);
+
+		return e(
+			'div',
+			{ className: 'navhubvisualisationtype' },
+			e(
+				'div',
+				{ className: 'typelabel', onClick: this.toggle },
+				e(
+					'span',
+					null,
+					this.props.label
+				),
+				e(
+					'span',
+					{ className: 'typechevron icon-chevron-' + (this.state.open ? 'down' : 'up') }
+				)
+				
+			),
+			e(
+				Reactstrap.Collapse,
+				{ isOpen: this.state.open },
+				e(
+					'div',
+					{ className: 'navhubvisualisationtypes'},
+					listitems
+				)
+			)
+		);
+	}
+});]]></script>
+        <script_name>NavHubAddWidgetType</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-08-22 09:36:05</sys_created_on>
+        <sys_id>e6b371e71b1bbb00bcb985507e4bcb3a</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubAddWidgetType</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_e6b371e71b1bbb00bcb985507e4bcb3a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-10 15:32:33</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

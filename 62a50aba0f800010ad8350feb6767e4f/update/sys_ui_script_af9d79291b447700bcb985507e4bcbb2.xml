@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.IndDesignContent</name>
+        <script><![CDATA[var IndicatorDesignContent = createReactClass({
+	requestUpdateForDiagram: function(event) {
+		if (this.refs.IndicatorDesignTree != null) {
+			this.refs.IndicatorDesignTree.requestUpdateForDiagram();
+		}
+	},
+		
+	render: function() {
+		return [
+			e(
+				'div',
+				{ key: 'middle', className: 'wb-pa-lanes wb-pa-lanes-scroll wb-pa-board-color-1' },
+				e(
+					IndicatorDesignTree,
+					{ 
+						ref: 'IndicatorDesignTree',
+						entities: this.props.entities,
+						relations: this.props.relations,
+						personas: this.props.personas,
+						breakdowns: this.props.breakdowns,
+						entitytypes: this.props.entitytypes,
+						dashboardtabrowcanvasses: this.props.dashboardtabrowcanvasses,
+						indicatordefinitions: this.props.indicatordefinitions,
+						indicatordefinition_indicatordefinition: this.props.indicatordefinition_indicatordefinition,
+						report_definitions: this.props.report_definitions,
+						onSaveEntitiesCollapsedDataDefinition: this.props.onSaveEntitiesCollapsedDataDefinition,
+						insertEntityIndicatorDefinition: this.props.insertEntityIndicatorDefinition,
+						refreshEntityDefinitionData: this.props.refreshEntityDefinitionData,
+						deleteEntityIndicatorDefinition: this.props.deleteEntityIndicatorDefinition,
+						insertEntityReportDefinition: this.props.insertEntityReportDefinition,
+						deleteEntityReportDefinition: this.props.deleteEntityReportDefinition,
+						filter_text: this.props.filter_text,
+						filter_status: this.props.filter_status,
+						readonly: this.props.readonly,
+						project_library: this.props.project_library
+					}
+				)
+			),
+			e(
+				'div',
+				{ key: 'bottom', className: 'wb-pa-quick-panel entitytype refreshonly' },
+				e(
+					'div',
+					{className:'wb-pa-quick-panel-content clearfix'},
+					e(
+						"button",
+						{ type: "button", className: "btn btn-primary icon-refresh bottom-refresh-button", onClick: this.props.onRefresh }
+					)
+				)
+			)
+		];
+	}
+});]]></script>
+        <script_name>IndDesignContent</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-07 15:47:10</sys_created_on>
+        <sys_id>af9d79291b447700bcb985507e4bcbb2</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_name>sn_kpi_composer.IndDesignContent</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_af9d79291b447700bcb985507e4bcbb2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-26 13:16:13</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

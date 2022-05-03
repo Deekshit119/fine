@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskValidateTaskDefReference</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskValidateTaskDefReference</name>
+        <script><![CDATA[var ProjectTaskValidateTaskDefReference = Class.create();
+ProjectTaskValidateTaskDefReference.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+  
+    /*
+
+        Validate existing task definitions for a specific project
+
+        For the current specific project, take all task-def record (based on the project-list field)
+        
+        For all task-def rec:
+        1) check if the definition-ref still exists (example, if it references a indicator definition? does it still exists). If the definition record does not exsist anymore,
+            change the status of this task-def record
+
+        2) Check if, in the current project, there is any entity that references the defintion-ref, if not the project should be removed from the task-def field        
+
+    */
+
+	validatetasks: function(data) {
+
+		if (this.trace) this._debug.push("ProjectTaskValidateTaskDefReference, Active project: " + data.project.sys_id + " (" + data.project.name + ")");
+
+        var that = this;
+
+        // Take all task-def record for the active project
+        var gr_taskDef = new GlideRecord('sn_kpi_composer_task_definition');
+        gr_taskDef.addEncodedQuery("projectsLIKE" + data.project.sys_id);
+        //gr_taskDef.addQuery("projects", 'IN', data.project.sys_id);
+        gr_taskDef.query();
+
+        //this._debug.push("data: " + JSON.stringify(data));
+
+        // Start loop
+        while(gr_taskDef.next()) {
+
+            // STEP 1
+
+            // Get table name from linked document_id
+            var tableNm = gr_taskDef.getValue("definition_table");
+
+            // Create gliderecord
+            var tmp = new GlideRecord(tableNm);
+
+            // Take sys_id
+            var sys_id = gr_taskDef.getValue("definition_record");
+
+            // Check if record still exists 
+            var found = tmp.get(sys_id);
+
+            if (found == false && gr_taskDef.getValue("status") != 5) {
+                if (this.trace) this._debug.push("Reference not found: " + tableNm + "  sys_id:" + sys_id + "  change taskdefinition state to ");
+                gr_taskDef.setValue("status", 5);
+                gr_taskDef.update();
+            }
+
+            // STEP 2
+
+            if (tableNm == 'sn_kpi_composer_indicator_definition' || tableNm == 'sn_kpi_composer_report_definition' || tableNm == 'sn_kpi_composer_breakdown') {
+
+                var found = false;
+                data.entities.forEach(function(e) { 
+
+                    if (e.indicator_definition == sys_id) {
+                        found = true;
+                    }
+                    if (e.report_definition == sys_id) {
+                        found = true;
+                    }
+                    if (e.breakdowns) {
+                        e.breakdowns.forEach(function(b) {
+                            if (b == sys_id) found = true;
+                        });
+                    }
+                })
+
+                if (found == false) {
+
+                    this.removeProjectUsedInTaskDef(gr_taskDef, data.project.sys_id)
+                    gr_taskDef.update();
+
+                    /*
+                    // Take the project array
+                    var projects = gr_taskDef.getValue("projects").split(",");
+                    // Debug
+                    if (this.trace) this._debug.push("No entities found with " + tableNm + " with sys_id: " + sys_id + "  remove project from task. (" + projects + ")");
+
+                    var projectIdx = projects.indexOf(data.project.sys_id);
+                    if (projectIdx>-1) {
+                        projects.splice(projectIdx, 1);
+                        var newProjects = projects.join(",");
+                        newProjects = newProjects.replace(" ", "");
+                        gr_taskDef.setValue("projects", newProjects);
+                        gr_taskDef.update();
+                        //this._debug.push("New projects value: " + newProjects);
+                    }
+                    */
+                }
+            }
+
+        }
+
+		
+	},
+    type: 'ProjectTaskValidateTaskDefReference'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-08-26 07:44:53</sys_created_on>
+        <sys_id>81d2a6801bd634507e0d52c8624bcbee</sys_id>
+        <sys_mod_count>15</sys_mod_count>
+        <sys_name>ProjectTaskValidateTaskDefReference</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_81d2a6801bd634507e0d52c8624bcbee</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-14 10:07:40</sys_updated_on>
+    </sys_script_include>
+</record_update>

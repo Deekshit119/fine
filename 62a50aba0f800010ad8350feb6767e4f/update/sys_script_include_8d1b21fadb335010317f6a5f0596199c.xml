@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectTaskCreateInteractiveFilter</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectTaskCreateInteractiveFilter</name>
+        <script><![CDATA[var ProjectTaskCreateInteractiveFilter = Class.create();
+ProjectTaskCreateInteractiveFilter.prototype = Object.extendsObject(sn_kpi_composer.ProjectTask, {
+	
+	createtasks: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectTaskCreateInteractiveFilter");	
+	
+		data.dashboards.forEach(function(d) {
+			d.tabs.forEach(function(t) {
+				t.rows.forEach(function(r) {
+					r.canvasses.forEach(function(canvas) {
+						if (canvas.widget_type == "Interactive Filters") {
+
+							if (that.trace) that._debug.push("Create/update interactive filter task: " + canvas.title);
+							var defRecId = canvas.sys_id;
+							var defTableNm = 'sn_kpi_composer_canvas';
+
+							// Lookup or create record
+							var taskDefRec = that._addOrGetTaskDefinitionRecord(defTableNm, defRecId, data.project.sys_id);
+							if (that.trace) that._debug.push("Lookup DefRecId 5: " + defRecId + " for DefRecTableNm: " + defTableNm + " => " + JSON.stringify(taskDefRec));
+
+							// Generic update of the status
+							that._updateTaskDefinitionStatus(taskDefRec, canvas, canvas.interactive_filter, data);
+
+							// Set artifact source table
+							taskDefRec.artifact_table = 'sys_ui_hp_publisher';
+
+							// Set the artifact target record
+							taskDefRec.artifact_record = canvas.interactive_filter;
+
+							var desc = gs.getMessage("{0}Interactive filter name'{1}'", [taskDefRec.validationerrors, canvas.title]);
+							desc +=  gs.getMessage("\nUI Control type: '{0}'", canvas.widgetvisualisation_dv);
+							if (canvas.description) desc +=  gs.getMessage("\nDescription: '{0}'", canvas.description);
+
+							taskDefRec.description = desc;
+			
+							var result = that._updateTaskDefinitionRecord(taskDefRec);
+						}
+					});
+				});
+			});
+        });
+	},
+
+    type: 'ProjectTaskCreateInteractiveFilter'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2020-10-15 13:57:57</sys_created_on>
+        <sys_id>8d1b21fadb335010317f6a5f0596199c</sys_id>
+        <sys_mod_count>22</sys_mod_count>
+        <sys_name>ProjectTaskCreateInteractiveFilter</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_8d1b21fadb335010317f6a5f0596199c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-19 14:40:11</sys_updated_on>
+    </sys_script_include>
+</record_update>

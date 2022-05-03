@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.EntityInfo</name>
+        <script><![CDATA[var EntityInfo = createReactClass({
+	render: function() {
+		return e(
+			'div',
+			null,
+			e(
+				'div',
+				{className: 'sn-aside-header'},
+				e(
+					'span',
+					null,
+					getMessage('Info')
+				)
+			),
+			e(
+				'div',
+				{className: 'sn-aside-body wb-pa-aside-body'},
+				e(
+					KnowledgeArticleList,
+					{
+						knowledgearticles: this.props.entity.knowledgearticles,
+						title: getMessage('Knowledge Articles'),
+						addPlaceholder: getMessage('Add Item'),
+						onKnowledgeArticleAdd: this.props.onKnowledgeArticleAdd,
+						onKnowledgeArticleDelete: this.props.onKnowledgeArticleDelete
+					}
+				),
+				e(
+					UserList,
+					{
+						users: this.props.entity.owners,
+						title: getMessage('Responsible'),
+						addPlaceholder: getMessage('Add Responsible'),
+						onUserAdd: this.props.onOwnerAdd,
+						onUserDelete: this.props.onOwnerDelete
+					}
+				),
+				e(
+					UserList,
+					{
+						users: this.props.entity.contacts,
+						title: getMessage('Contacts'),
+						addPlaceholder: getMessage('Add Contact'),
+						onUserAdd: this.props.onContactAdd,
+						onUserDelete: this.props.onContactDelete
+					}
+				)
+			)
+		);
+	}
+});]]></script>
+        <script_name>EntityInfo</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-14 12:54:59</sys_created_on>
+        <sys_id>5549dd3b1b44bb0019e8ed7b2f4bcbaf</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>sn_kpi_composer.EntityInfo</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_5549dd3b1b44bb0019e8ed7b2f4bcbaf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2020-12-17 08:44:56</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

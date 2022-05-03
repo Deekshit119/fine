@@ -1,0 +1,1988 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_hub_flow">
+    <sys_hub_flow action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <acls/>
+        <active>true</active>
+        <annotation/>
+        <callable_by_client_api>false</callable_by_client_api>
+        <category/>
+        <compiler_build>glide-quebec-12-09-2020__patch4-hotfix1-06-03-2021_06-07-2021_1407.zip</compiler_build>
+        <copied_from/>
+        <copied_from_name/>
+        <description/>
+        <internal_name>kpi_composer_task_definition</internal_name>
+        <label_cache>[{"name":"e73dd6f5-8373-4496-bd20-a4980382c2ca.table_name","label":"9➛Task Definition Table","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition Table","type":"table_name","base_type":"table_name","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"e73dd6f5-8373-4496-bd20-a4980382c2ca.record","label":"9➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition Record","type":"reference","base_type":"reference","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"subflow.task_definition_record.waiting_on_dependencies","label":"Input➛Task Definition Record➛Waiting on dependencies","reference":"","reference_display":"Waiting on dependencies","type":"boolean","base_type":"boolean","parent_table_name":"sn_kpi_composer_task_definition","column_name":"waiting_on_dependencies"},{"name":"9e5c1050-3e0d-4744-a95b-a28d77d41cb3.context","label":"12➛Context","reference":"sys_flow_context","reference_display":"Context","type":"reference","base_type":"reference","attributes":{}},{"name":"36bc738d-8f31-4473-a71d-d6dda0a6d17a.item","label":"11➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition Record","type":"reference","base_type":"reference","attributes":{"pills_draggable_inside_block":"true","pills_draggable_outside_block":"false"}},{"name":"subflow.task_definition_record.dependencies","label":"Input➛Task Definition Record➛Dependencies","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"glide_list","base_type":"glide_list","parent_table_name":"sn_kpi_composer_task_definition","column_name":"dependencies"},{"name":"subflow.task_definition_record","label":"Input➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"reference","base_type":"reference","column_name":"","attributes":{"uiType":"reference","uiTypeLabel":"Reference","element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper","uiUniqueId":"cab5de21-a254-4ac5-b4fc-3c781b9d2647","sourceUiUniqueId":"","sourceType":"","sourceId":""}},{"name":"ae9847be-df77-4458-91a4-c79d3ab35b88.table_name","label":"6➛Task Definition Table","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"table_name","base_type":"table_name","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"ae9847be-df77-4458-91a4-c79d3ab35b88.record","label":"6➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"reference","base_type":"reference","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"34604f54-7f2a-4d91-b558-fbe57ce7d86b.item","label":"3➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition Record","type":"reference","base_type":"reference","attributes":{"pills_draggable_inside_block":"true","pills_draggable_outside_block":"false"}},{"name":"subflow.task_definition_record.status","label":"Input➛Task Definition Record➛Status","reference":"","reference_display":"Status","type":"choice","base_type":"choice","parent_table_name":"sn_kpi_composer_task_definition","column_name":"status"},{"name":"34604f54-7f2a-4d91-b558-fbe57ce7d86b.item.status","label":"3➛Task Definition Record➛Status","reference":"","reference_display":"Status","type":"choice","base_type":"choice","parent_table_name":"sn_kpi_composer_task_definition","column_name":"status"},{"name":"subflow.task_definition_record.sys_id","label":"Input➛Task Definition Record➛Sys ID","reference":"","reference_display":"Sys ID","type":"GUID","base_type":"GUID","parent_table_name":"sn_kpi_composer_task_definition","column_name":"sys_id"},{"name":"fddfb502-6315-48c0-9a71-404e5c45f6f1.Count","label":"1➛Count","reference_display":"Count","type":"integer","base_type":"integer","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"fddfb502-6315-48c0-9a71-404e5c45f6f1.Table","label":"1➛Task Definition Table","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition Table","type":"table_name","base_type":"table_name","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"fddfb502-6315-48c0-9a71-404e5c45f6f1.Records","label":"1➛Task Definition Records","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition Records","type":"records","base_type":"records","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"flow_variable.has_incomplete_dependencies","label":"Flow Variables➛Has incomplete dependencies","reference":"","reference_display":"","type":"boolean","base_type":"boolean","column_name":"","attributes":{"uiType":"boolean","uiTypeLabel":"True/False","element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper","uiUniqueId":"5928fa03-92cb-46a1-b2b1-fc9c892d1dd5"}},{"name":"subflow.task_definition_record.definition_record","label":"Input➛Task Definition Record➛Definition Record","reference":"","reference_display":"Definition Record","type":"document_id","base_type":"document_id","parent_table_name":"sn_kpi_composer_task_definition","column_name":"definition_record"},{"name":"7380b77b-8498-4ac7-bd03-f697792589c2.record","label":"7➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition Record","type":"reference","base_type":"reference","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"7380b77b-8498-4ac7-bd03-f697792589c2.table_name","label":"7➛Task Definition Table","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition Table","type":"table_name","base_type":"table_name","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}}]</label_cache>
+        <master_snapshot>16b4ae381b65f0107e0d52c8624bcbac</master_snapshot>
+        <name>OLD - KPI Composer Task Definition (backup)</name>
+        <natlang/>
+        <outputs/>
+        <remote_trigger_id/>
+        <run_as>user</run_as>
+        <run_with_roles/>
+        <sc_callable>false</sc_callable>
+        <show_draft_actions>false</show_draft_actions>
+        <show_triggered_flows>false</show_triggered_flows>
+        <status>draft</status>
+        <sys_class_name>sys_hub_flow</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 07:46:33</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>1ca31a7c1b25f0107e0d52c8624bcb87</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>OLD - KPI Composer Task Definition (backup)</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_hub_flow_1ca31a7c1b25f0107e0d52c8624bcb87</sys_update_name>
+        <sys_updated_by>deekshitulu.malladi@snc</sys_updated_by>
+        <sys_updated_on>2022-05-03 12:06:20</sys_updated_on>
+        <type>subflow</type>
+    </sys_hub_flow>
+    <sys_translated_text action="delete_multiple" query="documentkey=1ca31a7c1b25f0107e0d52c8624bcb87"/>
+    <sys_variable_value action="delete_multiple" query="document_key=1ca31a7c1b25f0107e0d52c8624bcb87"/>
+    <sys_flow_cat_variable_model action="delete_multiple" query="id=1ca31a7c1b25f0107e0d52c8624bcb87^sys_idNOT IN50a31a7c1b25f0107e0d52c8624bcb88"/>
+    <sys_flow_cat_variable_model action="INSERT_OR_UPDATE">
+        <id>1ca31a7c1b25f0107e0d52c8624bcb87</id>
+        <name>KPI Composer Task Definition</name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 07:46:33</sys_created_on>
+        <sys_id>50a31a7c1b25f0107e0d52c8624bcb88</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 07:46:33</sys_updated_on>
+    </sys_flow_cat_variable_model>
+    <sys_hub_flow_input action="delete_multiple" query="model=1ca31a7c1b25f0107e0d52c8624bcb87^sys_idNOT INab6dd2341b65f0107e0d52c8624bcbd2"/>
+    <sys_hub_flow_input action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,uiType=reference,uiTypeLabel=Reference,uiUniqueId=cab5de21-a254-4ac5-b4fc-3c781b9d2647</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table>sn_kpi_composer_task_definition</choice_table>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>task_definition_record</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="Reference">reference</internal_type>
+        <label>Task Definition Record</label>
+        <mandatory>true</mandatory>
+        <max_length>32</max_length>
+        <model display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</model>
+        <model_id>1ca31a7c1b25f0107e0d52c8624bcb87</model_id>
+        <model_table>sys_hub_flow</model_table>
+        <name>var__m_sys_hub_flow_input_1ca31a7c1b25f0107e0d52c8624bcb87</name>
+        <next_element/>
+        <order>1</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference display_value="" name="sn_kpi_composer_task_definition">sn_kpi_composer_task_definition</reference>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_flow_input</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:29:22</sys_created_on>
+        <sys_id>ab6dd2341b65f0107e0d52c8624bcbd2</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package/>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:29:22</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_flow_input>
+    <sys_hub_action_instance action="delete_multiple" query="flow=1ca31a7c1b25f0107e0d52c8624bcb87^sys_idNOT IN6f6d16341b65f0107e0d52c8624bcbe7,8cfe6a301ba5f0107e0d52c8624bcb94,b97b83f41be5f0107e0d52c8624bcb74"/>
+    <sys_hub_action_instance action="INSERT_OR_UPDATE">
+        <action_inputs/>
+        <action_inputs/>
+        <action_type display_value="Look Up Records">43400a1587003300663ca1bb36cb0b4b</action_type>
+        <action_type_parent/>
+        <comment>Lookup related task definitions on this task</comment>
+        <compiled_snapshot>43400a1587003300663ca1bb36cb0b4b</compiled_snapshot>
+        <display_text/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <order>1</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:29:22</sys_created_on>
+        <sys_id>6f6d16341b65f0107e0d52c8624bcbe7</sys_id>
+        <sys_mod_count>78</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:47</sys_updated_on>
+        <ui_id>fddfb502-6315-48c0-9a71-404e5c45f6f1</ui_id>
+    </sys_hub_action_instance>
+    <sys_variable_value action="delete_multiple" query="document_key=6f6d16341b65f0107e0d52c8624bcbe7"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>6f6d16341b65f0107e0d52c8624bcbe7</document_key>
+        <order>0</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:29:22</sys_created_on>
+        <sys_id>e76d16341b65f0107e0d52c8624bcbe9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:29:22</sys_updated_on>
+        <value>sn_kpi_composer_task_definition</value>
+        <variable display_value="Table">8f400a1587003300663ca1bb36cb0b4b</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="id=6f6d16341b65f0107e0d52c8624bcbe7"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>conditions</field>
+        <id>6f6d16341b65f0107e0d52c8624bcbe7</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:29:22</sys_created_on>
+        <sys_id>a36d16341b65f0107e0d52c8624bcbe9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:29:22</sys_updated_on>
+        <table>var__m_sys_hub_action_input_43400a1587003300663ca1bb36cb0b4b</table>
+        <value>dependenciesLIKE{{subflow.task_definition_record.sys_id}}^sys_id!={{subflow.task_definition_record.sys_id}}</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>table</field>
+        <id>6f6d16341b65f0107e0d52c8624bcbe7</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:29:22</sys_created_on>
+        <sys_id>676d16341b65f0107e0d52c8624bcbe9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:29:22</sys_updated_on>
+        <table>var__m_sys_hub_action_input_43400a1587003300663ca1bb36cb0b4b</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_hub_action_instance action="INSERT_OR_UPDATE">
+        <action_inputs/>
+        <action_inputs/>
+        <action_type display_value="Update Record">f9d01dd2c31332002841b63b12d3aea1</action_type>
+        <action_type_parent/>
+        <comment/>
+        <compiled_snapshot>f9d01dd2c31332002841b63b12d3aea1</compiled_snapshot>
+        <display_text/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <order>7</order>
+        <parent_ui_id>0ae00dae-ce9e-4877-a0b8-abab96444e4c</parent_ui_id>
+        <sys_class_name>sys_hub_action_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>8cfe6a301ba5f0107e0d52c8624bcb94</sys_id>
+        <sys_mod_count>54</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>7380b77b-8498-4ac7-bd03-f697792589c2</ui_id>
+    </sys_hub_action_instance>
+    <sys_variable_value action="delete_multiple" query="document_key=8cfe6a301ba5f0107e0d52c8624bcb94"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>8cfe6a301ba5f0107e0d52c8624bcb94</document_key>
+        <order>50</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>80fe6a301ba5f0107e0d52c8624bcb97</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:45:51</sys_updated_on>
+        <value>sn_kpi_composer_task_definition</value>
+        <variable display_value="Table">b5d01916c31332002841b63b12d3aec9</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>8cfe6a301ba5f0107e0d52c8624bcb94</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>ccfe6a301ba5f0107e0d52c8624bcb96</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:29</sys_updated_on>
+        <value>waiting_on_dependencies=false</value>
+        <variable display_value="Fields">02d01916c31332002841b63b12d3aeee</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="id=8cfe6a301ba5f0107e0d52c8624bcb94"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>record</field>
+        <id>8cfe6a301ba5f0107e0d52c8624bcb94</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>88fe6a301ba5f0107e0d52c8624bcb96</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:45:51</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value>{{subflow.task_definition_record}}</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>table_name</field>
+        <id>8cfe6a301ba5f0107e0d52c8624bcb94</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>c4fe6a301ba5f0107e0d52c8624bcb96</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:45:51</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>values</field>
+        <id>8cfe6a301ba5f0107e0d52c8624bcb94</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>4cfe6a301ba5f0107e0d52c8624bcb96</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:45:51</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_hub_action_instance action="INSERT_OR_UPDATE">
+        <action_inputs/>
+        <action_inputs/>
+        <action_type display_value="Update Record">f9d01dd2c31332002841b63b12d3aea1</action_type>
+        <action_type_parent/>
+        <comment/>
+        <compiled_snapshot>f9d01dd2c31332002841b63b12d3aea1</compiled_snapshot>
+        <display_text/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <order>9</order>
+        <parent_ui_id>71a47621-8fcb-477e-bc23-766bf0f4f6c5</parent_ui_id>
+        <sys_class_name>sys_hub_action_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:30</sys_created_on>
+        <sys_id>b97b83f41be5f0107e0d52c8624bcb74</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>e73dd6f5-8373-4496-bd20-a4980382c2ca</ui_id>
+    </sys_hub_action_instance>
+    <sys_variable_value action="delete_multiple" query="document_key=b97b83f41be5f0107e0d52c8624bcb74"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>b97b83f41be5f0107e0d52c8624bcb74</document_key>
+        <order>50</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:30</sys_created_on>
+        <sys_id>bd7b83f41be5f0107e0d52c8624bcb76</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:30</sys_updated_on>
+        <value>sn_kpi_composer_task_definition</value>
+        <variable display_value="Table">b5d01916c31332002841b63b12d3aec9</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>b97b83f41be5f0107e0d52c8624bcb74</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:30</sys_created_on>
+        <sys_id>f57b83f41be5f0107e0d52c8624bcb76</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:30</sys_updated_on>
+        <value>waiting_on_dependencies=true</value>
+        <variable display_value="Fields">02d01916c31332002841b63b12d3aeee</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="id=b97b83f41be5f0107e0d52c8624bcb74"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>record</field>
+        <id>b97b83f41be5f0107e0d52c8624bcb74</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:30</sys_created_on>
+        <sys_id>b17b83f41be5f0107e0d52c8624bcb76</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:30</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value>{{subflow.task_definition_record}}</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>table_name</field>
+        <id>b97b83f41be5f0107e0d52c8624bcb74</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:30</sys_created_on>
+        <sys_id>fd7b83f41be5f0107e0d52c8624bcb75</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:30</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>values</field>
+        <id>b97b83f41be5f0107e0d52c8624bcb74</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:30</sys_created_on>
+        <sys_id>757b83f41be5f0107e0d52c8624bcb76</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:30</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_hub_sub_flow_instance action="delete_multiple" query="flow=1ca31a7c1b25f0107e0d52c8624bcb87^sys_idNOT IN31656a781b65f0107e0d52c8624bcbe8"/>
+    <sys_hub_sub_flow_instance action="INSERT_OR_UPDATE">
+        <comment/>
+        <display_text/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <inputs/>
+        <inputs/>
+        <order>12</order>
+        <parent_ui_id>36bc738d-8f31-4473-a71d-d6dda0a6d17a</parent_ui_id>
+        <subflow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</subflow>
+        <subflow_instance_inputs/>
+        <sys_class_name>sys_hub_sub_flow_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:04:12</sys_created_on>
+        <sys_id>31656a781b65f0107e0d52c8624bcbe8</sys_id>
+        <sys_mod_count>48</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>9e5c1050-3e0d-4744-a95b-a28d77d41cb3</ui_id>
+    </sys_hub_sub_flow_instance>
+    <sys_variable_value action="delete_multiple" query="document_key=31656a781b65f0107e0d52c8624bcbe8"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_sub_flow_instance</document>
+        <document_key>31656a781b65f0107e0d52c8624bcbe8</document_key>
+        <order>0</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:04:12</sys_created_on>
+        <sys_id>fd65aa781b65f0107e0d52c8624bcb0e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:04:12</sys_updated_on>
+        <value>1</value>
+        <variable display_value="Wait For Completion">79656a781b65f0107e0d52c8624bcbe9</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="id=31656a781b65f0107e0d52c8624bcbe8"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>task_definition_record</field>
+        <id>31656a781b65f0107e0d52c8624bcbe8</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:04:12</sys_created_on>
+        <sys_id>b165aa781b65f0107e0d52c8624bcb0e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:04:12</sys_updated_on>
+        <table>var__m_sys_hub_flow_input_16b4ae381b65f0107e0d52c8624bcbac</table>
+        <value>{{36bc738d-8f31-4473-a71d-d6dda0a6d17a.item}}</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_sub_flow_instance_inputs_31656a781b65f0107e0d52c8624bcbe8^id=31656a781b65f0107e0d52c8624bcbe8"/>
+    <sys_hub_sub_flow_instance_inputs action="delete_multiple" query="model=31656a781b65f0107e0d52c8624bcbe8^sys_idNOT IN79656a781b65f0107e0d52c8624bcbe9"/>
+    <sys_hub_sub_flow_instance_inputs action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,fd_hide_inline_script_widget=true,uiType=boolean,uiTypeLabel=True/False</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>wait_for_completion</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">boolean</internal_type>
+        <label>Wait For Completion</label>
+        <mandatory>false</mandatory>
+        <max_length>40</max_length>
+        <model display_value="">31656a781b65f0107e0d52c8624bcbe8</model>
+        <model_id>31656a781b65f0107e0d52c8624bcbe8</model_id>
+        <model_table>sys_hub_flow_logic_ext_input</model_table>
+        <name>var__m_sys_hub_sub_flow_instance_inputs_31656a781b65f0107e0d52c8624bcbe8</name>
+        <next_element/>
+        <order>0</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_sub_flow_instance_inputs</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:04:12</sys_created_on>
+        <sys_id>79656a781b65f0107e0d52c8624bcbe9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package/>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:04:12</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_sub_flow_instance_inputs>
+    <sys_hub_flow_logic action="delete_multiple" query="flow=1ca31a7c1b25f0107e0d52c8624bcb87^sys_idNOT IN0bde92741b65f0107e0d52c8624bcba1,33ee6a301ba5f0107e0d52c8624bcb8a,33ee6a301ba5f0107e0d52c8624bcb8e,84ef8bf81be5f0107e0d52c8624bcbda,8bde92741b65f0107e0d52c8624bcba4,9334a6381b65f0107e0d52c8624bcbfb,9334a6381b65f0107e0d52c8624bcbfe,cfde92741b65f0107e0d52c8624bcb9e"/>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">47de92741b65f0107e0d52c8624bcba1</block>
+        <comment>Check one of the tasks that this task depence on, is not ok -&gt; if not set status to wait</comment>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="For Each">098e1dc5c3e232002841b63b12d3ae33</logic_definition>
+        <order>3</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:35:37</sys_created_on>
+        <sys_id>0bde92741b65f0107e0d52c8624bcba1</sys_id>
+        <sys_mod_count>32</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>34604f54-7f2a-4d91-b558-fbe57ce7d86b</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=0bde92741b65f0107e0d52c8624bcba1"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_1ca31a7c1b25f0107e0d52c8624bcb87^id=0bde92741b65f0107e0d52c8624bcba1"/>
+    <sys_element_mapping action="delete_multiple" query="id=0bde92741b65f0107e0d52c8624bcba1"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>items</field>
+        <id>0bde92741b65f0107e0d52c8624bcba1</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:35:37</sys_created_on>
+        <sys_id>83de92741b65f0107e0d52c8624bcba4</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:44:55</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_098e1dc5c3e232002841b63b12d3ae33</table>
+        <value>{{subflow.task_definition_record.dependencies}}</value>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">7bee6a301ba5f0107e0d52c8624bcb89</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <flow_variable/>
+        <flow_variables_assigned>has_incomplete_dependencies</flow_variables_assigned>
+        <inputs/>
+        <logic_definition display_value="Set Flow Variables">4f787d1e0f9b0010ecf0cc52ff767ea0</logic_definition>
+        <order>5</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id>117ba539-4a71-4119-bcc2-28f6f5be3c16</parent_ui_id>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>33ee6a301ba5f0107e0d52c8624bcb8a</sys_id>
+        <sys_mod_count>22</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>684fe5aa-6e87-401a-8264-3ba946ae1d3d</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=33ee6a301ba5f0107e0d52c8624bcb8a"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_flow_logic</document>
+        <document_key>33ee6a301ba5f0107e0d52c8624bcb8a</document_key>
+        <order>0</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>f3ee6a301ba5f0107e0d52c8624bcb8d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:45:51</sys_updated_on>
+        <value>1</value>
+        <variable display_value="Has incomplete dependencies">29ed9a341b65f0107e0d52c8624bcb21</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_1ca31a7c1b25f0107e0d52c8624bcb87^id=33ee6a301ba5f0107e0d52c8624bcb8a"/>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">7fee6a301ba5f0107e0d52c8624bcb8d</block>
+        <comment>No dependencies found, check if task def record should be updated</comment>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="If">af4e1945c3e232002841b63b12d3ae3e</logic_definition>
+        <order>6</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>33ee6a301ba5f0107e0d52c8624bcb8e</sys_id>
+        <sys_mod_count>23</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>0ae00dae-ce9e-4877-a0b8-abab96444e4c</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=33ee6a301ba5f0107e0d52c8624bcb8e"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_1ca31a7c1b25f0107e0d52c8624bcb87^id=33ee6a301ba5f0107e0d52c8624bcb8e"/>
+    <sys_element_mapping action="delete_multiple" query="id=33ee6a301ba5f0107e0d52c8624bcb8e"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition</field>
+        <id>33ee6a301ba5f0107e0d52c8624bcb8e</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:45:51</sys_created_on>
+        <sys_id>bfee6a301ba5f0107e0d52c8624bcb90</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:29</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value>{{flow_variable.has_incomplete_dependencies}}=false^{{subflow.task_definition_record.waiting_on_dependencies}}=true</value>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">0cef8bf81be5f0107e0d52c8624bcbd9</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="If">af4e1945c3e232002841b63b12d3ae3e</logic_definition>
+        <order>8</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 12:09:46</sys_created_on>
+        <sys_id>84ef8bf81be5f0107e0d52c8624bcbda</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>71a47621-8fcb-477e-bc23-766bf0f4f6c5</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=84ef8bf81be5f0107e0d52c8624bcbda"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_1ca31a7c1b25f0107e0d52c8624bcb87^id=84ef8bf81be5f0107e0d52c8624bcbda"/>
+    <sys_element_mapping action="delete_multiple" query="id=84ef8bf81be5f0107e0d52c8624bcbda"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition</field>
+        <id>84ef8bf81be5f0107e0d52c8624bcbda</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 12:09:46</sys_created_on>
+        <sys_id>00ef8bf81be5f0107e0d52c8624bcbdd</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:09:46</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value>{{flow_variable.has_incomplete_dependencies}}=true^{{subflow.task_definition_record.waiting_on_dependencies}}=false</value>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">c7de92741b65f0107e0d52c8624bcba4</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="If">af4e1945c3e232002841b63b12d3ae3e</logic_definition>
+        <order>4</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id>34604f54-7f2a-4d91-b558-fbe57ce7d86b</parent_ui_id>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:35:37</sys_created_on>
+        <sys_id>8bde92741b65f0107e0d52c8624bcba4</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>117ba539-4a71-4119-bcc2-28f6f5be3c16</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=8bde92741b65f0107e0d52c8624bcba4"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_flow_logic</document>
+        <document_key>8bde92741b65f0107e0d52c8624bcba4</document_key>
+        <order>10</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:35:37</sys_created_on>
+        <sys_id>4fde92741b65f0107e0d52c8624bcba7</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:35:37</sys_updated_on>
+        <value>Status not OK</value>
+        <variable display_value="Condition Label">f0af19c1c32632002841b63b12d3aea3</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_1ca31a7c1b25f0107e0d52c8624bcb87^id=8bde92741b65f0107e0d52c8624bcba4"/>
+    <sys_element_mapping action="delete_multiple" query="id=8bde92741b65f0107e0d52c8624bcba4"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition</field>
+        <id>8bde92741b65f0107e0d52c8624bcba4</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:35:37</sys_created_on>
+        <sys_id>cbde92741b65f0107e0d52c8624bcba7</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:56:06</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value>{{34604f54-7f2a-4d91-b558-fbe57ce7d86b.item.status}}!=0^{{subflow.task_definition_record.status}}=3^NQ{{34604f54-7f2a-4d91-b558-fbe57ce7d86b.item.status}}=1</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition_name</field>
+        <id>8bde92741b65f0107e0d52c8624bcba4</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:35:37</sys_created_on>
+        <sys_id>0bde92741b65f0107e0d52c8624bcba7</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:35:37</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">df34a6381b65f0107e0d52c8624bcbfa</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="If">af4e1945c3e232002841b63b12d3ae3e</logic_definition>
+        <order>10</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:59:07</sys_created_on>
+        <sys_id>9334a6381b65f0107e0d52c8624bcbfb</sys_id>
+        <sys_mod_count>31</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>c98192e4-0717-42c7-b6aa-e47bfbce5ca2</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=9334a6381b65f0107e0d52c8624bcbfb"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_1ca31a7c1b25f0107e0d52c8624bcb87^id=9334a6381b65f0107e0d52c8624bcbfb"/>
+    <sys_element_mapping action="delete_multiple" query="id=9334a6381b65f0107e0d52c8624bcbfb"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition</field>
+        <id>9334a6381b65f0107e0d52c8624bcbfb</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:59:07</sys_created_on>
+        <sys_id>1f34a6381b65f0107e0d52c8624bcbfd</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:59:07</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value>{{subflow.task_definition_record.status}}=0</value>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">df34a6381b65f0107e0d52c8624bcbfd</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="For Each">098e1dc5c3e232002841b63b12d3ae33</logic_definition>
+        <order>11</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id>c98192e4-0717-42c7-b6aa-e47bfbce5ca2</parent_ui_id>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:59:07</sys_created_on>
+        <sys_id>9334a6381b65f0107e0d52c8624bcbfe</sys_id>
+        <sys_mod_count>31</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>36bc738d-8f31-4473-a71d-d6dda0a6d17a</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=9334a6381b65f0107e0d52c8624bcbfe"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_1ca31a7c1b25f0107e0d52c8624bcb87^id=9334a6381b65f0107e0d52c8624bcbfe"/>
+    <sys_element_mapping action="delete_multiple" query="id=9334a6381b65f0107e0d52c8624bcbfe"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>items</field>
+        <id>9334a6381b65f0107e0d52c8624bcbfe</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:59:07</sys_created_on>
+        <sys_id>1b34e6381b65f0107e0d52c8624bcb00</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:59:07</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_098e1dc5c3e232002841b63b12d3ae33</table>
+        <value>{{fddfb502-6315-48c0-9a71-404e5c45f6f1.Records}}</value>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">0fde92741b65f0107e0d52c8624bcb9e</block>
+        <comment>Set incomplete dep to false</comment>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</flow>
+        <flow_variable/>
+        <flow_variables_assigned>has_incomplete_dependencies</flow_variables_assigned>
+        <inputs/>
+        <logic_definition display_value="Set Flow Variables">4f787d1e0f9b0010ecf0cc52ff767ea0</logic_definition>
+        <order>2</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:35:37</sys_created_on>
+        <sys_id>cfde92741b65f0107e0d52c8624bcb9e</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 08:21:48</sys_updated_on>
+        <ui_id>de148f9c-dc7b-43d0-8e42-0526b7783d36</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=cfde92741b65f0107e0d52c8624bcb9e"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_1ca31a7c1b25f0107e0d52c8624bcb87^id=cfde92741b65f0107e0d52c8624bcb9e"/>
+    <sys_hub_flow_variable action="delete_multiple" query="model=1ca31a7c1b25f0107e0d52c8624bcb87^sys_idNOT IN29ed9a341b65f0107e0d52c8624bcb21"/>
+    <sys_hub_flow_variable action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,uiType=boolean,uiTypeLabel=True/False,uiUniqueId=5928fa03-92cb-46a1-b2b1-fc9c892d1dd5</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value>false</default_value>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>has_incomplete_dependencies</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">boolean</internal_type>
+        <label>Has incomplete dependencies</label>
+        <mandatory>false</mandatory>
+        <max_length>40</max_length>
+        <model display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</model>
+        <model_id>1ca31a7c1b25f0107e0d52c8624bcb87</model_id>
+        <model_table>sys_hub_flow</model_table>
+        <name>var__m_sys_hub_flow_variable_1ca31a7c1b25f0107e0d52c8624bcb87</name>
+        <next_element/>
+        <order>0</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_flow_variable</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:31:25</sys_created_on>
+        <sys_id>29ed9a341b65f0107e0d52c8624bcb21</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>Has incomplete dependencies</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_hub_flow_variable_29ed9a341b65f0107e0d52c8624bcb21</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-23 07:32:28</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_flow_variable>
+    <sys_documentation action="delete_multiple" query="name=var__m_sys_hub_flow_input_1ca31a7c1b25f0107e0d52c8624bcb87^sys_idNOT IN2b6d16341b65f0107e0d52c8624bcbde"/>
+    <sys_documentation action="INSERT_OR_UPDATE">
+        <element>task_definition_record</element>
+        <help/>
+        <hint/>
+        <label>Task Definition Record</label>
+        <language>en</language>
+        <name>var__m_sys_hub_flow_input_1ca31a7c1b25f0107e0d52c8624bcb87</name>
+        <plural/>
+        <sys_class_name>sys_documentation</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 08:29:22</sys_created_on>
+        <sys_id>2b6d16341b65f0107e0d52c8624bcbde</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Task Definition Record</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_documentation_var__m_sys_hub_flow_input_1ca31a7c1b25f0107e0d52c8624bcb87_task_definition_record_en</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 08:29:22</sys_updated_on>
+        <url/>
+        <url_target/>
+    </sys_documentation>
+    <sys_flow_subflow_plan action="delete_multiple" query="plan_id=1ca31a7c1b25f0107e0d52c8624bcb87^sys_idNOT IN3eb4ee381b65f0107e0d52c8624bcb31"/>
+    <sys_flow_subflow_plan action="INSERT_OR_UPDATE">
+        <plan>{"persistor":{"@class":".ChunkingPlanPersistor","table":"sys_flow_subflow_plan","id":"3eb4ee381b65f0107e0d52c8624bcb31","name":"plan"}}</plan>
+        <plan_id display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</plan_id>
+        <snapshot>5e10573c1be5f0107e0d52c8624bcb21</snapshot>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:16</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>3eb4ee381b65f0107e0d52c8624bcb31</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_overrides/>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:07</sys_updated_on>
+    </sys_flow_subflow_plan>
+    <sys_hub_flow_snapshot action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <acls/>
+        <active>true</active>
+        <annotation/>
+        <callable_by_client_api>false</callable_by_client_api>
+        <category/>
+        <copied_from/>
+        <copied_from_name/>
+        <description/>
+        <internal_name>kpi_composer_task_definition</internal_name>
+        <label_cache>[{"name":"e73dd6f5-8373-4496-bd20-a4980382c2ca.table_name","label":"9➛Task Definition Table","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"table_name","base_type":"table_name","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"e73dd6f5-8373-4496-bd20-a4980382c2ca.record","label":"9➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"reference","base_type":"reference","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"subflow.task_definition_record.waiting_on_dependencies","label":"Input➛Task Definition Record➛Waiting on dependencies","reference":"","reference_display":"Waiting on dependencies","type":"boolean","base_type":"boolean","parent_table_name":"sn_kpi_composer_task_definition","column_name":"waiting_on_dependencies"},{"name":"9e5c1050-3e0d-4744-a95b-a28d77d41cb3.context","label":"12➛Context","reference":"sys_flow_context","reference_display":"Flow engine context","type":"reference","base_type":"reference","attributes":{}},{"name":"36bc738d-8f31-4473-a71d-d6dda0a6d17a.item","label":"11➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"reference","base_type":"reference","attributes":{"pills_draggable_inside_block":"true","pills_draggable_outside_block":"false"}},{"name":"subflow.task_definition_record.dependencies","label":"Input➛Task Definition Record➛Dependencies","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"glide_list","base_type":"glide_list","parent_table_name":"sn_kpi_composer_task_definition","column_name":"dependencies"},{"name":"subflow.task_definition_record","label":"Input➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"reference","base_type":"reference","column_name":"","attributes":{"uiType":"reference","uiTypeLabel":"Reference","element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper","uiUniqueId":"cab5de21-a254-4ac5-b4fc-3c781b9d2647","sourceUiUniqueId":"","sourceType":"","sourceId":""}},{"name":"ae9847be-df77-4458-91a4-c79d3ab35b88.table_name","label":"6➛Task Definition Table","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"table_name","base_type":"table_name","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"ae9847be-df77-4458-91a4-c79d3ab35b88.record","label":"6➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"reference","base_type":"reference","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"34604f54-7f2a-4d91-b558-fbe57ce7d86b.item","label":"3➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"reference","base_type":"reference","attributes":{"pills_draggable_inside_block":"true","pills_draggable_outside_block":"false"}},{"name":"subflow.task_definition_record.status","label":"Input➛Task Definition Record➛Status","reference":"","reference_display":"Status","type":"choice","base_type":"choice","parent_table_name":"sn_kpi_composer_task_definition","column_name":"status"},{"name":"34604f54-7f2a-4d91-b558-fbe57ce7d86b.item.status","label":"3➛Task Definition Record➛Status","reference":"","reference_display":"Status","type":"choice","base_type":"choice","parent_table_name":"sn_kpi_composer_task_definition","column_name":"status"},{"name":"subflow.task_definition_record.sys_id","label":"Input➛Task Definition Record➛Sys ID","reference":"","reference_display":"Sys ID","type":"GUID","base_type":"GUID","parent_table_name":"sn_kpi_composer_task_definition","column_name":"sys_id"},{"name":"fddfb502-6315-48c0-9a71-404e5c45f6f1.Count","label":"1➛Count","reference_display":"Count","type":"integer","base_type":"integer","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"fddfb502-6315-48c0-9a71-404e5c45f6f1.Table","label":"1➛Task Definition Table","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"table_name","base_type":"table_name","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"fddfb502-6315-48c0-9a71-404e5c45f6f1.Records","label":"1➛Task Definition Records","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"records","base_type":"records","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"flow_variable.has_incomplete_dependencies","label":"Flow Variables➛Has incomplete dependencies","reference":"","reference_display":"","type":"boolean","base_type":"boolean","column_name":"","attributes":{"uiType":"boolean","uiTypeLabel":"True/False","element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper","uiUniqueId":"5928fa03-92cb-46a1-b2b1-fc9c892d1dd5"}},{"name":"subflow.task_definition_record.definition_record","label":"Input➛Task Definition Record➛Definition Record","reference":"","reference_display":"Definition Record","type":"document_id","base_type":"document_id","parent_table_name":"sn_kpi_composer_task_definition","column_name":"definition_record"},{"name":"7380b77b-8498-4ac7-bd03-f697792589c2.record","label":"7➛Task Definition Record","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"reference","base_type":"reference","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}},{"name":"7380b77b-8498-4ac7-bd03-f697792589c2.table_name","label":"7➛Task Definition Table","reference":"sn_kpi_composer_task_definition","reference_display":"Task Definition","type":"table_name","base_type":"table_name","attributes":{"element_mapping_provider":"com.glide.flow_design.action.data.FlowDesignVariableMapper"}}]</label_cache>
+        <master>true</master>
+        <name>KPI Composer Task Definition</name>
+        <natlang/>
+        <outputs/>
+        <parent_flow display_value="OLD - KPI Composer Task Definition (backup)">1ca31a7c1b25f0107e0d52c8624bcb87</parent_flow>
+        <remote_trigger_id/>
+        <run_as>user</run_as>
+        <run_with_roles/>
+        <sc_callable>false</sc_callable>
+        <status>published</status>
+        <sys_class_name>sys_hub_flow_snapshot</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:14</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>16b4ae381b65f0107e0d52c8624bcbac</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name/>
+        <sys_overrides/>
+        <sys_package/>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <type>subflow</type>
+    </sys_hub_flow_snapshot>
+    <sys_translated_text action="delete_multiple" query="documentkey=16b4ae381b65f0107e0d52c8624bcbac"/>
+    <sys_variable_value action="delete_multiple" query="document_key=16b4ae381b65f0107e0d52c8624bcbac"/>
+    <sys_flow_cat_variable_model action="delete_multiple" query="id=16b4ae381b65f0107e0d52c8624bcbac^sys_idNOT IN9eb4ae381b65f0107e0d52c8624bcbac"/>
+    <sys_flow_cat_variable_model action="INSERT_OR_UPDATE">
+        <id>16b4ae381b65f0107e0d52c8624bcbac</id>
+        <name>KPI Composer Task Definition</name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:14</sys_created_on>
+        <sys_id>9eb4ae381b65f0107e0d52c8624bcbac</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:14</sys_updated_on>
+    </sys_flow_cat_variable_model>
+    <sys_hub_flow_input action="delete_multiple" query="model=16b4ae381b65f0107e0d52c8624bcbac^sys_idNOT IN16b4ae381b65f0107e0d52c8624bcbae"/>
+    <sys_hub_flow_input action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,uiType=reference,uiTypeLabel=Reference,uiUniqueId=cab5de21-a254-4ac5-b4fc-3c781b9d2647</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table>sn_kpi_composer_task_definition</choice_table>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>task_definition_record</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="Reference">reference</internal_type>
+        <label>Task Definition Record</label>
+        <mandatory>true</mandatory>
+        <max_length>32</max_length>
+        <model display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</model>
+        <model_id>16b4ae381b65f0107e0d52c8624bcbac</model_id>
+        <model_table>sys_hub_flow_snapshot</model_table>
+        <name>var__m_sys_hub_flow_input_16b4ae381b65f0107e0d52c8624bcbac</name>
+        <next_element/>
+        <order>1</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference display_value="" name="sn_kpi_composer_task_definition">sn_kpi_composer_task_definition</reference>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_flow_input</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:14</sys_created_on>
+        <sys_id>16b4ae381b65f0107e0d52c8624bcbae</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package/>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:14</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_flow_input>
+    <sys_hub_action_instance action="delete_multiple" query="flow=16b4ae381b65f0107e0d52c8624bcbac^sys_idNOT IN04e3bab41ba5f0107e0d52c8624bcbd8,26b4ae381b65f0107e0d52c8624bcbfe,4e8b87f41be5f0107e0d52c8624bcb62"/>
+    <sys_hub_action_instance action="INSERT_OR_UPDATE">
+        <action_inputs/>
+        <action_inputs/>
+        <action_type display_value="Update Record">f9d01dd2c31332002841b63b12d3aea1</action_type>
+        <action_type_parent display_value="Update Record">baf174c8c3c232002841b63b12d3aee4</action_type_parent>
+        <comment/>
+        <compiled_snapshot>f9d01dd2c31332002841b63b12d3aea1</compiled_snapshot>
+        <display_text/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <order>7</order>
+        <parent_ui_id>0ae00dae-ce9e-4877-a0b8-abab96444e4c</parent_ui_id>
+        <sys_class_name>sys_hub_action_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:26</sys_created_on>
+        <sys_id>04e3bab41ba5f0107e0d52c8624bcbd8</sys_id>
+        <sys_mod_count>24</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>7380b77b-8498-4ac7-bd03-f697792589c2</ui_id>
+    </sys_hub_action_instance>
+    <sys_variable_value action="delete_multiple" query="document_key=04e3bab41ba5f0107e0d52c8624bcbd8"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>04e3bab41ba5f0107e0d52c8624bcbd8</document_key>
+        <order>50</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:26</sys_created_on>
+        <sys_id>04e3bab41ba5f0107e0d52c8624bcbda</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 10:07:26</sys_updated_on>
+        <value>sn_kpi_composer_task_definition</value>
+        <variable display_value="Table">b5d01916c31332002841b63b12d3aec9</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>04e3bab41ba5f0107e0d52c8624bcbd8</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:26</sys_created_on>
+        <sys_id>40e3bab41ba5f0107e0d52c8624bcbda</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:48</sys_updated_on>
+        <value>waiting_on_dependencies=false</value>
+        <variable display_value="Fields">02d01916c31332002841b63b12d3aeee</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="id=04e3bab41ba5f0107e0d52c8624bcbd8"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>record</field>
+        <id>04e3bab41ba5f0107e0d52c8624bcbd8</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:26</sys_created_on>
+        <sys_id>0ce3bab41ba5f0107e0d52c8624bcbd9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 10:07:26</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value>{{subflow.task_definition_record}}</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>table_name</field>
+        <id>04e3bab41ba5f0107e0d52c8624bcbd8</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:26</sys_created_on>
+        <sys_id>48e3bab41ba5f0107e0d52c8624bcbd9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 10:07:26</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>values</field>
+        <id>04e3bab41ba5f0107e0d52c8624bcbd8</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:26</sys_created_on>
+        <sys_id>cce3bab41ba5f0107e0d52c8624bcbd9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 10:07:26</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_hub_action_instance action="INSERT_OR_UPDATE">
+        <action_inputs/>
+        <action_inputs/>
+        <action_type display_value="Look Up Records">43400a1587003300663ca1bb36cb0b4b</action_type>
+        <action_type_parent display_value="Look Up Records">d1c56ec50b30030085c083eb37673a50</action_type_parent>
+        <comment>Lookup related task definitions on this task</comment>
+        <compiled_snapshot>43400a1587003300663ca1bb36cb0b4b</compiled_snapshot>
+        <display_text/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <order>1</order>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_action_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>26b4ae381b65f0107e0d52c8624bcbfe</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>fddfb502-6315-48c0-9a71-404e5c45f6f1</ui_id>
+    </sys_hub_action_instance>
+    <sys_variable_value action="delete_multiple" query="document_key=26b4ae381b65f0107e0d52c8624bcbfe"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>26b4ae381b65f0107e0d52c8624bcbfe</document_key>
+        <order>0</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>a2b4ee381b65f0107e0d52c8624bcb00</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:15</sys_updated_on>
+        <value>sn_kpi_composer_task_definition</value>
+        <variable display_value="Table">8f400a1587003300663ca1bb36cb0b4b</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="id=26b4ae381b65f0107e0d52c8624bcbfe"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>conditions</field>
+        <id>26b4ae381b65f0107e0d52c8624bcbfe</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>6eb4ae381b65f0107e0d52c8624bcbff</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:15</sys_updated_on>
+        <table>var__m_sys_hub_action_input_43400a1587003300663ca1bb36cb0b4b</table>
+        <value>dependenciesLIKE{{subflow.task_definition_record.sys_id}}^sys_id!={{subflow.task_definition_record.sys_id}}</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>table</field>
+        <id>26b4ae381b65f0107e0d52c8624bcbfe</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>22b4ee381b65f0107e0d52c8624bcb00</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:15</sys_updated_on>
+        <table>var__m_sys_hub_action_input_43400a1587003300663ca1bb36cb0b4b</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_hub_action_instance action="INSERT_OR_UPDATE">
+        <action_inputs/>
+        <action_inputs/>
+        <action_type display_value="Update Record">f9d01dd2c31332002841b63b12d3aea1</action_type>
+        <action_type_parent display_value="Update Record">baf174c8c3c232002841b63b12d3aee4</action_type_parent>
+        <comment/>
+        <compiled_snapshot>f9d01dd2c31332002841b63b12d3aea1</compiled_snapshot>
+        <display_text/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <order>9</order>
+        <parent_ui_id>71a47621-8fcb-477e-bc23-766bf0f4f6c5</parent_ui_id>
+        <sys_class_name>sys_hub_action_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:48</sys_created_on>
+        <sys_id>4e8b87f41be5f0107e0d52c8624bcb62</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>e73dd6f5-8373-4496-bd20-a4980382c2ca</ui_id>
+    </sys_hub_action_instance>
+    <sys_variable_value action="delete_multiple" query="document_key=4e8b87f41be5f0107e0d52c8624bcb62"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>4e8b87f41be5f0107e0d52c8624bcb62</document_key>
+        <order>50</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:48</sys_created_on>
+        <sys_id>4a8b87f41be5f0107e0d52c8624bcb64</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:48</sys_updated_on>
+        <value>sn_kpi_composer_task_definition</value>
+        <variable display_value="Table">b5d01916c31332002841b63b12d3aec9</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_action_instance</document>
+        <document_key>4e8b87f41be5f0107e0d52c8624bcb62</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:48</sys_created_on>
+        <sys_id>868b87f41be5f0107e0d52c8624bcb64</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:48</sys_updated_on>
+        <value>waiting_on_dependencies=true</value>
+        <variable display_value="Fields">02d01916c31332002841b63b12d3aeee</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="id=4e8b87f41be5f0107e0d52c8624bcb62"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>record</field>
+        <id>4e8b87f41be5f0107e0d52c8624bcb62</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:48</sys_created_on>
+        <sys_id>428b87f41be5f0107e0d52c8624bcb64</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:48</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value>{{subflow.task_definition_record}}</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>table_name</field>
+        <id>4e8b87f41be5f0107e0d52c8624bcb62</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:48</sys_created_on>
+        <sys_id>8e8b87f41be5f0107e0d52c8624bcb63</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:48</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>values</field>
+        <id>4e8b87f41be5f0107e0d52c8624bcb62</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 11:50:48</sys_created_on>
+        <sys_id>068b87f41be5f0107e0d52c8624bcb64</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:48</sys_updated_on>
+        <table>var__m_sys_hub_action_input_f9d01dd2c31332002841b63b12d3aea1</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_hub_sub_flow_instance action="delete_multiple" query="flow=16b4ae381b65f0107e0d52c8624bcbac^sys_idNOT IN8ec76ef81b65f0107e0d52c8624bcbea"/>
+    <sys_hub_sub_flow_instance action="INSERT_OR_UPDATE">
+        <comment/>
+        <display_text/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <inputs/>
+        <inputs/>
+        <order>12</order>
+        <parent_ui_id>36bc738d-8f31-4473-a71d-d6dda0a6d17a</parent_ui_id>
+        <subflow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</subflow>
+        <subflow_instance_inputs/>
+        <sys_class_name>sys_hub_sub_flow_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:14:36</sys_created_on>
+        <sys_id>8ec76ef81b65f0107e0d52c8624bcbea</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>9e5c1050-3e0d-4744-a95b-a28d77d41cb3</ui_id>
+    </sys_hub_sub_flow_instance>
+    <sys_variable_value action="delete_multiple" query="document_key=8ec76ef81b65f0107e0d52c8624bcbea"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_sub_flow_instance</document>
+        <document_key>8ec76ef81b65f0107e0d52c8624bcbea</document_key>
+        <order>0</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:14:36</sys_created_on>
+        <sys_id>46c76ef81b65f0107e0d52c8624bcbfa</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:14:36</sys_updated_on>
+        <value>1</value>
+        <variable display_value="Wait For Completion">4ac76ef81b65f0107e0d52c8624bcbeb</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="id=8ec76ef81b65f0107e0d52c8624bcbea"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>task_definition_record</field>
+        <id>8ec76ef81b65f0107e0d52c8624bcbea</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:14:36</sys_created_on>
+        <sys_id>8ac76ef81b65f0107e0d52c8624bcbf9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:14:36</sys_updated_on>
+        <table>var__m_sys_hub_flow_input_16b4ae381b65f0107e0d52c8624bcbac</table>
+        <value>{{36bc738d-8f31-4473-a71d-d6dda0a6d17a.item}}</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_sub_flow_instance_inputs_8ec76ef81b65f0107e0d52c8624bcbea^id=8ec76ef81b65f0107e0d52c8624bcbea"/>
+    <sys_hub_sub_flow_instance_inputs action="delete_multiple" query="model=8ec76ef81b65f0107e0d52c8624bcbea^sys_idNOT IN4ac76ef81b65f0107e0d52c8624bcbeb"/>
+    <sys_hub_sub_flow_instance_inputs action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,fd_hide_inline_script_widget=true,uiType=boolean,uiTypeLabel=True/False</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>wait_for_completion</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">boolean</internal_type>
+        <label>Wait For Completion</label>
+        <mandatory>false</mandatory>
+        <max_length>40</max_length>
+        <model display_value="">8ec76ef81b65f0107e0d52c8624bcbea</model>
+        <model_id>8ec76ef81b65f0107e0d52c8624bcbea</model_id>
+        <model_table>sys_hub_flow_logic_ext_input</model_table>
+        <name>var__m_sys_hub_sub_flow_instance_inputs_8ec76ef81b65f0107e0d52c8624bcbea</name>
+        <next_element/>
+        <order>0</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_sub_flow_instance_inputs</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:14:36</sys_created_on>
+        <sys_id>4ac76ef81b65f0107e0d52c8624bcbeb</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package/>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:14:36</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_sub_flow_instance_inputs>
+    <sys_hub_flow_logic action="delete_multiple" query="flow=16b4ae381b65f0107e0d52c8624bcbac^sys_idNOT IN44e3fab41ba5f0107e0d52c8624bcb04,62b4ae381b65f0107e0d52c8624bcbe7,a2b4ae381b65f0107e0d52c8624bcbea,aeb4ae381b65f0107e0d52c8624bcbf0,c8ff8ff81be5f0107e0d52c8624bcbfb,d0e3fab41ba5f0107e0d52c8624bcb14,e2b4ae381b65f0107e0d52c8624bcbed,eeb4ae381b65f0107e0d52c8624bcbf3"/>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">7bee6a301ba5f0107e0d52c8624bcb89</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <flow_variable/>
+        <flow_variables_assigned>has_incomplete_dependencies</flow_variables_assigned>
+        <inputs/>
+        <logic_definition display_value="Set Flow Variables">4f787d1e0f9b0010ecf0cc52ff767ea0</logic_definition>
+        <order>5</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id>117ba539-4a71-4119-bcc2-28f6f5be3c16</parent_ui_id>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:26</sys_created_on>
+        <sys_id>44e3fab41ba5f0107e0d52c8624bcb04</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>684fe5aa-6e87-401a-8264-3ba946ae1d3d</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=44e3fab41ba5f0107e0d52c8624bcb04"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_flow_logic</document>
+        <document_key>44e3fab41ba5f0107e0d52c8624bcb04</document_key>
+        <order>0</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:26</sys_created_on>
+        <sys_id>48e3fab41ba5f0107e0d52c8624bcb13</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 10:07:26</sys_updated_on>
+        <value>1</value>
+        <variable display_value="Has incomplete dependencies">6eb4ae381b65f0107e0d52c8624bcbe0</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_16b4ae381b65f0107e0d52c8624bcbac^id=44e3fab41ba5f0107e0d52c8624bcb04"/>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">0fde92741b65f0107e0d52c8624bcb9e</block>
+        <comment>Set incomplete dep to false</comment>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <flow_variable/>
+        <flow_variables_assigned>has_incomplete_dependencies</flow_variables_assigned>
+        <inputs/>
+        <logic_definition display_value="Set Flow Variables">4f787d1e0f9b0010ecf0cc52ff767ea0</logic_definition>
+        <order>2</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>62b4ae381b65f0107e0d52c8624bcbe7</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>de148f9c-dc7b-43d0-8e42-0526b7783d36</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=62b4ae381b65f0107e0d52c8624bcbe7"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_16b4ae381b65f0107e0d52c8624bcbac^id=62b4ae381b65f0107e0d52c8624bcbe7"/>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">47de92741b65f0107e0d52c8624bcba1</block>
+        <comment>Check one of the tasks that this task depence on, is not ok -&gt; if not set status to wait</comment>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="For Each">098e1dc5c3e232002841b63b12d3ae33</logic_definition>
+        <order>3</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>a2b4ae381b65f0107e0d52c8624bcbea</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>34604f54-7f2a-4d91-b558-fbe57ce7d86b</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=a2b4ae381b65f0107e0d52c8624bcbea"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_16b4ae381b65f0107e0d52c8624bcbac^id=a2b4ae381b65f0107e0d52c8624bcbea"/>
+    <sys_element_mapping action="delete_multiple" query="id=a2b4ae381b65f0107e0d52c8624bcbea"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>items</field>
+        <id>a2b4ae381b65f0107e0d52c8624bcbea</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>2eb4ae381b65f0107e0d52c8624bcbec</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:15</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_098e1dc5c3e232002841b63b12d3ae33</table>
+        <value>{{subflow.task_definition_record.dependencies}}</value>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">df34a6381b65f0107e0d52c8624bcbfa</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="If">af4e1945c3e232002841b63b12d3ae3e</logic_definition>
+        <order>10</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>aeb4ae381b65f0107e0d52c8624bcbf0</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>c98192e4-0717-42c7-b6aa-e47bfbce5ca2</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=aeb4ae381b65f0107e0d52c8624bcbf0"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_16b4ae381b65f0107e0d52c8624bcbac^id=aeb4ae381b65f0107e0d52c8624bcbf0"/>
+    <sys_element_mapping action="delete_multiple" query="id=aeb4ae381b65f0107e0d52c8624bcbf0"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition</field>
+        <id>aeb4ae381b65f0107e0d52c8624bcbf0</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>2ab4ae381b65f0107e0d52c8624bcbf3</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:15</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value>{{subflow.task_definition_record.status}}=0</value>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">0cef8bf81be5f0107e0d52c8624bcbd9</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="If">af4e1945c3e232002841b63b12d3ae3e</logic_definition>
+        <order>8</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 12:10:02</sys_created_on>
+        <sys_id>c8ff8ff81be5f0107e0d52c8624bcbfb</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>71a47621-8fcb-477e-bc23-766bf0f4f6c5</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=c8ff8ff81be5f0107e0d52c8624bcbfb"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_16b4ae381b65f0107e0d52c8624bcbac^id=c8ff8ff81be5f0107e0d52c8624bcbfb"/>
+    <sys_element_mapping action="delete_multiple" query="id=c8ff8ff81be5f0107e0d52c8624bcbfb"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition</field>
+        <id>c8ff8ff81be5f0107e0d52c8624bcbfb</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 12:10:03</sys_created_on>
+        <sys_id>44ff8ff81be5f0107e0d52c8624bcbfe</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:03</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value>{{flow_variable.has_incomplete_dependencies}}=true^{{subflow.task_definition_record.waiting_on_dependencies}}=false</value>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">7fee6a301ba5f0107e0d52c8624bcb8d</block>
+        <comment>No dependencies found, check if task def record should be updated</comment>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="If">af4e1945c3e232002841b63b12d3ae3e</logic_definition>
+        <order>6</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id/>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:26</sys_created_on>
+        <sys_id>d0e3fab41ba5f0107e0d52c8624bcb14</sys_id>
+        <sys_mod_count>15</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>0ae00dae-ce9e-4877-a0b8-abab96444e4c</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=d0e3fab41ba5f0107e0d52c8624bcb14"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_16b4ae381b65f0107e0d52c8624bcbac^id=d0e3fab41ba5f0107e0d52c8624bcb14"/>
+    <sys_element_mapping action="delete_multiple" query="id=d0e3fab41ba5f0107e0d52c8624bcb14"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition</field>
+        <id>d0e3fab41ba5f0107e0d52c8624bcb14</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 10:07:27</sys_created_on>
+        <sys_id>50e3fab41ba5f0107e0d52c8624bcb17</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:50:48</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value>{{flow_variable.has_incomplete_dependencies}}=false^{{subflow.task_definition_record.waiting_on_dependencies}}=true</value>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">c7de92741b65f0107e0d52c8624bcba4</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="If">af4e1945c3e232002841b63b12d3ae3e</logic_definition>
+        <order>4</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id>34604f54-7f2a-4d91-b558-fbe57ce7d86b</parent_ui_id>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>e2b4ae381b65f0107e0d52c8624bcbed</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>117ba539-4a71-4119-bcc2-28f6f5be3c16</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=e2b4ae381b65f0107e0d52c8624bcbed"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>sys_hub_flow_logic</document>
+        <document_key>e2b4ae381b65f0107e0d52c8624bcbed</document_key>
+        <order>10</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>a6b4ae381b65f0107e0d52c8624bcbf0</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:15</sys_updated_on>
+        <value>Status not OK</value>
+        <variable display_value="Condition Label">f0af19c1c32632002841b63b12d3aea3</variable>
+    </sys_variable_value>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_16b4ae381b65f0107e0d52c8624bcbac^id=e2b4ae381b65f0107e0d52c8624bcbed"/>
+    <sys_element_mapping action="delete_multiple" query="id=e2b4ae381b65f0107e0d52c8624bcbed"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition</field>
+        <id>e2b4ae381b65f0107e0d52c8624bcbed</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>26b4ae381b65f0107e0d52c8624bcbf0</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 11:56:23</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value>{{34604f54-7f2a-4d91-b558-fbe57ce7d86b.item.status}}!=0^{{subflow.task_definition_record.status}}=3^NQ{{34604f54-7f2a-4d91-b558-fbe57ce7d86b.item.status}}=1</value>
+    </sys_element_mapping>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>condition_name</field>
+        <id>e2b4ae381b65f0107e0d52c8624bcbed</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>62b4ae381b65f0107e0d52c8624bcbf0</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:15</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_af4e1945c3e232002841b63b12d3ae3e</table>
+        <value/>
+    </sys_element_mapping>
+    <sys_hub_flow_logic action="INSERT_OR_UPDATE">
+        <block display_value="">df34a6381b65f0107e0d52c8624bcbfd</block>
+        <comment/>
+        <connected_to/>
+        <decision_table/>
+        <decision_table_inputs/>
+        <display_text/>
+        <extended_inputs/>
+        <flow display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</flow>
+        <flow_variable/>
+        <flow_variables_assigned/>
+        <inputs/>
+        <inputs/>
+        <logic_definition display_value="For Each">098e1dc5c3e232002841b63b12d3ae33</logic_definition>
+        <order>11</order>
+        <outputs_assigned/>
+        <outputs_to_assign/>
+        <parent_ui_id>c98192e4-0717-42c7-b6aa-e47bfbce5ca2</parent_ui_id>
+        <sys_class_name>sys_hub_flow_logic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>eeb4ae381b65f0107e0d52c8624bcbf3</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_scope/>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 12:10:04</sys_updated_on>
+        <ui_id>36bc738d-8f31-4473-a71d-d6dda0a6d17a</ui_id>
+        <workflow_inputs/>
+        <workflow_reference/>
+    </sys_hub_flow_logic>
+    <sys_variable_value action="delete_multiple" query="document_key=eeb4ae381b65f0107e0d52c8624bcbf3"/>
+    <sys_element_mapping action="delete_multiple" query="table=var__m_sys_hub_flow_variable_16b4ae381b65f0107e0d52c8624bcbac^id=eeb4ae381b65f0107e0d52c8624bcbf3"/>
+    <sys_element_mapping action="delete_multiple" query="id=eeb4ae381b65f0107e0d52c8624bcbf3"/>
+    <sys_element_mapping action="INSERT_OR_UPDATE">
+        <field>items</field>
+        <id>eeb4ae381b65f0107e0d52c8624bcbf3</id>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:15</sys_created_on>
+        <sys_id>66b4ae381b65f0107e0d52c8624bcbf6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:15</sys_updated_on>
+        <table>var__m_sys_hub_flow_logic_input_098e1dc5c3e232002841b63b12d3ae33</table>
+        <value>{{fddfb502-6315-48c0-9a71-404e5c45f6f1.Records}}</value>
+    </sys_element_mapping>
+    <sys_hub_flow_variable action="delete_multiple" query="model=16b4ae381b65f0107e0d52c8624bcbac^sys_idNOT IN6eb4ae381b65f0107e0d52c8624bcbe0"/>
+    <sys_hub_flow_variable action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>element_mapping_provider=com.glide.flow_design.action.data.FlowDesignVariableMapper,uiType=boolean,uiTypeLabel=True/False,uiUniqueId=5928fa03-92cb-46a1-b2b1-fc9c892d1dd5</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label/>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>has_incomplete_dependencies</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">boolean</internal_type>
+        <label>Has incomplete dependencies</label>
+        <mandatory>false</mandatory>
+        <max_length>40</max_length>
+        <model display_value="KPI Composer Task Definition">16b4ae381b65f0107e0d52c8624bcbac</model>
+        <model_id>16b4ae381b65f0107e0d52c8624bcbac</model_id>
+        <model_table>sys_hub_flow_snapshot</model_table>
+        <name>var__m_sys_hub_flow_variable_16b4ae381b65f0107e0d52c8624bcbac</name>
+        <next_element/>
+        <order>0</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>sys_hub_flow_variable</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:14</sys_created_on>
+        <sys_id>6eb4ae381b65f0107e0d52c8624bcbe0</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Has incomplete dependencies</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_hub_flow_variable_6eb4ae381b65f0107e0d52c8624bcbe0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:14</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </sys_hub_flow_variable>
+    <sys_documentation action="delete_multiple" query="name=var__m_sys_hub_flow_input_16b4ae381b65f0107e0d52c8624bcbac^sys_idNOT IN5eb4ae381b65f0107e0d52c8624bcbd4"/>
+    <sys_documentation action="INSERT_OR_UPDATE">
+        <element>task_definition_record</element>
+        <help/>
+        <hint/>
+        <label>Task Definition Record</label>
+        <language>en</language>
+        <name>var__m_sys_hub_flow_input_16b4ae381b65f0107e0d52c8624bcbac</name>
+        <plural/>
+        <sys_class_name>sys_documentation</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-07-22 09:01:14</sys_created_on>
+        <sys_id>5eb4ae381b65f0107e0d52c8624bcbd4</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Task Definition Record</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_documentation_var__m_sys_hub_flow_input_16b4ae381b65f0107e0d52c8624bcbac_task_definition_record_en</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-07-22 09:01:14</sys_updated_on>
+        <url/>
+        <url_target/>
+    </sys_documentation>
+    <sys_hub_flow action="update">
+        <sys_id>1ca31a7c1b25f0107e0d52c8624bcb87</sys_id>
+        <latest_snapshot>16b4ae381b65f0107e0d52c8624bcbac</latest_snapshot>
+    </sys_hub_flow>
+</record_update>

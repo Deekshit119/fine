@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationEntityUsedMultipleTimesOnDashboard</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationEntityUsedMultipleTimesOnDashboard</name>
+        <script><![CDATA[var ProjectValidationEntityUsedMultipleTimesOnDashboard = Class.create();
+ProjectValidationEntityUsedMultipleTimesOnDashboard.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationEntityUsedMultipleTimesOnDashboard");
+				
+		this._apply_on_dashboards(data.dashboards, 
+			function(dashboard) { 
+				// All entities on this dashboards
+				var entity_sys_ids = that._all_used_entities_in_dashboard(dashboard);
+				
+			
+				//---------------------------
+				// Duplicate widget / measurement combination found on dashboard "#D_NAME#"
+				//---------------------------
+				for(var ei =0, em = data.entities.length; ei<em; ei++) {
+					var entity = data.entities[ei];
+					
+					
+					// Check if this entity is used
+					if (entity_sys_ids.filter(function(e) { return e == entity.sys_id }).length >1) {
+						that._addProjectValidationInfo(
+							{ 																		
+								description: gs.getMessage("Measurment '{0}' used in more then one widget on dashboard '{1}'", [entity.name, dashboard.name]),
+								table: "sn_kpi_composer_dashboard",
+								record: dashboard.sys_id,
+							}, { project: { sys_id: data.project.sys_id } });
+					}
+				}			
+			
+			});
+	},
+
+    type: 'ProjectValidationEntityUsedMultipleTimesOnDashboard'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-02 12:50:51</sys_created_on>
+        <sys_id>f9a82978db5c8850d5b45bd2ca96192e</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>ProjectValidationEntityUsedMultipleTimesOnDashboard</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_f9a82978db5c8850d5b45bd2ca96192e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 15:05:33</sys_updated_on>
+    </sys_script_include>
+</record_update>

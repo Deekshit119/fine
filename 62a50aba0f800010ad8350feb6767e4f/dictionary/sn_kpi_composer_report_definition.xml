@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Definición de informe" max_length="40" name="sn_kpi_composer_report_definition" type="collection">
+        <element attributes="track_definition_updated=true" default="1" label="Aggregation" max_length="40" name="aggregation" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" label="Comments" max_length="4000" name="comments" type="journal"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" label="Condition" max_length="4000" name="condition" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated" max_length="40" name="definition_updated" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Definition Updated by" max_length="40" name="definition_updated_by" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="4000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Development instructions" max_length="4000" name="development_instructions" type="string"/>
+        <element attributes="base_start=true,track_definition_updated=true" label="Facts Table" max_length="80" name="facts_table" type="table_name"/>
+        <element attributes="edge_encryption_enabled=true,track_definition_updated=true" label="Name" max_length="40" name="name" type="string"/>
+        <element attributes="encode_utf8=false,track_definition_updated=true" label="Report Source" max_length="32" name="report_source" reference="sys_report_source" type="reference"/>
+        <element attributes="track_definition_updated=true" choice="1" label="Source Type" max_length="40" name="source_type" type="choice">
+            <choice/>
+        </element>
+        <index name="index">
+            <element name="report_source"/>
+        </index>
+    </element>
+</database>

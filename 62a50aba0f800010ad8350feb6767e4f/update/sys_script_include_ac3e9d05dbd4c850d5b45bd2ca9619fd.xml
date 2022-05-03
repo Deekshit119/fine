@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.ProjectValidationBreakdownDefWithoutFactsTable</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ProjectValidationBreakdownDefWithoutFactsTable</name>
+        <script><![CDATA[var ProjectValidationBreakdownDefWithoutFactsTable = Class.create();
+ProjectValidationBreakdownDefWithoutFactsTable.prototype = Object.extendsObject(sn_kpi_composer.ProjectValidation, {
+	
+	validate: function(data) {
+		var that = this;
+		if (this.trace) this._debug.push("ProjectValidationBreakdownDefWithoutFactsTable");	
+		
+		/*
+		* Breakdowns, check only when used
+		*/
+		var breakdowns = this._projectApi.breakdownsInProject(data);
+		for(var bdx = 0; bdx<breakdowns.length; bdx++) {
+			var breakdown = breakdowns[bdx];
+			/* 
+			* > Breakdown Definition zonder Facts table
+			*/
+			if (breakdown.facts_table == null && breakdown.pa_breakdown == null) {
+				this._addProjectValidationDefinitionError(
+					{ 
+						description: gs.getMessage("Breakdown definition has no facts table"),
+						table: "sn_kpi_composer_breakdown",
+						record: breakdown.sys_id,
+					}, { project: { sys_id: data.project.sys_id } });
+			}																
+		}		
+		
+	},
+    type: 'ProjectValidationBreakdownDefWithoutFactsTable'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-03 06:40:49</sys_created_on>
+        <sys_id>ac3e9d05dbd4c850d5b45bd2ca9619fd</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>ProjectValidationBreakdownDefWithoutFactsTable</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_ac3e9d05dbd4c850d5b45bd2ca9619fd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-09 15:00:25</sys_updated_on>
+    </sys_script_include>
+</record_update>

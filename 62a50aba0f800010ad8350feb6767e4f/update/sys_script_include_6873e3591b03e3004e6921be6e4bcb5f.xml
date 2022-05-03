@@ -1,0 +1,1617 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_kpi_composer.EntityApi</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description>The major data read function over all Entity data.&#13;
+Some implementation of normal function calls to JSON/AJAX calleble client functions</description>
+        <name>EntityApi</name>
+        <script><![CDATA[var EntityApi = Class.create();
+EntityApi.prototype = Object.extendsObject(sn_kpi_composer.BaseApi, {
+
+	
+	getDataJson: function (input) {
+		return JSON.stringify(this.getData());
+	},
+	
+    /*
+	* This function reads all data from the project to display
+	* The returing object will contain:
+	* - project = the current project of this user
+	* - breakdowns = all the breakdowns
+	* - personas = all the persona's of this project
+	* - entities = all entities of this project
+	* - relations = all relations between entities
+	* - rules = all allowed relations between entitytypes
+	* - entitytypes = all entitytypes
+	* - users = all user used in active project (project + entity)
+	* - knowledge = all knowledge used in active project (project + entity)
+	* - indicatordefinitions = all indicator definitions for this project/entities
+	* - taskResuls = task to execute
+	* - validationResults = validation results
+	* - pa_widgets used in the canvases
+	*/
+    getData: function (input) {
+
+		// Read input param
+		input = this._getInputParam(input);
+
+
+		// Generic upgrade function call
+		this._upgradeDbItems();
+
+        var data = {};
+        try {
+            //gs.info("Enter EntityApi.getData()");						
+		
+			// local var
+			var project = this._projectApi.project(input);
+
+			// prepare result object
+			data.project = project;
+			data.breakdowns = [];
+			data.personas = [];
+			data.entities = [];
+			data.relations = [];
+			data.rules = [];
+			data.entitytypes = [];
+			data.users = [];
+			data.knowledgearticles = [];
+			data.indicatordefinitions = [];
+			data.indicatordefinition_indicatordefinition = [];
+			data.dashboards = [];
+			data.pa_widgets = [];
+			data.pa_dashboards = [];
+			data.spotlight = this._getSpotlightInstalled();
+			data.spotlight_groups = [];
+			data.report_definitions = [];
+			data.groups = [];
+			data.project_permissions = [];
+
+			// Return the input values, this is used in the createtask etc
+			data.input = input;
+			
+			if (this.trace) this._debug.push("Reading entitie data from the project");
+
+			input = {};
+			input.project = project;
+
+			// Create and load last edit field
+			project.lastedit = this._projectApi.mark_project_as_edited(input);
+			
+			if (this.trace) this._debug.push("Read root and relation from:" + JSON.stringify(input));
+
+			// Load all root nodes and all relations with no parent 
+			// This are all the starting point within a tree
+			var root_entitites = this._selectRootEntitiesAndRelations(input);
+
+			// Collect all items from a tree that are flatten to a single array
+			root_entitites.flat_items = [];
+
+			// Collect all tree's
+			var trees = [];
+
+			// Take all root entities
+			// Root entities are entities with no relation record within his own project
+			var that = this;
+			root_entitites.entities.forEach(function(e) {
+				var tree_input = {};
+				tree_input.entity = e;
+				tree_input.project = project;
+
+				// Create a tree of all child nodes from this node
+				var tree = that._selectEntityTree(tree_input);
+
+				var distinct_tree = that._selectEntityTree(tree_input);
+
+				trees.push(distinct_tree);
+
+				// All first nodes of a tree are root
+				tree.entity.root = true;
+				
+				// Flatten the nodes by adding the relation
+				var flat_items = that._entitiesAndRelationFromTree(tree, []);
+
+
+				root_entitites.flat_items.push(flat_items);
+
+			});
+
+			// Take all related records (to libs)
+			root_entitites.relations.forEach(function(r) {
+				var tree_input = {};
+				tree_input.entity = {};
+				tree_input.entity.sys_id = r.to_org_sys_id;
+				tree_input.project = project;
+
+				// Create a tree for the lib item
+				// Start with depth counter 1 because this relation is to a library!
+				var tree = that._selectEntityTree(tree_input, 1);
+
+				var distinct_tree = that._selectEntityTree(tree_input, 1);
+
+				trees.push(distinct_tree);
+
+				tree_input.entity = tree.entity;
+
+				// This entity is a root for sure
+				tree.entity.library_root = true;
+
+				// All first nodes of a tree are root
+				tree.entity.root = true;
+
+				// Make sure we store the sys_id of the relation
+				tree.entity.relation_sys_id = r.sys_id;
+
+				// Flatten the nod
+				var flat_items = that._entitiesAndRelationFromTree(tree_input, [r.sys_id]);
+
+				
+				// Add items to flat list
+				root_entitites.flat_items.push(flat_items);
+			});
+
+			// 
+			root_entitites.e = [];
+			root_entitites.r = [];
+
+			// Add root relations as relation
+			root_entitites.relations.forEach(function(r) {
+				r.to = r.sys_id + "_" + r.to;
+				root_entitites.r.push(r);
+			});
+
+			// Concat all flat items to a single list
+			root_entitites.flat_items.forEach(function(f) {
+				root_entitites.e = root_entitites.e.concat(f.entities);
+				root_entitites.r = root_entitites.r.concat(f.relations);
+			});
+
+			// Cleanup properties that are no longer needed
+			root_entitites.r.forEach(function(r) { 
+				delete r.entity; 
+				delete r.depth;
+			});
+
+			// Cleanup properties that are no longer needed
+			root_entitites.e.forEach(function(e) {
+				delete e.depth;
+				delete e.relations;
+			});
+			
+			// Return entities and relation as result
+			data.entities = root_entitites.e;
+			data.relations = root_entitites.r;
+
+
+			var knowledgeArticlesSysIds = [];
+			var userSysIds = [];
+
+			// With all the entities, collect the users, knownledgeArticles 
+			data.entities.forEach(function(e) {
+				if(e.knowledgearticles)
+					knowledgeArticlesSysIds = knowledgeArticlesSysIds.concat(e.knowledgearticles.split(","));
+				if(e.owners)
+					userSysIds = userSysIds.concat(e.owners.split(","));
+				if(e.contacts)
+					userSysIds = userSysIds.concat(e.contacts.split(","));
+			});
+
+			// also load knowledgeArticles, users and contact from the project
+			if (project && project.knowledgearticles) {
+				knowledgeArticlesSysIds = knowledgeArticlesSysIds.concat(project.knowledgearticles.split(","));
+			}
+
+			if (project && project.contacts) {
+				userSysIds = userSysIds.concat(project.contacts.split(","));
+			}
+
+			if (project && project.owners) {
+				userSysIds = userSysIds.concat(project.owners.split(","));
+			}
+
+			if (this.trace) this._debug.push("Read users:" + JSON.stringify(userSysIds));
+			if (this.trace) this._debug.push("Read knowledgearticles:" + JSON.stringify(knowledgeArticlesSysIds));
+
+			// Read users only if we have sys_ids
+			if(global.JSUtil.nil(userSysIds))
+				data.users = [];
+			else
+				data.users = this._selectUsers({ maxresult: 0, sys_ids: userSysIds.join(",")}).users; 
+
+			// Read knownledge articles only if we have sys_ids 
+			if(global.JSUtil.nil(knowledgeArticlesSysIds))
+				data.knowledgearticles = [];
+			else
+				data.knowledgearticles = this._selectKnowledgeArticles({ maxresult: 0, sys_ids: knowledgeArticlesSysIds.join(",")}).knowledgearticles;
+
+			// Read breakdowns
+			data.breakdowns = this._projectApi.allBreakdownsWithShow(project.sys_id);
+
+			// If the requested project is a library, we are editing a library
+			// so all entities (from this project - not from other projects)
+			// should not be markt as libray
+			// Start by checking if the source/requested project is a library
+			if (project.library) {
+				data.entities.forEach(function(e) {					
+					// If this entity is a library and it is from the source project disable the library bool
+					if (e.project_sys_id === project.sys_id && e.library)
+						e.library = false;					
+				});
+			}
+
+
+
+			// Read table of entity nodes that are collapsed for this project
+			var ec = new GlideRecord('sn_kpi_composer_entity_collapsed');
+			ec.addQuery("project", project.sys_id);
+			ec.query();
+			while(ec.next()) {
+				// Get the entity that is collapsed
+				var relation = ec.getValue("relation") || "";
+				var entity = ec.getValue("entity");
+				// Now set the values for this entity
+				data.entities.forEach(function(e) {
+
+					// If this is the entity to collapse
+					if (e.relation_sys_id == relation && e.org_sys_id == entity) {
+						e.collapsed = (ec.getValue("analysis")  == "1" ? true : false);
+						e.collapseddd = (ec.getValue("data_definition")  == "1" ? true : false);
+					}
+				});
+			}			
+
+			
+			// Persona for this project
+            var ep2 = new GlideRecordSecure('sn_kpi_composer_persona');
+			ep2.addQuery("project", project.sys_id);
+            ep2.query();
+            while (ep2.next()) {
+                data.personas.push(this._persona_record(ep2));
+            }					
+				
+			//if (this.trace) this._debug.push("Reading entity-entity data from the project");
+			//data.relations_OLD = project_entities_and_relations.relations;
+
+
+			if (this.trace) this._debug.push("Reading entity relation rule data from the project");
+			
+			// Rules abouw relations
+			var r = new GlideRecord('sn_kpi_composer_entity_relation_rule');
+			r.query();
+			while (r.next()) {
+				data.rules.push({
+					sys_id: r.getDisplayValue('sys_id'),
+					name: r.getDisplayValue('name'),
+					description: r.getDisplayValue('description'),
+					to_type: r.getValue('to_entity_type'),
+					from_type: r.getValue('from_entity_type')
+				});
+			}
+
+			if (this.trace) this._debug.push("Reading entity type data from the project");
+			
+			// The entitytypes
+			var sn = new GlideRecord('sn_kpi_composer_entity_type');
+			sn.orderBy('order');
+			sn.query();
+			while (sn.next()) {
+				var entityType = {
+					sys_id: sn.getValue('sys_id'),
+					color: sn.getDisplayValue('color.color'),
+					name: sn.getValue('name'),
+					description: sn.getValue('description'),
+					//entitytype: sn.getDisplayValue('sys_id'),
+					allowbreakdown: (sn.getValue('allow_breakdown') === "1"),
+					allowpersona: (sn.getValue('allow_persona') === "1"),
+					allowoncanvas: (sn.getValue('allow_on_canvas') === "1"),
+					category: "Source"
+				};
+				data.entitytypes.push(entityType);
+			}
+			
+			// Read dashboards
+			var getDashboards = this._getDashboards(input);
+			if (getDashboards && getDashboards.success) {
+				data.dashboards = getDashboards.dashboards;
+			} else {
+				data.dashboards = JSON.stringify(getDashboards);
+			}
+
+			data.groups = this._selectGroups({ maxresult: 10 }).groups;
+
+			data.project_permissions = this._projectApi._getProjectPermissions(project.sys_id).project_permissions;
+
+			/*
+			data.widgettypes[]
+				- name
+				- etc
+				- visualisationtypes[]
+					- name
+					- etc
+					- visualisation[]
+						- name
+						- etc
+			*/			
+
+			// Read widget types and create array
+			data.widgettypes = this._getChoices('sn_kpi_composer_widgetvisualisation', 'widget_type');	
+			for(var vi = 0; vi<data.widgettypes.length; vi++) {
+				
+				// Create array with all visualitation types
+				var visualisationtypes = this._getChoices('sn_kpi_composer_widgetvisualisation', 'visualisationtype');	
+				// Create empty array to hold the visualisationtypes for this widgettype
+				data.widgettypes[vi].visualisationtypes = visualisationtypes;
+											
+				// Read widgets for the specific widgettype
+				var gr_widgetvisualisation = new GlideRecord('sn_kpi_composer_widgetvisualisation');
+				gr_widgetvisualisation.addQuery('widget_type', data.widgettypes[vi].value);
+				gr_widgetvisualisation.query();
+
+				while (gr_widgetvisualisation.next()) {
+					// Create the widget visualisation record
+					var widgetvisualisation = this._widgetvisualisation_record(gr_widgetvisualisation);
+
+					// Type the widgetvisualisation type
+					// Use filter to find the specic visualisation type
+					visualisationtypes.filter(function(visualisationtype) { 
+						return visualisationtype.value == widgetvisualisation.visualisationtype;  }).forEach(function(visualisationtype) {	
+							// Check if the visualisationtype has array of widgetvisualisations, if not create one
+							if (!visualisationtype.widgetvisualisations)
+								visualisationtype.widgetvisualisations = [];
+							// Now pusj the widgetvisualisation to the array
+							visualisationtype.widgetvisualisations.push(widgetvisualisation);
+						});
+				}
+				
+				// Filter record with no arrays
+				data.widgettypes[vi].visualisationtypes = visualisationtypes.filter(function(visualisationtype)  { return visualisationtype.widgetvisualisations != null; })
+
+			}		
+			
+			
+			// read the timeseries
+			data.timesseries = this._getChoices('sn_kpi_composer_canvas', 'time_serie');
+			// Hack the timesseries
+			data.timesseries.forEach(function(ts) { ts.sys_id = ts.value; });
+			
+			// Read PA widgets used in the project, collect all ID's from the canvasses
+			var getPa_WidgetsResult = this._getPaWidgets(data.dashboards);
+			if (getPa_WidgetsResult.success && getPa_WidgetsResult.success == true) {
+				data.pa_widgets = getPa_WidgetsResult.pa_widgets;
+			} else {
+				data.pa_widgets_error = "Could not load pa widgets:" + JSON.stringify(getPa_WidgetsResult);
+			}
+			
+			// Read PA dashboards used in the project
+			var getPa_DashboardResult = this._getPaDashboards(data.dashboards);
+			if (getPa_DashboardResult.success && getPa_DashboardResult.success == true) {
+				data.pa_dashboards = getPa_DashboardResult.pa_dashboards;
+			} else {
+				data.pa_dashboards_error = "Could not load pa dashboards:" + JSON.stringify(getPa_DashboardResult);
+			}			
+
+			// Read the reports used in this project
+			var getReports = this._getReports(data.dashboards);
+			if (getReports.success && getReports.success == true) {
+				data.reports = getReports.reports;
+			} else {
+				data.reports_error = "Could not load reports:" + JSON.stringify(getReports);
+			}
+			
+			// Read the content blocks used in this project (by dashboard)
+			var getContentBlocks = this._getContentBlocks(data.dashboards);
+			if (getContentBlocks.success && getContentBlocks.success == true) {
+				data.content_blocks = getContentBlocks.content_blocks;
+			} else {
+				data.content_blocks_error = "Could not load contentblocks:" + JSON.stringify(getContentBlocks);
+			}
+
+			// Read the interactive filters used in this project (by dashboard)
+			var getInteractiveFilters = this._getInteractiveFilters(data.dashboards);
+			if (getInteractiveFilters.success && getInteractiveFilters.success == true) {
+				data.interactive_filters = getInteractiveFilters.interactive_filters;
+			} else {
+				data.interactive_filters_error = "Could not load interactive filters:" + JSON.stringify(getInteractiveFilters);
+			}			
+
+			// Read the spotlight record from this project (by dashboard)
+			if (data.spotlight.installed) {
+				var getSpotlightGroups = this._getSpotlightGroups(data.dashboards);
+				if (getSpotlightGroups.success && getSpotlightGroups.success == true) {
+					data.spotlight_groups = getSpotlightGroups.spotlight_groups;
+				} else {
+					data.spotlight_groups_error = "Could not load spotlight groups:" + JSON.stringify(getSpotlightGroups);
+				}
+			}
+			
+			input = {};
+			input.project = project;
+			input.entities = data.entities;
+			result = this._relatedIndicatorDefinitions(input);
+			if (result.success) {
+				data.indicatordefinitions = result.indicatordefinitions;
+				data.indicatordefinition_indicatordefinition = result.indicatordefinition_indicatordefinition;
+			} else {
+				throw "Could not read Indicator definitions. Result:" + JSON.stringify(result);
+			}
+			
+			// Collect all report_definitions used in the entities
+			var report_definition_sys_ids = [];
+			data.entities.forEach(function(entity) {
+				if (entity.report_definition)
+					if (report_definition_sys_ids.indexOf(entity.report_definition)<0)
+						report_definition_sys_ids.push(entity.report_definition);
+			});
+
+			// Use the (default) search function to get the report definition record
+			data.report_definitions = this._selectReportDefinitions({ maxresult: 0, sys_ids: report_definition_sys_ids }).report_definitions;
+			
+			// Add empty array of used in canvas data
+			data.entities.forEach(function(e) { e.used_in_canvas = [];});
+
+			// Now collect the entity used in canvasses infomation
+			// Go by eatch dashboard and canvas and add the canvas to the entity, when it is used
+			data.dashboards.forEach(function (d) {
+				d.tabs.forEach(function(t) {
+					t.rows.forEach(function(r) {
+						r.canvasses.forEach(function(c) {
+							if (c.entities){
+								c.entities.split(',').forEach(function (e_sys_id) {
+									data.entities.filter(function(e) { return (e.sys_id == e_sys_id || e.org_sys_id == e_sys_id); }).forEach(function(e) {
+										e.used_in_canvas.push(c);
+									});
+								});
+							}
+						});
+					});
+				});
+			});
+            
+			if (this.trace) this._debug.push("Reading done from the project");
+			
+			if (this.trace) this._debug.push("Reading project validation results");
+			var validationApi = new sn_kpi_composer.ProjectValidation();
+			var validations = validationApi.validationResults(input);
+			if (validations.success) {
+				data.validations = validations.validations;
+			} else {
+				data.validations = validations;
+			}
+
+			var taskApi = new sn_kpi_composer.ProjectTask();
+			data.taskdefs = { empty: true };
+			if (this.trace) this._debug.push("Reading project taskdef results");
+			var taskdefs = taskApi.taskDefsResults(input);
+			if (taskdefs.success) {
+				// Taks tasksdef
+				data.taskdefs = taskdefs.taskDef;
+				// place counts in tasks (backward compatible)
+				data.tasks = taskdefs.taskDef.counts;
+				// Remove counts from taskdefs (no double data)
+				delete(data.taskdefs.counts);
+			} else {
+				data.taskdefs = taskdefs;
+				data.tasks = [];
+			}			
+			
+			if (this.trace) this._debug.push("DistinctEntitiesByOrgSysId");
+			// Create a direct lijst
+			data.distinct_entities = this.distinctEntitiesByOrgSysId(data);
+					
+            data.success = true;
+        } catch (err) {
+            gs.error(err);
+			gs.error(err.stack);
+			data.debug = this._debug;
+            data.exception = err;
+            data.success = false;
+        }
+
+		if (this.trace) data.debug = this._debug;
+		
+        return data;
+    },
+
+	getDistinctDataJson: function (input) {
+		return JSON.stringify(this.getDistinctData());
+	},
+
+	getDistinctData: function(input) {
+
+		// Read input param
+		input = this._getInputParam(input);
+
+		// Generic upgrade function call
+		this._upgradeDbItems();
+
+        var data = {};
+		data.success = false;
+
+
+        try {
+		
+
+			// local var
+			var project = this._projectApi.project(input);
+
+			input = {};
+			input.project = project;
+
+			// Load all root nodes and all relations with no parent 
+			// This are all the starting point within a tree
+			var root_entitites = this._selectRootEntitiesAndRelations(input);
+
+			var trees = [];
+
+			// Take all root entities
+			// Root entities are entities with no relation record within his own project
+			var that = this;
+			root_entitites.entities.forEach(function(e) {
+				var tree_input = {};
+				tree_input.entity = e;
+				tree_input.project = project;
+
+				// Create a tree of all child nodes from this node
+				var tree = that._selectEntityTree(tree_input);
+
+				// All first nodes of a tree are root
+				tree.entity.root = true;
+				
+				trees.push(tree);
+
+			});
+
+			// Take all related records (to libs)
+			root_entitites.relations.forEach(function(r) {
+				var tree_input = {};
+				tree_input.entity = {};
+				tree_input.entity.sys_id = r.to_org_sys_id;
+				tree_input.project = project;
+
+				// Create a tree for the lib item
+				// Start with depth counter 1 because this relation is to a library!
+				var tree = that._selectEntityTree(tree_input, 1);
+				tree_input.entity = tree.entity;
+
+				// This entity is a root for sure
+				tree.entity.library_root = true;
+
+				// All first nodes of a tree are root
+				tree.entity.root = true;
+
+				// Make sure we store the sys_id of the relation
+				tree.entity.relation_sys_id = r.sys_id;
+
+				trees.push(tree);
+
+			});
+
+			data.entities = [];
+
+			var that = this;
+
+			trees.forEach(function(tree) {
+
+				// Flatten the nodes by adding the relation
+				var flat_items = that._entitiesAndRelationFromTree(tree, []);
+
+				// Make a list of entities based on the org_sys_id
+				flat_items.entities.forEach(function(entity) {
+
+					if (data.entities.filter(function(e) { return e.org_sys_id == entity.org_sys_id }).length == 0) {
+						data.entities.push(entity);
+					}
+				});
+
+			});
+
+			// Cleanup the list by removing the org_sys_id and changing the sys_id
+			data.entities.forEach(function(e) {
+				e.sys_id = e.org_sys_id;
+				delete e.org_sys_id;
+			})
+
+			data.success = true;
+
+		}
+		catch(err) {
+			gs.error(err);
+			gs.error(err.stack);
+			data.exception = err;
+		}
+
+		return data;
+
+	},
+
+	getEntityDataJson: function(input) {	
+		
+		var response = {};
+		response.success = false;
+		
+		try {
+
+			// Get input params
+			input = this._getInputParam(input);
+            
+			// Get project
+			var project = this._projectApi.project(input);
+
+			// Get entities
+			var entities = this._projectApi._project_entities_and_relations(input);
+			if (entities.success) {
+				response.entities = entities.entities;
+			} else {
+				throw "Could not read Entities. Result: " + JSON.stringify(result);
+			}
+			
+			response.indicatordefinitions = [];
+			response.indicatordefinition_indicatordefinition = [];
+			
+			input = {};
+			input.project = project;
+			input.entities = entities.entities;
+			
+			if (this.trace) this._debug.push("Entities: " + JSON.stringify(entities));
+			
+			result = this._relatedIndicatorDefinitions(input);
+			if (result.success) {
+				response.indicatordefinitions = result.indicatordefinitions;
+				response.indicatordefinition_indicatordefinition = result.indicatordefinition_indicatordefinition;
+			} else {
+				throw "Could not read Indicator definitions. Result:" + JSON.stringify(result);
+			}
+
+			//voor Pepijn: dit heb ik toegevoegd, om de report_definitions ook mee te krijgen
+			// Collect all report_definitions used in the entities
+			var report_definition_sys_ids = [];
+			entities.entities.forEach(function(entity) {
+				if (entity.report_definition)
+					if (report_definition_sys_ids.indexOf(entity.report_definition)<0)
+						report_definition_sys_ids.push(entity.report_definition);
+			});
+			// Use the (default) search function to get the report definition record
+			response.report_definitions = this._selectReportDefinitions({ maxresult: 0, sys_ids: report_definition_sys_ids }).report_definitions;
+
+			response.success = true;
+		} catch (err) {
+			gs.error(err);
+			response.debug = this._debug;
+			response.exception = err;
+		}
+		
+		return JSON.stringify(response);	
+	},
+
+	/*
+	* Get all persona from a entity (in a project)
+	* params:
+	* input.entity.sys_id
+	*    NOT: input.entity.project_sys_id is also leading
+	*/
+	_selectPersonaFromEntity: function(input) {
+		var persona = [];
+		try {
+			if (input && input.entity && input.entity.sys_id) {
+
+				if (input && input.project && input.project.sys_id) {
+
+					var ep_gr = new GlideRecord('sn_kpi_composer_entity_persona_m2m'); 
+					// Find the entity by sys_id
+					ep_gr.addQuery("entity", input.entity.sys_id);
+
+					// Only take persona from the source project OR if the project owner is a library
+					var filter = "project.sys_id=" + input.project.sys_id + "^ORproject.library=true";					
+					ep_gr.addEncodedQuery(filter);
+
+					ep_gr.query();
+					while(ep_gr.next()) {
+						// Now get the persona info and add it to the list
+						var p_gr = new GlideRecord("sn_kpi_composer_persona");
+						if (p_gr.get(ep_gr.getValue("persona"))) {
+							var person = this._persona_record(p_gr);
+							persona.push(person);
+						} else {
+							throw "Persona with sys_id '" +  ep_gr.getValue("persona") + "' not found.";
+						}
+					}		
+				} else {
+					throw "entity.project.sys_id (persona) parameter is mandatory";
+				}
+
+			} else {
+				throw "entity.sys_id (persona) parameter is mandatory";
+			}
+
+		} catch(err) {
+			persona.push(JSON.stringify(err));
+		}
+
+		return persona;
+	},
+
+	_selectbreakdownsFromEntity: function(input) {
+		
+		var breakdowns = [];
+		try{
+			if (input && input.entity && input.entity.sys_id) { 
+
+				if (input && input.project && input.project.sys_id) { 
+
+					var ep_gr = new GlideRecord('sn_kpi_composer_entity_breakdown_m2m'); 
+					ep_gr.addQuery("entity", input.entity.sys_id);
+					var filter = "project.sys_id=" + input.project.sys_id + "^ORproject.library=true";
+					ep_gr.addEncodedQuery(filter);
+					ep_gr.query();
+					while(ep_gr.next()) {
+						var p_gr = new GlideRecord("sn_kpi_composer_breakdown");
+						if (p_gr.get(ep_gr.getValue("breakdown"))) {
+							var breakdown = this._breakdown_record(p_gr);
+							breakdown.project_sys_id = ep_gr.getElement('project.sys_id').toString();
+							breakdown.from_library = (ep_gr.getElement("project.library") ? true : false);
+							breakdown.from_project = (breakdown.project_sys_id == input.project.sys_id);
+							breakdowns.push(breakdown);	
+						} else {
+							throw "Breakdown with sys_id '" +  ep_gr.getValue("breakdown") + "' not found.";
+						}
+					}		
+
+				} else {
+					throw "entity.project.sys_id (breakdowns) parameter is mandatory";
+				}
+
+			} else {
+				throw "entity.sys_id (breakdowns) parameter is mandatory";
+			}
+		} catch(err) {
+			breakdowns.push(JSON.stringify(err));
+		}
+
+		return breakdowns;
+	},
+
+
+	/*
+	* Read all (related) data for a entity within a project
+	* Reads the entity data and the breakdowns for a specific entity
+	*/
+	_selectEntityWithinProject: function(entity_sys_id, project_sys_id) {
+		var entity = { "entity": entity_sys_id, "project": project_sys_id, "not_found": true};
+		// Find the to entity in the db
+		var e_gr = new GlideRecord("sn_kpi_composer_entity");
+		if (e_gr.get(entity_sys_id)) {
+			// Create object and add to result
+			entity = this._entity_record(e_gr);
+			
+			// tmp breakdown list
+			var distinct_breakdowns = [];
+
+			// Create room for persona's and breakdown
+			entity.personas = [];
+			entity.breakdowns_from_library = [];
+			entity.breakdowns_from_project = [];
+
+
+			// Store the original sys_id, (sub)tree items will change the sys id
+			entity.org_sys_id = entity.sys_id;
+
+			// Find persona for this entity
+			var personas = this._selectPersonaFromEntity( { "entity": { "sys_id": entity_sys_id }, "project": {"sys_id": project_sys_id } });
+			personas.forEach(function(p) { entity.personas.push(p.sys_id); });
+			
+			// Find breakdowns for this entity for this project
+			var breakdowns = this._selectbreakdownsFromEntity({ "entity": { "sys_id": entity_sys_id }, "project": {"sys_id": project_sys_id } });
+			
+			breakdowns.forEach(function(b) { 
+
+				var idx = distinct_breakdowns.indexOf(b.sys_id);
+				if (idx === -1) {
+					distinct_breakdowns.push(b.sys_id);
+				}
+				
+				// Single list (could be removed)
+				if (b.from_library) entity.breakdowns_from_library.push(b.sys_id);
+				if (b.from_project) entity.breakdowns_from_project.push(b.sys_id);
+
+			});
+
+			// debug <- bart, remove?
+			entity.breakdowns = distinct_breakdowns;
+
+		}
+		return entity;
+	},
+
+
+	_emptyEntity: function() {
+		var entity = {};
+		entity = {};
+		entity.relations = [];
+		entity.sys_id = "";
+		entity.not_found = true;
+		entity.name = "EntityNotFound";
+		entity.description = "There is no entity found.";
+		entity.knowledgearticles = "";
+		entity.owners = "";
+		entity.contacts = "";
+		entity.personas = [];
+		entity.breakdowns = [];	
+		entity.depth_counter = 0;
+		entity.root = false;
+		return entity;	
+	},
+
+	/*
+	* Return a entity (from a project)
+	* and all entities below with there relations
+	* this return part of the entity (project) tree
+	* parameters:
+	* input.project.sys_id => the source project (needed because a node can be reused in different projects <---- IS THIS TRUE)
+	* input.entity.sys_id => the root entity node
+	*/
+	_selectEntityTree: function(input, depth_counter) {
+
+		var data = {};
+		data.success = false;
+		data.entity = this._emptyEntity();
+
+		if (!depth_counter) depth_counter = 0;
+
+		try {
+
+			if (input && input.entity && input.entity.sys_id) {
+
+				if (input && input.project && input.project.sys_id) {
+
+					// Add the source entity
+					var main_entity = this._selectEntityWithinProject(input.entity.sys_id, input.project.sys_id);
+
+					// Only when the entity is found
+					if (!main_entity.not_found) {
+
+						main_entity.relation_sys_id = "";
+
+						main_entity.depth_counter = depth_counter;
+
+						if (input.entity.library_root)
+							main_entity.library_root = input.entity.library_root;
+
+						// Add a empty relation arry to store relations later
+						main_entity.relations = [];
+
+						// Set the main entity
+						data.entity = main_entity;
+
+						// If there is to mutch recursion quit now!!
+						if (depth_counter>4) {
+							data.success = true;
+							data.entity.recursive_break = true;
+							return data;
+						}
+				
+
+						// Find all relation where this is entity the mother
+						var ee_gr = new GlideRecord("sn_kpi_composer_entities_entities_m2m");
+						ee_gr.addQuery("from_entity", input.entity.sys_id);
+						ee_gr.query();
+
+
+						while(ee_gr.next()) {
+
+							// Take the to entity
+							var to_entity_sys_id = ee_gr.getValue("to_entity");
+							
+							// Create relation record
+							var relation = this._relation_record(ee_gr);
+										
+							// Add relation record to the main entity
+							main_entity.relations.push(relation);
+
+							// prepare recursive call
+							var sub_input = {};
+							sub_input.entity = {};
+							sub_input.entity.sys_id = to_entity_sys_id;
+							sub_input.project = input.project;
+
+							// make recursive call
+							var sub = this._selectEntityTree(sub_input, (depth_counter + relation.inc_depth));
+
+							if (sub.success) {
+
+								// add recursive entity to the relation
+								relation.entity = sub.entity;
+								relation.entity.relation_sys_id = relation.sys_id;
+
+								// If the relation is to a other project
+								// the node is a root_library node
+								// But only a root library element is this is the FIRST pointer to a lib and not any next one
+								if (relation.project != relation.to_project && relation.entity.depth_counter<2) {
+									relation.entity.library_root = true;
+								}
+							}
+						}
+
+					}
+
+					data.success = true;
+
+				} else {
+					throw "parameter project.sys_id is mandantory";
+				}
+			} else {
+				throw "parameter input.entity.sys_id is mandantory";
+			}
+		}
+		catch(err) {
+			data.exception = JSON.stringify(err);
+		}
+
+		return data;
+
+	},
+
+	_applyDepth: function(depth, sys_id) {
+		var result = sys_id;
+
+		// If depth is null, create empty arry
+		if (!depth) depth = [];
+
+		var d = depth.join("_");
+		if (d.length>0) {
+			result = d + "_" + sys_id;
+		}
+		return result;
+	},
+
+	/*
+	* From a entity with relations, take all entities and return them recursively
+	*/
+	_addEntityRecursive: function(entity, depth) {
+		var entities = [];
+		if (entity) {
+			entity.depth = [];
+			entity.depth = entity.depth.concat(depth);
+			entity.sys_id = this._applyDepth(depth, entity.sys_id);
+			entities.push(entity);
+			var that = this;
+			// check if entity.relations is present
+			if (entity.relations) {
+				entity.relations.forEach(function(r) {
+					// When the relation is outside of this project, add the relaiton sys_id
+					if (r.project !== r.to_project) {
+						depth.push(r.sys_id);
+					}
+					entities = entities.concat(that._addEntityRecursive(r.entity, depth));
+					if (r.project !== r.to_project)
+						depth.pop();					
+				});
+			}
+		}
+		return entities;
+	},
+	
+	/*
+	* From a relation with relations, take all entities and return them recursively
+	*/
+	_addRelationRecursive: function(entity, depth) {
+		var relations = [];
+		var that = this;
+
+		if (entity && entity.relations) {
+			entity.relations.forEach(function(r) {
+				r.depth = [];
+				r.depth = r.depth.concat(depth);
+				r.from = that._applyDepth(depth, r.from);
+
+				relations.push(r);
+				
+				// When the relation is outside of this project, add the relaiton sys_id
+				if (r.project !== r.to_project) 
+					depth.push(r.sys_id);
+
+				r.to = that._applyDepth(depth, r.to);
+				
+				relations = relations.concat(that._addRelationRecursive(r.entity, depth));
+
+				if (r.project !== r.to_project)
+					depth.pop();					
+			});
+		}
+		return relations;
+	},	
+
+	/*
+	* Create entity and relation array form a entity tree source
+	* input:
+	* entity
+	*     .relaitons[]
+	*           entity
+	*           entity
+	*           entity
+	*              .relations[] 
+	*/
+	_entitiesAndRelationFromTree: function(input, startDepth) {
+
+		var result = {};
+		result.success = false;
+		result.entities = [];
+		result.relations = [];
+
+		if (!startDepth)
+			startDepth = [];
+
+		try {
+			if (input && input.entity) {
+				result.entities = this._addEntityRecursive(input.entity, startDepth);
+				result.relations = this._addRelationRecursive(input.entity, startDepth);
+			}
+
+			// Collect user, knowledge articles information
+			var knowledgeArticlesSysIds = [];
+			var userSysIds = [];
+
+			// With all the entities, collect the users, knownledgeArticles 
+			result.entities.forEach(function(e) {
+				if(e.knowledgearticles)
+					knowledgeArticlesSysIds = knowledgeArticlesSysIds.concat(e.knowledgearticles.split(","));
+				if(e.owners)
+					userSysIds = userSysIds.concat(e.owners.split(","));
+				if(e.contacts)
+					userSysIds = userSysIds.concat(e.contacts.split(","));
+			});
+
+
+			// Read users only if we have sys_ids
+			if(global.JSUtil.nil(userSysIds))
+				result.users = [];
+			else
+				result.users = this._selectUsers({ maxresult: 0, sys_ids: userSysIds.join(",")}).users; 
+
+			// Read knownledge articles only if we have sys_ids 
+			if(global.JSUtil.nil(knowledgeArticlesSysIds))
+				result.knowledgearticles = [];
+			else
+				result.knowledgearticles = this._selectKnowledgeArticles({ maxresult: 0, sys_ids: knowledgeArticlesSysIds.join(",")}).knowledgearticles;
+
+			result.success = true;
+		}
+		catch(err) {
+			result.exception = JSON.stringify(err);
+		}
+
+		// Remove recursive relation from the entity list
+		result.entities.forEach(function(e) { delete e.relations; });
+
+		return result;
+	},
+
+	/*
+	* select all root entities from a project
+	* This are all entities from the project that don't have any relation records (from the main project) with a TO_ENTITY value;
+	* and select all relations the are in the project but relate to other projects and no from_entity
+	* params:
+	* input.project.sys_id => the project
+	*/
+	_selectRootEntitiesAndRelations: function(input) {
+		
+		var result = {};
+		result.success = false;
+		result.entities = [];
+		result.relations = [];
+
+		try {
+
+			if (input && input.project && input.project.sys_id) {
+
+				// All entities in this project
+				var e_gr = new GlideRecord("sn_kpi_composer_root_entities");
+				e_gr.addQuery("e_project", input.project.sys_id);
+				e_gr.addNullQuery("ee_project");
+				e_gr.query();
+
+				while(e_gr.next()) {
+					var entity = this._entity_record(e_gr, "e_");
+					entity.depth = [];
+					result.entities.push(entity);
+				}
+
+				var r_gr = new GlideRecord("sn_kpi_composer_entities_entities_m2m");
+				r_gr.addQuery("project", input.project.sys_id);
+				r_gr.addNullQuery("from_entity");
+				r_gr.query();
+				while(r_gr.next()) {
+					var relation = this._relation_record(r_gr);
+					/*
+					var entity_gr = r_gr.to_entity.getRefRecord();
+					if (entity_gr.isValidRecord()) {
+						var entity = this._entity_record(entity_gr);
+						entity.sys_id = relation.sys_id + "_" + entity.sys_id;
+						relation.to_entity = entity.sys_id;
+						relation.entity = entity;
+					}
+					*/
+					result.relations.push(relation);
+				}
+
+				// Select all relation that don't have a from (parent)
+
+				result.success = true;
+			} else {
+				throw "_selectRootEntities: parameter missing, input.project.sys_id is mandatory";
+			}
+
+		} 
+		catch(err) {
+			result.exception = JSON.stringify(err);
+		}
+
+
+		return result;
+	},
+	
+	/*
+	* Executes multiple update statements at ones
+	* The input parameter (sysparm_input) shout contain a array of input values
+	* all input values (from the array) will be passed to _updateData function (one by one)
+	*/
+	multiUpdateData: function (input) {
+
+		gs.info("Calling multiUpdateData function (BaseApi)");
+
+		var response = {};
+		response.results = [];
+
+		try {
+
+			// Get input params
+			input = this._getInputParam(input);
+
+			// Create input parameters/object
+			/* OLD WAY -> new way above
+			var inputStr = this.getParameter('sysparm_input');
+			gs.info("Input (multi): " + inputStr);
+			var input = new global.JSON().decode(inputStr);
+			*/
+
+			// Check if there are actions
+			if (input.actions) {
+				// For each trouble with this
+				for(var i = 0; i<input.actions.length; i++) {
+					gs.info("Execute action (X):" + i);
+					// Get the action
+					var action = input.actions[i];
+
+					// Add the result to 
+					response.results.push(this._updateData(action));
+				}
+
+				gs.info("All actions done: " + response.results);
+
+				// Calculate overall result
+				// If there is no success (property) in the result the overall result will be false
+				response.success = response.results.every(function (r) {
+					if (r.success)
+						return r.success;
+					// No success property?
+					return false;
+				});
+			} else {
+				throw "No actions defined at input request!";
+			}
+		} // try
+		catch (err) {
+			gs.error(err);
+			response.exception = err;
+			response.success = false;
+		}
+		return new global.JSON().encode(response);
+	},
+	
+
+	/*
+	* Update data in the database by a input statement
+	* The input object should contain a 'action' property (string) with the name of the action to execute
+	* The different action should have different properties and values
+	* The result will be a object containing a 'succes' property (boolean)
+	* When a error occurse the result also contains a 'exception' property
+	*/
+	updateData: function (input) {
+
+		var response = {};
+		response.success = false;
+
+		// gs.info("Calling updateData function (BaseApi)");
+		try {
+
+			// Get input params
+			input = this._getInputParam(input);
+
+			// Old way - new way above
+			//var inputStr = this.getParameter('sysparm_input');
+			//var input = new global.JSON().decode(inputStr);
+
+			if (input) {
+				var result = this._updateData(input);
+
+				// Debug values?
+				result.debug = this._debug;
+
+				return new global.JSON().encode(result);
+			}
+		} catch (err) {
+			gs.error(err);
+			response.debug = this._debug;
+			response.exception = err;
+			response.success = false;
+		}
+		return new global.JSON().encode(response);
+	},	
+	
+	selectSpotlightGroupsJson: function(input) {
+
+		// Result data
+		var data = {};
+
+		// Get input params
+		input = this._getInputParam(input);
+		
+		// When this call is made by glideajax, input parameters should be red
+		try {
+		
+			if (this.trace) this._debug.push("Searching for spotlight groups: '" + JSON.stringify(input) + "'");
+			data = this._selectSpotlightGroups(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},
+	
+	selectUsersJson: function(input) {
+
+		// Result data
+		var data = {};
+		
+		// Get input params
+		input = this._getInputParam(input);
+
+		// When this call is made by glideajax, input parameters should be red
+		try {
+
+			if (this.trace) this._debug.push("Searching for users: '" + JSON.stringify(input) + "'");
+			data = this._selectUsers(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},
+	
+	selectGroupsJson: function(input) {
+
+		// Result data
+		var data = {};
+		
+		// Get input params
+		input = this._getInputParam(input);
+
+		// When this call is made by glideajax, input parameters should be red
+		try {
+		
+			if (this.trace) this._debug.push("Searching for groups: '" + JSON.stringify(input) + "'");
+			data = this._selectGroups(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},	
+
+	selectIndicatorDefinitionsJson: function(input) {
+
+		// Result data
+		var data = {};
+		
+		// When this call is made by glideajax, input parameters should be red
+		try {
+		
+			var inputStr = this.getParameter('sysparm_input');		
+			if (typeof input === "undefined") {
+				if (inputStr) {
+					input = new global.JSON().decode(inputStr); 
+				} else {
+					input = { note: "No input values set" };
+				}				
+			} 
+			if (this.trace) ("Searching for Indicator Definitions: '" + JSON.stringify(input) + "'");
+			data = this._selectIndicatorDefinitions(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},
+
+	selectReportDefinitionsJson: function(input) {
+
+		// Result data
+		var data = {};
+		
+		// When this call is made by glideajax, input parameters should be red
+		try {
+		
+			var inputStr = this.getParameter('sysparm_input');		
+			if (typeof input === "undefined") {
+				if (inputStr) {
+					input = new global.JSON().decode(inputStr); 
+				} else {
+					input = { note: "No input values set" };
+				}				
+			} 
+			if (this.trace) this._debug.push("Searching for Report Definitions: '" + JSON.stringify(input) + "'");
+			data = this._selectReportDefinitions(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},
+	
+	
+	// Return the same values from _selectKnowledges in json format
+	selectKnowledgeArticlesJson: function(input) {
+		var data = {};
+
+		// Get input params
+		input = this._getInputParam(input);
+		
+		// When this call is made by glideajax, input parameters should be red
+		try {
+			
+			if (this.trace) this._debug.push("Searching for knownledgearticles: '" + JSON.stringify(input) + "'");
+			data = this._selectKnowledgeArticles(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},
+	
+	// Return a list of PaWidgets
+	selectPaWidgets: function(input) {
+		var data = {};
+
+		// Get input params
+		input = this._getInputParam(input);
+
+		// When this call is made by glideajax, input parameters should be red
+		try {
+			
+			if (this.trace) this._debug.push("Searching for pa widgets: '" + JSON.stringify(input) + "'");
+			data = this._selectPaWidgets(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},
+	
+	// Return a list of Reports
+	selectReportsJson: function(input) {
+		var data = {};
+
+		// Get input params
+		input = this._getInputParam(input);
+		
+		// When this call is made by glideajax, input parameters should be red
+		try {
+
+			if (this.trace) this._debug.push("Searching for reports: '" + JSON.stringify(input) + "'");
+			data = this._selectReports(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},		
+
+	// Return a list of Reports
+	selectContentBlocksJson: function(input) {
+		var data = {};
+		
+		// Get input params
+		input = this._getInputParam(input);
+
+		// When this call is made by glideajax, input parameters should be red
+		try {			
+			if (this.trace) this._debug.push("Searching for content blocks: '" + JSON.stringify(input) + "'");
+			data = this._selectContentBlocks(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},		
+	
+	// Return a list of Reports
+	selectInteractiveFiltersJson: function(input) {
+		var data = {};
+
+		// Get input params
+		input = this._getInputParam(input);
+		
+		// When this call is made by glideajax, input parameters should be red
+		try {
+			
+			if (this.trace) this._debug.push("Searching for interactive filters: '" + JSON.stringify(input) + "'");
+			data = this._selectInteractiveFilters(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},				
+	
+	// Return a list of PaDashboards
+	selectPaDashboards: function(input) {
+		var data = {};
+
+		// Get input params
+		input = this._getInputParam(input);
+
+		// When this call is made by glideajax, input parameters should be red
+		try {
+			
+			if (this.trace) this._debug.push("Searching for pa dashboards: '" + JSON.stringify(input) + "'");
+			data = this._selectPaDashboards(input);
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(data);
+	},	
+
+	// Return a list of breakdowns
+	getBreakdownsJson: function(input) {
+		var result = {};
+		result.success = false;
+		result.breakdowns = [];
+		
+		// Get input params
+		input = this._getInputParam(input);
+
+		// When this call is made by glideajax, input parameters should be red
+		try {
+
+			if (this.trace) this._debug.push("Searching for breakdowns: '" + JSON.stringify(input) + "'");
+			result.breakdowns = this._projectApi.allBreakdownsWithShow(this._projectApi.project(input).sys_id);
+
+			result.success = true;
+
+		}
+		catch(err) {			
+			data.debug = this._debug;
+			data.exception = err;
+			data.success = false;
+		}
+		return new global.JSON().encode(result);
+	},
+				
+
+	getDashboardsJson: function(input) {
+		var dashboardData = this._getDashboards(input);
+		if (dashboardData) {
+			return JSON.stringify(dashboardData);
+		}
+		return "null";
+	},
+
+	
+	_isMemberOfGroups: function(input) {
+		var result = {};
+		result.groups = [];
+		result.one = false;
+		result.all = false;
+		try {
+		if (input.groups) {
+			result.all = true;
+			input.groups.forEach(function(group) {
+				var inGroup = gs.getUser().isMemberOf(group);
+				if (inGroup) {
+					result.one = true;
+				} else result.all = false;
+			});
+		}
+		} catch(err) {
+			result.exception = JSON.stringify(err);
+		}
+		return result;
+	},
+	
+	isMemberOfGroupsJson: function(input) {
+		input = this._getInputParam(input);
+		var result = this._isMemberOfGroups(input);
+		return JSON.stringify(result);
+	},
+
+
+	// Input should have entities list red from the getData function
+	// it makes a distinct list of the entities based on the or org_sys_id
+	distinctEntitiesByOrgSysId: function(input) {
+		var result = [];
+		if (input && input.entities) {
+			input.entities.forEach(function(entity) {
+				if (result.filter(function(e) { return e.sys_id == entity.org_sys_id }).length == 0) {			
+					// Strinify the object to make a copy
+					var new_entity = JSON.parse(JSON.stringify(entity));
+					// override the sys_id with the original value
+					new_entity.sys_id = new_entity.org_sys_id;
+					// Remove the org_sys_id property
+					delete new_entity.org_sys_id;
+					// Add to the list
+					result.push(new_entity);
+				}
+			});					
+		} else {
+			result.push("Entities property not found");
+		}
+		return result;
+	},
+	
+	
+	
+    type: 'EntityApi'
+});
+
+
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-16 11:34:19</sys_created_on>
+        <sys_id>6873e3591b03e3004e6921be6e4bcb5f</sys_id>
+        <sys_mod_count>816</sys_mod_count>
+        <sys_name>EntityApi</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_script_include_6873e3591b03e3004e6921be6e4bcb5f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-09-24 09:02:05</sys_updated_on>
+    </sys_script_include>
+</record_update>

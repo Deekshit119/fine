@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <name>sn_kpi_composer.NavHubButton</name>
+        <script><![CDATA[var NavHubButton = createReactClass({
+	handleClick : function() {
+		this.props.onActiveAsideChange(this.props.id);
+	},
+	
+	render: function() {
+		var className = 'btn btn-icon sn-navhub-btn ' + this.props.iconClass;
+		if (this.props.isActive === true) {
+			className = className + ' state-active';
+		}
+		var style = null;
+		if (this.props.paddingBottom) {
+			style = { paddingBottom: this.props.paddingBottom };
+		}
+		return e(
+			'button',
+			{ className: className, type: 'button', 'aria-label': this.props.title, title: this.props.title, 'aria-hidden': 'false', onClick: this.handleClick, style: style },
+			this.props.children
+		);
+	}
+});]]></script>
+        <script_name>NavHubButton</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-23 21:06:30</sys_created_on>
+        <sys_id>223ae9bf1b0ba70019e8ed7b2f4bcb59</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>sn_kpi_composer.NavHubButton</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_223ae9bf1b0ba70019e8ed7b2f4bcb59</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-20 09:44:35</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>false</use_scoped_format>
+    </sys_ui_script>
+</record_update>

@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Helper functions to make function calls to server side API</description>
+        <global>false</global>
+        <name>sn_kpi_composer.ClientApi</name>
+        <script><![CDATA[var sn_kpi_composer = sn_kpi_composer || {};
+
+sn_kpi_composer.ClientApi = (function () {
+	"use strict";
+
+	// ServerApi like: ProjectApi / EntityApi
+	// call = getData
+	function readServerData(serverApi, call, data, callback) {
+		try {
+			// Get data from the server
+			jslog("Server call '" + serverApi + "." + call + "' " + JSON.stringify(data));
+			var ga = new GlideAjax(serverApi);
+			ga.addParam('sysparm_name', call);
+			if (data) ga.addParam('sysparm_input', JSON.stringify(data));
+			
+			var handleResponse = function (response) {
+				var answer = response.responseXML.documentElement.getAttribute('answer');
+				var result = JSON.parse(answer);
+				if (callback) {
+					// log("Project data red, calling callback");
+					// jslog(data);
+					callback(result);
+				} else {
+					jslog("Project data is in, but nu callback function set (data lost)", "warn");
+				}
+			};
+			// Call server
+			ga.getXML(handleResponse);
+		}
+		catch(ex) {
+			jslog(ex);
+		}
+	}
+
+	// ServerApi like: ProjectApi / EntityApi
+	// call = updateData
+	function executeOnServer(serverApi, call, data, callbackSucces, callbackError) {
+		try {
+			
+			jslog("Sending data to '" + serverApi + "." + call + "' " + JSON.stringify(data));
+			
+			// Create Ajax call
+			var ga = new GlideAjax(serverApi);
+			ga.addParam('sysparm_name', call);
+			ga.addParam('sysparm_input', JSON.stringify(data));
+						
+			var handleResponse = function (response) {
+				var result = {};
+			
+				var answer = response.responseXML.documentElement.getAttribute('answer');
+				try {					
+					result = JSON.parse(answer);
+				}
+				catch(ansErr) {
+					console.error("Exception while decoding the answer.");
+					console.error(ansErr);
+					console.error(answer);
+				}
+				
+				// Debug
+				jslog(result);
+			
+				if (result && result.success !== null) {
+					if (!result.success) {
+						var showDefaultError = true;
+						if (callbackError && typeof(callbackError) == "function") {
+							jslog("Calling callbackError()");
+							if (callbackError(result)) {
+								showDefaultError = false;
+							}
+						} 
+						if (showDefaultError) {
+							jslog("Exception, no callback set.");
+							jslog(result);
+							if (result.exception)
+								addErrorMessage(new GwtMessage().getMessage("Exception: {0}", result.exception));
+							else {
+								if (result.results) {
+									var exceptions = "";
+									result.results.forEach(function(e) { exceptions += e.exception + " | "; });
+									addErrorMessage(getMessage("Exceptions: {0}", exceptions));
+								} else {
+									addErrorMessage(getMessage("Unexpected result: {0}", JSON.stringify(result)));
+								}
+							}
+						}
+					}
+
+					// Check if there is a callback
+					if (result.success) {
+						if (callbackSucces && typeof(callbackSucces) == "function") {
+							jslog("Calling callbackSucces()");
+							callbackSucces(result);
+						} else {
+							jslog("callbackSucces not set.");
+							jslog(result);
+						}
+					}
+				} else {
+					if (result) {
+						throw "Result has no Success property. Result: '" + JSON.stringify(result) + "'";
+					}
+					throw "Result is null. (No result from server call)";
+				}
+				jslog("executeOnServer is done ('" + serverApi + "." + call + "').");
+			};
+
+			// Call Server
+			ga.getXML(handleResponse);
+			
+		} catch (err) {
+			jslog("executeOnServer exception ('" + serverApi + "." + call + "'): " + err);
+			addErrorMessage(err);
+		}
+	}
+
+	return {
+
+		// Read all data from the server
+		readServerData: function (data, callback) {
+			readServerData('EntityApi', 'getDataJson', data, callback);
+		},
+		
+		// Read the Entity data only (same entity data as (readServerData) but no other data)
+		readEntityDataServerData: function (data, callback) {
+			readServerData('EntityApi', 'getEntityDataJson', data, callback);
+		},
+		
+		// Generic call to the EntityApi (with error and success callback)
+		callEntityApi: function(call, data, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', call, data, callbackSucces, callbackError);
+		},
+		
+		// Generic call to any API file (with error and success callback)
+		callApi: function(api, call, data, callbackSucces, callbackError) {
+			executeOnServer(api, call, data, callbackSucces, callbackError);
+		},
+
+		// Generic call to the EntityApi (with error and success callback)
+		getBreakdowns: function(data, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', "getBreakdownsJson", data, callbackSucces, callbackError);
+		},
+		
+
+		// Updates the server data based on a specific call
+		updateServerData: function (data, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'updateData', data, callbackSucces, callbackError);
+		},
+		// Updates the server data based on a specific call
+		multiUpdateServerData: function (data, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'multiUpdateData', data, callbackSucces, callbackError);
+		},
+		
+		/* 
+		* get a list of user based on the filer
+		* Set filter object:
+		* input.filter = ""  the value to filter on (default = "" => all)
+		* input.active = true/false (default = true)
+		* input.maxresult = number of records to return (default = 20)
+		* the  result list is orderd by name
+		*/
+		selectUsers: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectUsersJson', filter, callbackSucces, callbackError);
+		},
+		
+		selectKnowledgeArticles: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectKnowledgeArticlesJson', filter, callbackSucces, callbackError);
+		},
+		
+		selectIndicatorDefinitions: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectIndicatorDefinitionsJson', filter, callbackSucces, callbackError);
+		},
+
+		selectReportDefinitions: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectReportDefinitionsJson', filter, callbackSucces, callbackError);
+		},
+		
+		selectPaWidgets: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectPaWidgets', filter, callbackSucces, callbackError);
+		},	
+		
+		selectPaDashboards: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectPaDashboards', filter, callbackSucces, callbackError);
+		},	
+
+		selectReports: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectReportsJson', filter, callbackSucces, callbackError);
+		},	
+
+		selectContentBlocks: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectContentBlocksJson', filter, callbackSucces, callbackError);
+		},			
+
+		selectInteractiveFilters: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectInteractiveFiltersJson', filter, callbackSucces, callbackError);
+		},			
+
+		selectSpotlightGroups: function(input, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectSpotlightGroupsJson', input, callbackSucces, callbackError);
+		},		
+		
+		selectGroups: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'selectGroupsJson', filter, callbackSucces, callbackError);
+		},		
+		
+		testProject: function(callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'testProject', {}, callbackSucces, callbackError);
+		},
+		
+		// input.trace = true optional
+		projectCreateValidations: function(input, callbackSucces, callbackError) {
+			executeOnServer('ProjectValidation', 'createValidateJSON', input, callbackSucces, callbackError);
+		},
+		
+		// input.trace = true optional
+		projectCreateTasks: function(input, callbackSucces, callbackError) {
+			executeOnServer('ProjectTask', 'createProjectTasksJSON', input, callbackSucces, callbackError);
+		},		
+		
+		projectValidationResults: function(input, callbackSucces, callbackError) {
+			executeOnServer('ProjectValidation', 'validationResultsJSON', input, callbackSucces, callbackError);
+		},		
+		
+		projectTaskResults: function(input, callbackSucces, callbackError) {
+			executeOnServer('ProjectTask', 'taskResultsJSON', input, callbackSucces, callbackError);
+		},		
+
+		projectsHistory: function(input, callbackSucces, callbackError) {
+			executeOnServer('ProjectApi', 'getProjectsHistoryJson', input, callbackSucces, callbackError);
+		},
+
+		addProjectPermissions: function(input, callbackSucces, callbackError) {
+			executeOnServer('ProjectApi', 'addProjectPermissionsJson', input, callbackSucces, callbackError);
+		},
+		
+		updateProjectPermissions: function(input, callbackSucces, callbackError) {
+			executeOnServer('ProjectApi', 'updateProjectPermissionsJson', input, callbackSucces, callbackError);
+		},		
+
+		deleteProjectPermissions: function(input, callbackSucces, callbackError) {
+			executeOnServer('ProjectApi', 'deleteProjectPermissionsJson', input, callbackSucces, callbackError);
+		},		
+
+		
+		addProject: function(input, callbackSucces, callbackError) {
+			executeOnServer('ProjectApi', 'addProjectJson', input, callbackSucces, callbackError);
+		},			
+		
+		isMemberOfGroups: function(input, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'isMemberOfGroupsJson', input, callbackSucces, callbackError);
+		},			
+
+		createNewTemplate:function(input, callbackSucces, callbackError) {
+			executeOnServer('TemplateApi', 'createNewTemplateJson', input, callbackSucces, callbackError);
+		},		
+		
+		createNewTabFromTemplate:function(input, callbackSucces, callbackError) {
+			executeOnServer('TemplateApi', 'createNewTabFromTemplateJson', input, callbackSucces, callbackError);
+		},		
+
+		selectTabTemplates: function(filter, callbackSucces, callbackError) {
+			executeOnServer('TemplateApi', 'selectTabTemplatesJson', filter, callbackSucces, callbackError);
+		},		
+
+		selectLibraryProjects: function(filter, callbackSucces, callbackError) {
+			executeOnServer('LibraryApi', 'selectLibraryProjectsJson', filter, callbackSucces, callbackError);
+		},		
+			
+		createLibraryProjectFromEntity: function(filter, callbackSucces, callbackError) {
+			executeOnServer('LibraryApi', 'createLibraryProjectFromEntityJson', filter, callbackSucces, callbackError);
+		},	
+		
+		copyLibraryEntitiesToProject: function(filter, callbackSucces, callbackError) {
+			executeOnServer('LibraryApi', 'copyLibraryEntitiesToProjectJson', filter, callbackSucces, callbackError);
+		},	
+
+		deleteProject: function(filter, callbackSucces, callbackError) {
+			executeOnServer('ProjectApi', 'deleteProjectJson', filter, callbackSucces, callbackError);
+		},	
+		
+		addLibraryToProject: function(filter, callbackSucces, callbackError) {
+			executeOnServer('LibraryApi', 'addLibraryToProjectJson', filter, callbackSucces, callbackError);
+		},		
+
+		getDistinctData: function(filter, callbackSucces, callbackError) {
+			executeOnServer('EntityApi', 'getDistinctDataJson', filter, callbackSucces, callbackError);
+		},		
+		
+					
+		type: "ClientApi"
+	};
+})();
+]]></script>
+        <script_name>ClientApi</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-01-30 18:20:35</sys_created_on>
+        <sys_id>c4c4c9c6db97eb006dd37914b996196f</sys_id>
+        <sys_mod_count>123</sys_mod_count>
+        <sys_name>sn_kpi_composer.ClientApi</sys_name>
+        <sys_package display_value="KPI Composer" source="sn_kpi_composer">62a50aba0f800010ad8350feb6767e4f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="KPI Composer">62a50aba0f800010ad8350feb6767e4f</sys_scope>
+        <sys_update_name>sys_ui_script_c4c4c9c6db97eb006dd37914b996196f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-04-26 10:06:02</sys_updated_on>
+        <ui_type>0</ui_type>
+        <use_scoped_format>true</use_scoped_format>
+    </sys_ui_script>
+</record_update>
